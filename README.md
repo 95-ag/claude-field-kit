@@ -1,29 +1,35 @@
 # Claude Field Kit
 
-Source of truth for reusable Claude assets — rules, hooks, agents, skills, commands, plugins, and project
-templates — and the operating manual for maintaining them.
+A curated library of reusable Claude Code assets — rules, hooks, agents, skills, slash commands, plugin
+references, and project templates — and the conventions for organizing and delivering them across projects
+and machines.
 
-It is **not** a backup of `~/.claude`: runtime state (caches, sessions, history, credentials) is excluded.
+Improve an asset in one project, capture it here, and sync it into the others — the durable home for assets
+that would otherwise die in a project's gitignored `.claude/`.
 
-> This README is the full guide, read on demand. It is **not** auto-loaded into Claude sessions — that's
-> `.claude/CLAUDE.md`, which points here.
+**Who it's for:** primarily a personal kit, public so the tiering model and the capture → review → promote →
+deliver workflow can be borrowed. It is **not** a backup of `~/.claude` — runtime state (caches, sessions,
+history, credentials) is excluded.
 
 ## Contents
-- [Why it exists](#why-it-exists)
-- [Structure](#structure)
-- [Placement](#placement)
-- [Promotion and sync](#promotion-and-sync)
-- [Project bootstrap](#project-bootstrap)
-- [Authoring conventions](#authoring-conventions)
-- [Hook conventions](#hook-conventions)
+- [Overview](#overview) — what it is, why, and what's inside (start here)
+- [Assets](#assets) — the tiers, and where each asset lives
+- [System](#system) — capture, promote, deliver, and the authoring/hook conventions
 
-## Why it exists
-Future project `.claude/` folders are gitignored (local-only), so anything reusable in them is lost when a
-project is cleaned or re-cloned. Claude Field Kit is their durable home: improve an asset in a project, capture it
-here, then sync it into future projects. Store only what's expected to be **reused** across projects or
-environments — project-specific knowledge stays in the project.
+## Overview
 
-## Structure
+### Why it exists
+A project's `.claude/` is gitignored, so the rules, hooks, and skills you improve there vanish when it's
+cleaned or re-cloned. This kit is their durable home: **capture** an asset out of a project, then **sync** it
+into the others. Only reusable assets belong here — project-specific knowledge stays in the project.
+
+### Cross-machine setup (Windows + WSL)
+A personal quirk: my projects live in WSL, but I sometimes work them from the Windows desktop app (easier
+visualization), and want parity either way. So the kit delivers to **both** `~/.claude` homes — `global/shared`
+for everything common, `global/windows` and `global/wsl` for per-environment specifics (e.g. MSYS/WSL path
+rules). **Single-environment users can ignore the split** and use `global/shared`.
+
+### What's inside
 Three asset tiers plus a staging area:
 
 ```text
@@ -31,32 +37,23 @@ global/              # applies to every Claude environment
 ├── shared/          #   all environments (rules, hooks, skills, agents, CLAUDE.md)
 ├── windows/         #   Windows-desktop specifics (e.g. MSYS/WSL path rules)
 ├── wsl/             #   WSL specifics
-└── tools/           #   delivery engine — global-sync.mjs composes global/ → ~/.claude on each env
+└── tools/           #   delivery engine — global-sync.mjs composes global/ → ~/.claude per env
 
-project/             # copied into a new project's .claude/ — composed per project:
+project/             # copied into a new project's .claude/, composed per project:
 ├── shared/          #   universal — every project
 ├── domains/<d>/     #   stack-agnostic capability: web-frontend, automation, …
 ├── stacks/<s>/      #   tooling per tech: node, python, …
-└── repos/<name>/    #   bound to ONE named project — reused within it, NOT composed into others
+└── repos/<name>/    #   bound to ONE named project — reused within it, not composed into others
 
-incoming/            # staging (LOCAL-ONLY, gitignored) — captured by asset TYPE; tier at promotion (see Placement)
-├── skills/
-├── rules/
-├── agents/
-└── plugins/
+incoming/            # staging (local-only, gitignored) — captured by asset TYPE; tier assigned at promotion
+└── skills/ · rules/ · agents/ · plugins/
 ```
 
-A project composes its config by loading `shared` + each applicable `domain` + each applicable `stack`; a
-multi-stack repo loads several stacks. `repos/<name>/` is the exception — it loads **only** into its own
-named project, never composed into others; it is the durable home for that project's gitignored,
-project-bound assets. Add a bucket only when a stack, capability, or named project first appears.
+## Assets
 
-Working state (`session.md`, `tasks.md`, `lessons.md`) lives in `.claude/work/`, and `incoming/` is transient
-capture→promote staging — both are **local-only, gitignored; the git repo never contains them**. Committed =
-durable knowledge (`global/`, `project/`, `README.md`); local = ephemeral build state.
-
-## Placement
-What goes where:
+### The tiers in detail
+A project composes its config by loading `shared` + each applicable `domain` + each applicable `stack` (a
+multi-stack repo loads several). What each tier holds:
 
 - **Global** (`global/…`) — reusable across projects, not tied to one domain; part of the personal Claude
   workflow. *e.g.* engineering rules, git rules, safety hooks, debugging agents.
@@ -67,27 +64,46 @@ What goes where:
   design systems, motion, content, visual verification), `automation` (pipeline workflow, auth pauses, data integrity).
 - **Stack** (`project/stacks/<s>/`) — tooling tied to a tech: build/verify gate, artifacts, `.gitignore`,
   stack git overrides. *e.g.* `node`, `python`.
-- **Repo** (`project/repos/<name>/`) — bound to one named project (hardcoded paths/schema/components),
-  not cross-project reusable, but durable and reused *within* that project. Its gitignored `.claude/`
-  would lose them on clean — this is their home. Never composed into other projects. *e.g.* `portfolio`
-  (content/asset/cover/review pipeline).
+- **Repo** (`project/repos/<name>/`) — bound to one named project (hardcoded paths/schema/components), not
+  cross-project reusable. *e.g.* `portfolio` (content/asset/cover/review pipeline).
 
-### Placement decision rule
+And the composition rules:
+
+- `repos/<name>/` is the exception — it loads **only** into its own named project, never composed into others;
+  it's the durable home for that project's gitignored, project-bound assets.
+- Add a bucket only when a stack, capability, or named project first appears.
+
+### Placement — picking a tier by reach
 Pick a tier by *reach*, not by where the asset came from (a globally-authored skill can still be
 domain-scoped):
+
 1. **Universal**, self-contained, any project regardless of domain/stack → `global/shared`
    (*e.g.* `spec-write`, `design-write`).
 2. **Cross-project but domain-scoped** — only meaningful within one kind of work → `project/domains/<d>`
    (*e.g.* the `audit-*` design critiques + `implement-ai-seo` → `web-frontend`).
 3. **Tied to a specific tool/tech** → `project/stacks/<s>`.
 4. **Hardcoded to one project's structure** (paths, schema, components) → not cross-project reusable. If
-   durable + reused within that project → `project/repos/<name>/` (its gitignored `.claude/` would lose
-   it otherwise); if throwaway → leave it in the project. Never composed into other projects; generalize
-   to a higher tier only on real cross-project demand — no speculative generalization.
+   durable + reused within that project → `project/repos/<name>/` (its gitignored `.claude/` would lose it
+   otherwise); if throwaway → leave it in the project. Never composed into other projects; generalize to a
+   higher tier only on real cross-project demand — no speculative generalization.
 5. **Exact or trivial-fork marketplace asset** → leave to plugin delivery; catalog it in the plugin
    reference (don't duplicate). Vendor a fork only when its customization is substantive.
 
-## Promotion and sync
+---
+
+## System
+
+> **Dense reference — skip unless you want to understand the workings and replicate or operate this kit
+> yourself.** None of this is needed to understand or borrow assets; it's the capture, promotion, delivery,
+> and authoring machinery.
+
+- [The maintenance loop](#the-maintenance-loop) — capture → review → promote
+- [Promotion & sync](#promotion--sync) — what promotes, and how it's delivered
+- [Project bootstrap](#project-bootstrap) — seeding a new project's `.claude/`
+- [Authoring conventions](#authoring-conventions)
+- [Hook conventions](#hook-conventions)
+
+### The maintenance loop
 Assets flow **project → incoming → review → tier**. Never promote straight from a project — review first.
 
 ```text
@@ -95,14 +111,16 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
 ```
 
 - **Capture by type, not scope** — staging sorts by asset type (`skills/ rules/ agents/ plugins/`). The
-  reach-based **Placement rule** picks the tier (global vs project, and which domain/stack/repo) at
-  promotion, not at capture.
+  reach-based [Placement rule](#placement--picking-a-tier-by-reach) picks the tier (global vs project, and
+  which domain/stack/repo) at promotion, not at capture.
 - **Capture is hook-driven** — the global `asset-capture` hook auto-stages any edit under a project's
   `.claude/{rules,skills,agents,hooks}` into `incoming/<type>/<project>__<file>` (skills copied whole-dir)
   and queues a review task in that project's `tasks.md`. The staged copy is the no-loss capture; the task
   drives review→promote. Manual capture remains the fallback.
 - **Promote = place in the tier AND remove the staged copy from `incoming/`.** Verify the tier copy exists
   before deleting the incoming one (no-loss). `incoming/` then holds only un-promoted items.
+
+### Promotion & sync
 - **Only reusable assets promote** — project-specific knowledge stays in the project.
 - **Promote as the comprehensive general version** — strip project specifics AND fill the obvious gaps so the
   asset stands as the complete best-practice rule for its area; enter content as principles, not one project's
@@ -116,19 +134,23 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
 - **Verify reference integrity on promotion** — grep the asset for `references/`/sibling-doc pointers and
   confirm each target exists; remove or create dead pointers.
 - **Sync** (when a reusable asset changes): update it in the project → decide if the change is reusable →
-  update Claude Field Kit → sync future projects from it. Claude Field Kit is the source of truth.
-- **Global tier delivery** — the `global-sync` tool (`global/tools/global-sync.mjs`, via the `global-sync`
-  skill) composes `global/shared` + the env overlay and delivers it to each `~/.claude` (Windows + WSL),
+  update Claude Field Kit → sync other projects from it. Claude Field Kit is the source of truth.
+
+Delivery:
+
+- **Global tier** — the `global-sync` tool (`global/tools/global-sync.mjs`, via the `global-sync` skill)
+  composes `global/shared` + the env overlay and delivers it to each `~/.claude` (Windows + WSL),
   transforming `hooks.json` into that env's `settings.json` (WSL-wrapped on Windows, bare `node` on WSL).
-- **Plans + memory sync cross-env** — the global `plans-memory-sync` hook (SessionStart + SessionEnd) unions
+- **Plans + memory** — the global `plans-memory-sync` hook (SessionStart + SessionEnd) unions
   `~/.claude/plans/` and auto-memory between the Windows and WSL homes (newest-wins, never-delete; memory
   project-keys remapped per env). Runtime continuity, not asset promotion.
-- **Compose, never ship shared alone:** bootstrapping a project pulls `shared` + every applicable
+- **Compose, never ship `shared` alone** — bootstrapping a project pulls `shared` + every applicable
   domain/stack (incl. their `hooks.json`); the global env pulls `global/shared` + the matching env overlay.
 
-## Project bootstrap
-A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks). What you fill, and the
-rule for each (detail lives in each template):
+### Project bootstrap
+A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks). The actionable,
+discovery-driven procedure lives in `project/shared/BOOTSTRAP.md` — this section is the conceptual model.
+What you fill, and the rule for each (detail lives in each template):
 
 - **`CLAUDE.md`** (from `CLAUDE.template.md`) — repo-specific facts only: identity, stack, commands,
   rules-pointer, constraints. Workflow / git / guardrails / engineering / memory live in global
@@ -140,11 +162,9 @@ rule for each (detail lives in each template):
   SCHEMA / DESIGN optional, split out only when substantial (else fold into PROJECT). `spec-write` writes
   the non-design docs; `design-*` own DESIGN.
 
-The actionable, discovery-driven procedure lives in `project/shared/BOOTSTRAP.md` — follow it to seed a project's `.claude/`. This section is the conceptual model; BOOTSTRAP.md is the steps.
-
-## Authoring conventions
-Rules and Claude-facing docs must be **machine-readable, human-scannable, and low-load** — fully actionable
-with minimal other context loaded:
+### Authoring conventions
+Rules and Claude-facing docs are **machine-readable, human-scannable, and low-load** — fully actionable with
+minimal other context loaded:
 
 - Bullets over prose; one concept per line; no filler. If a line gets overloaded, break it into multiple
   lines or sub-points rather than packing concepts onto one — machine-readability never at the cost of human
@@ -161,7 +181,7 @@ with minimal other context loaded:
 - Keep any single **auto-loaded** doc under ~200 lines; split longer ones by sub-topic. (This README is read
   on demand, not auto-loaded, so it may run longer.)
 
-## Hook conventions
+### Hook conventions
 Hooks live in two tiers:
 
 - **Global** (`global/shared/hooks/`) — the machine-wide safety net + workflow hooks: `command-firewall`,
@@ -190,7 +210,7 @@ The conventions below apply to both tiers:
   stderr+exit-0 is human-only. Post-action advisories run as **PostToolUse**.
 - **`.claude/` is local-only** — gitignored, hard-blocked from commits.
 
-### Hook registration
+#### Hook registration
 Each tier with hooks carries a `hooks.json` manifest (a `settings.json` `hooks` fragment) — source of truth
 for which event + matcher each hook binds to.
 
@@ -202,9 +222,9 @@ for which event + matcher each hook binds to.
   concatenate; `"//"` keys dropped.
 - **Cross-shell:** command/commit hooks bind `"matcher": "Bash|PowerShell"`; file hooks bind
   `Write|Edit|MultiEdit|NotebookEdit`.
-- **Command form:** global hooks → `node "/home/<user>/.claude/hooks/<hook>.mjs"`; per-project hooks →
-  `node "$CLAUDE_PROJECT_DIR/.claude/hooks/<hook>.mjs"`. The Windows-desktop-over-WSL environment wraps
-  either **WSL-first** (`wsl -d ubuntu bash -lc '…'`) — see `global/windows/rules/windows-claude.md` § Hooks.
-- **Exec env:** resolved — hooks run under the Windows↔WSL harness (`node` resolves, stdin passes through,
-  settings load at session start). The environment-specific command form and the open `$CLAUDE_PROJECT_DIR`
-  path-format item are documented in `windows-claude.md` § Hooks.
+- **Command form:** global hooks → `node "/home/<user>/.claude/hooks/<hook>.mjs"`; per-project hooks resolve
+  the script cwd-relative (never `$CLAUDE_PROJECT_DIR` — unset inside WSL hooks). The Windows-desktop-over-WSL
+  environment wraps either **WSL-first** (`wsl -d ubuntu bash -lc '…'`) — see
+  `global/windows/rules/windows-claude.md` § Hooks.
+- **Exec env:** hooks run under the Windows↔WSL harness (`node` resolves, stdin passes through, settings load
+  at session start); the environment-specific command form is documented in `windows-claude.md` § Hooks.
