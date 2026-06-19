@@ -1,0 +1,13 @@
+{
+  "//": "Registration manifest for project/frontend/hooks/. Merged on top of project/shared/hooks.json by claude-sync (PreToolUse arrays concatenate). Frontend-only hooks. Commands are cwd-relative (node \".claude/hooks/…\", NOT $CLAUDE_PROJECT_DIR — unset inside a WSL hook); BOOTSTRAP step 2 applies the per-env wrap (WSL-first on Windows-desktop). See windows-claude.md § Hooks.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node \".claude/hooks/ai-prose-guard-mdx.mjs\"" }
+        ]
+      }
+    ]
+  }
+}

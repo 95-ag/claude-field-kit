@@ -1,0 +1,13 @@
+{
+  "//": "Project-scoped hooks — code-formatter only. Global safety hooks and session-checkpoint-nudger are delivered to ~/.claude by T2 global-sync and wired globally. Commands are cwd-relative (node \".claude/hooks/…\", NOT $CLAUDE_PROJECT_DIR — unset inside a WSL hook); BOOTSTRAP step 2 applies the per-env wrap (WSL-first on Windows-desktop). See windows-claude.md § Hooks.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node \".claude/hooks/code-formatter.mjs\"" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+# claude-os — durable home for reusable Claude assets.
+# Keep local-only working space, scratch, and secrets out of version control.
+
+# Local-only working space (session notes, work docs, local settings) — never committed
+/.claude/
+
+# One-off scripts + their outputs (scratch)
+/tmp/
+
+# Asset staging — the capture→review→promote workflow runs through here, but it is transient
+# working state, never a committed artifact. The repo documents the structure; it never ships incoming/.
+/incoming/
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*~
+*.swp
+
+# Node (the tools/hooks are dependency-free ESM; never commit these if they appear)
+node_modules/
+npm-debug.log*

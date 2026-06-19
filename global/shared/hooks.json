@@ -1,0 +1,41 @@
+{
+  "//": "Global hooks manifest. T2 global-sync transforms these into settings.json hooks for each env. Commands use absolute WSL paths; T2 wraps for Windows (wsl -d ubuntu bash) or leaves bare for WSL.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/file-protect.mjs\"" }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/command-firewall.mjs\"" },
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/git-commit-guard.mjs\"" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/session-checkpoint-nudger.mjs\"" }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/hub-dirty-flag.mjs\"" },
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/asset-capture.mjs\"" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "node \"/home/ag-95/.claude/hooks/plans-memory-sync.mjs\"" }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "node \"/home/ag-95/.claude/hooks/plans-memory-sync.mjs\"" }] }
+    ]
+  }
+}
