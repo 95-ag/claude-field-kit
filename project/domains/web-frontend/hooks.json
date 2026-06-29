@@ -5,7 +5,7 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "node \".claude/hooks/ai-prose-guard-mdx.mjs\"" }
+          { "type": "command", "command": "node \".claude/hooks/ai-prose-guard.mjs\"" }
         ]
       }
     ]

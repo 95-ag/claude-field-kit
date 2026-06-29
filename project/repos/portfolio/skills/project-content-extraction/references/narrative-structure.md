@@ -288,6 +288,8 @@ function, no label.
 
 When revising a draft: apply targeted improvements to the existing text, not a wholesale
 rewrite. Refinement, not substitution — a rewrite discards valid content and resets voice.
+Match the doc's established person and register when revising tuned prose — do not slip into
+first-person in an impersonal doc. Mirror its voice, not just its facts.
 
 **Concept density per section:** a section that introduces more than 2–3 new concepts
 at once forces the reader to context-switch mid-paragraph.

@@ -1,9 +1,9 @@
 # Component Structure
 
-How a component tree is organized and named so doc↔code navigation is trivial and a component's home is
-predictable from what it is. Read before adding, moving, or renaming a component. The component inventory
-and its doc mapping live in DESIGN.md → Components and DESIGN.md → Domain Components — reference them,
-never duplicate here.
+How a component tree is organized and named, and how it maps to `docs/DESIGN.md` — so doc↔code navigation is
+trivial and a component's home is predictable from what it is. Read before adding, moving, or renaming a
+component. The component inventory and its doc mapping live in DESIGN.md → Components and DESIGN.md → Domain
+Components — reference them, never duplicate here.
 
 ## Organization
 
@@ -21,16 +21,20 @@ domain-bound. Each folder has one job.
 - `shell/` — site-wide chrome mounted in the root layout (navigation, footer, app-wide providers).
   Single instance, not page-bound; composes portable components.
 
+**Background subsystem:**
+
+- `background/` — a standalone, full-viewport ambient background subsystem, when the project has one.
+  Not portable, not a feature, not chrome — its own top-level group. Omit when there is no ambient background.
+
 **Domain components** — page-, route-, or data-bound compositions (DESIGN.md → Domain Components):
 
 - `<feature>/` — named for the feature (e.g. `project/`, `about/`). May assume a page context, content
   schema, or editorial purpose.
 
-**Conditional:**
+**Document components** — blocks composed by authors in long-form content (DESIGN.md → Components → Document):
 
-- `content/` — components available to authored content bodies (MDX, rich text) plus the renderer
-  registry. Present **only** when the project renders authored content (MDX-based pages); omit otherwise.
-  Name the boundary precisely.
+- `document/` — authored-content components (Callout, Figure, Diagram, Code, …) plus the renderer registry.
+  Present **only** when the project renders authored content (MDX / rich text); omit otherwise.
 
 Additional rules:
 
@@ -43,10 +47,14 @@ Additional rules:
 1. An icon? → `icons/`.
 2. Portable (no page, route, or data assumptions)?
    - structural or spacing primitive → `layout/`
-   - rendered inside authored content (MDX projects only) → `content/`
+   - rendered inside authored content (MDX projects only) → `document/`
    - otherwise → `ui/`
-3. Part of the app frame (navigation, footer, app-wide provider)? → `shell/`.
-4. Bound to one page, route, or data shape? → a domain/feature folder named for it. If used by exactly
+3. Part of the app frame — mounted as a single instance in the root layout (navigation, footer,
+   app-wide provider)? → `shell/`. The test is **mounted vs composed**: a layout-mounted singleton is
+   shell even without a nav/footer role; a primitive the shell merely composes (e.g. a theme toggle)
+   stays in `ui/` per step 2.
+4. The ambient background (when the project has one)? → `background/`.
+5. Bound to one page, route, or data shape? → a domain/feature folder named for it. If used by exactly
    one route, keep it inline until an extract trigger fires (see Inline vs extract).
 
 ## Dependencies
@@ -55,6 +63,44 @@ Additional rules:
 - Domain components may depend on portable layers.
 - Avoid circular dependencies.
 - Move shared behavior downward into a portable layer only when the abstraction is genuinely reusable.
+
+## Canonical mapping (code ↔ DESIGN.md)
+
+The DESIGN.md section names are the standard; folder names are the project's to choose (keep them precise).
+
+| Code folder | DESIGN.md section |
+|---|---|
+| `shell/` | Components → Shell |
+| `ui/` | Components → UI |
+| `document/` (authored-content) | Components → Document |
+| `layout/` | Foundations → Layout |
+| `icons/` | Foundations → Iconography |
+| `background/` | Background (top-level) |
+| `<feature>/` | Domain Components |
+
+## Component sub-groups
+
+Under DESIGN.md → Components, **UI** and **Document** are sub-grouped by role. This is the general
+vocabulary; a system instantiates only the sub-groups it populates.
+
+- **UI** — Controls/Actions · Links · Display · Inputs · Feedback/Status
+- **Document** (authored-content blocks) — Annotations · Figures & Media · Diagrams & Charts · Code · Embeds
+
+Boundary (format-agnostic): **UI** = primitives composed by engineers in application code; **Document** =
+blocks composed by authors in long-form content (registered in the content renderer's registry). The
+dividing line is the **authoring registry**, not the file format. A primitive re-exported for authoring
+convenience keeps its canonical home (e.g. a layout primitive stays in `layout/`) — being reachable from
+authored content doesn't make it a Document member. **Folder is the home.**
+
+**Prose** — the base long-form text styling layer — is NOT a component; it's a Foundations concern
+(DESIGN.md → Foundations → Prose), with no entry in the component folders.
+
+## Foldering rule
+
+A layer folder (`ui/`, `layout/`, `document/`, …) stays **flat** while small. When adding a component
+would push a flat group past ~10 members, the SAME change splits that group into sub-folders matching the
+sub-group vocabulary above (`ui/controls/`, `ui/display/`, …). Not optional — part of the addition; the
+split axis is pre-defined, so it's mechanical. The threshold is tunable.
 
 ## Ownership
 
@@ -93,5 +139,4 @@ Do not extract for a 1:1 doc mapping. Single-use static sections stay inline, do
 - The shared name is the bridge: doc→code = grep the `PascalExport`; code→doc = search DESIGN.md.
 - Tag each domain-component/page-section entry in DESIGN.md as **`[inline]`** (lives in a page) or
   **`[standalone]`** (has its own file).
-- Portable components map to DESIGN.md → Components; layout primitives to DESIGN.md → Foundations → Layout;
-  feature folders to DESIGN.md → Domain Components.
+- Folder ↔ DESIGN.md section mapping lives in the Canonical mapping table above.

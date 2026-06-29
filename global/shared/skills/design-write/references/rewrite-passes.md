@@ -88,6 +88,8 @@ What changes:
 - Section content rewritten to match writing mode for its category (see contract § Section-Type Writing Modes).
 - Anti-patterns removed.
 - Component sections brought to: name → 1-line identity → 3–5 semantic bullets → optional YAML.
+- **Doc-first applied** — code references (paths, symbols, framework classes, wiring) rephrased as conceptual behavior, per contract § Doc-First. A one-shot audit under-counts; re-audit after the pass.
+- **Intros lead with the design concept** — every moved or new section intro checked against a sibling intro; implementation paths and self-justifying placement stripped.
 
 What does NOT change:
 - Canonical ordering, heading text, tokens — structural changes go in Structure pass.

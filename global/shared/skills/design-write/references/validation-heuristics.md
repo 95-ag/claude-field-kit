@@ -1,12 +1,12 @@
-# Realign Validation Heuristics
+# Validation Heuristics
 
-Run these checks after producing the rewritten document, before reporting done. Failed checks surface as a short remediation list.
+Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign**. Failed checks surface as a short remediation list. Most checks are mode-agnostic (valid structure, two-layer model, doc-first, tokens, terminology, template). A few are transform-only and tagged below: **Lossless** and **Manifest Completeness** apply to Update + Realign; the **Realign Judgment Heuristics** apply to Realign.
 
 ---
 
 ## Structural
 
-- Canonical top-level ordering preserved: `YAML Registry → Overview → Foundations → [Semantic Systems] → Components → Domain Components → Interaction Rules → Accessibility Rules → Cross-Cutting Rules → Technical Conventions → Iteration Notes`. Bracketed entries are optional.
+- Canonical top-level ordering preserved: `YAML Registry → Overview → Foundations → [Semantic Systems] → [Background] → Components → Domain Components → Interaction Rules → Accessibility Rules → Cross-Cutting Rules → Technical Conventions → Iteration Notes`. Bracketed entries are optional.
 - All spine sections required by the contract — and by any project-specific schema — are present. (Project-specific required Domain Components, e.g. a portfolio's `Project Detail` / `About Layouts`, come from the project's own schema, not this generic check.)
 - No heading deeper than H4.
 - No duplicate section titles within the same parent.
@@ -50,15 +50,27 @@ Run these checks after producing the rewritten document, before reporting done. 
 
 - Token references use `{token.name}` (resolved-value) format wherever the contract requires it.
 - No new tokens introduced that aren't declared in the Foundations section.
-- Stable vocabulary is consistent across the doc — no synonym drift introduced by the rewrite.
+- Stable vocabulary is consistent across the doc — no synonym drift introduced.
+
+## Doc-First, Anti-Patterns & Template
+
+- **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
+- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `writing-contract.md` → Prose Anti-Patterns); history lives in Iteration Notes.
+- **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
+- **Template completeness** — every subsection the Project-Specific Schema requires is present.
+- **Anchor resolution** — every heading anchor sibling rules/docs reference resolves to a real heading.
 
 ## Lossless
+
+*(Update + Realign — compares output to the input.)*
 
 - Token inventory: every token name present in the input appears in the output (or is logged in the manifest as a terminology unification).
 - Table row counts: preserved unless the manifest documents a merge.
 - Every input section's semantic content is traceable to an output location or a manifest entry.
 
 ## Manifest Completeness
+
+*(Update + Realign — every change has a manifest entry.)*
 
 - Every structural change in the output has a corresponding manifest entry.
 - No manifest entry references a location that doesn't exist in the output.
@@ -70,6 +82,8 @@ Run these checks after producing the rewritten document, before reporting done. 
 ---
 
 ## Realign Judgment Heuristics
+
+*(Realign only.)*
 
 These are preferences and guidelines, not hard rules. Apply them with judgment — context overrides heuristic.
 

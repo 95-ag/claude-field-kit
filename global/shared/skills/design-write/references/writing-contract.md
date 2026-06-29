@@ -170,6 +170,17 @@ without semantic linkage.
 
 ---
 
+## Token Naming Conventions
+
+Token names are **semantic — by usage/role, not value or appearance** — across every group (color, spacing, radius, motion, z-index, breakpoints, typography). A name says what the token is *for*, so it survives a value change.
+
+- **Name by role, not value.** `surface-elevated`, not `gray-100`; `duration-fast`, not `150ms`.
+- **One value → one token.** Don't mint two names for the same resolved value, or overload one name across distinct roles. Names must be distinct enough not to collide.
+- **Foreground pairs name their ground.** A text/icon token names the surface it sits on — e.g. an `ink` / `ink-on-accent` pairing.
+- **Responsive tiers use device + breakpoint-token names.** Name them by device (mobile, tablet, laptop, desktop, wide, ultrawide) and the framework's breakpoint tokens (e.g. sm, md, lg, xl, 2xl) — never ad-hoc scale words ("mid").
+
+---
+
 ## Design Identifiers
 
 These identifiers are load-bearing:
@@ -355,6 +366,29 @@ When a canonical table or spec block already expresses behavior clearly, interpr
 
 ---
 
+## Doc-First — No Code References
+
+DESIGN.md describes **what the design does and why — never how the code wires it.** Code follows the doc; the doc never points back at code. The test: state the design intent and rationale, not the implementation.
+
+**Ban** (implementation, not design):
+- File paths — `src/...`, `globals.css`, `footer.tsx`, `/public/...`.
+- Code symbols presented as code — component / registry / hook / provider / variable names.
+- Import / package / framework-API names — `next/image`, `next/font`, `@shikijs/rehype`.
+- Raw framework utility classes used as spec — `lg:flex-1`, `min-h-dvh`, `grid-cols-2`.
+- Mount-order / wiring prose — "mounted before the nav", "in the root layout", "re-exported from".
+
+**Allow:**
+- Design-token selectors & CSS custom properties — they *are* the token system (`[data-theme]`, `{radius.sm}`, `var(--accent)`). Prefer the `{token}` form for token references.
+- A deliberately-chosen tool/library *name* where the choice affects design semantics — not a library merely used by the implementation. The system name only, never its API, package, or wiring.
+
+**Where implementation detail belongs:**
+- Rendering/build/runtime *policy* lives in Technical Conventions, stated conceptually (what happens + why), naming no files, symbols, or packages.
+- No design information is lost: rewrite implementation details as conceptual behavior.
+- The doc↔code bridge is the naming convention (heading = export = file), not inline paths.
+- Pure implementation caveats belong in code comments or Technical notes, never in DESIGN.md.
+
+---
+
 ## Component Writing Contract
 
 Every reusable component section MUST contain:
@@ -515,6 +549,7 @@ Avoid:
 * excessive abstraction without grounding
 * repeating identical information across prose and YAML
 * process/source metadata in canonical sections — cross-doc citations ("see PRODUCT.md §7.4"), open-question markers, and self-containment notes ("Restated from X for self-containment") are transient authoring artifacts, not design-system content. Open decisions belong in `Iteration Notes → Open Decisions`; gaps belong in `Iteration Notes → Known Gaps`.
+* decision-history / iteration narration in canonical sections — "we renamed X→Y", "chose A over B", "previously…", migration residue, and self-justifying placement ("isn't a component, so no file"). Canonical content states the current decision, not the path to it; decision history → `Iteration Notes`, never inline.
 
 ---
 
@@ -623,8 +658,9 @@ The canonical spine provides the organizing structure for any substantial design
 ```
 YAML Registry              ← globally reusable tokens/scales/aliases/systems only
 # Overview
-# Foundations              (Colors, Typography, Spacing, Layout, Motion, Shapes, Elevation & Depth)
+# Foundations              (Colors, Typography, Prose, Spacing, Layout, Imagery, Motion, Shapes, Elevation & Depth, Iconography)
 # Semantic Systems         (optional — populate only when semantic concerns benefit from a dedicated home)
+# Background               (optional — ambient background subsystem; promote here when present)
 # Components               ← reusable / portable UI systems
 # Domain Components        ← page/domain-bound compositions and layouts
 # Interaction Rules        (global defaults: Hover, Focus, Disabled, Loading, Responsive Behavior)
@@ -634,10 +670,50 @@ YAML Registry              ← globally reusable tokens/scales/aliases/systems o
 # Iteration Notes          (Open Decisions, Known Gaps)
 ```
 
+## Foundations Template
+
+`# Foundations` is the system's primitive and base rendering layer. A project instantiates the subsections it needs from this canonical set; each documents one concern, in the shape noted. Pin exact subsection/H4 names in the Project-Specific Schema — other rules reference them. Writing *style* per subsection follows the Foundation Sections writing mode; this template fixes *what each documents*.
+
+| Subsection | Documents (shape) |
+|---|---|
+| Colors | palette/primitive tokens + a semantic-role mapping (token → role) |
+| Typography | type scale (family, size, weight, line-height) + semantic roles |
+| Prose | rendered long-form content — headings, blockquotes, lists, tables, inline code, links — consuming type/color tokens; base rendering layer, after Typography, not a component |
+| Spacing | spacing scale + semantic application |
+| Layout | grid, containers, reading column, layout primitives (architectural) |
+| Imagery | image/figure treatment — framing, ratios, placement |
+| Motion | duration + easing tokens + motion principles/limits |
+| Shapes | the radius/shape scale |
+| Elevation & Depth | elevation levels, surface layering, any blur/shadow carve-outs |
+| Iconography | the icon system — size, stroke, source |
+
+A base style/rendering layer (no component, not in the authoring registry) is a Foundations concern — classify by responsibility before placing it under `# Components`.
+
+## Background Policy
+
+An ambient background subsystem — a full-viewport visual layer the product renders behind content — is its own top-level section, placed between Foundations and Components when present. It is standalone: not a Foundation primitive, not a reusable Component, not page-bound chrome — so it is never buried inside Domain Components. Omit the section entirely when the system has no ambient background.
+
 **Components vs Domain Components:**
 
 - **Components** — reusable, portable UI systems with no page-specific assumptions. MUST NOT assume a route, schema, or editorial purpose.
 - **Domain Components** — page- or domain-bound compositions that orchestrate Components and Foundations into product surfaces. MAY assume a specific page context, content schema, or editorial purpose.
+
+## Components Sub-Taxonomy
+
+`# Components` is organized by composition layer, not visual function. Groups progress from application shell to reusable UI primitives to author-authored document blocks: **Shell → UI → Document**.
+
+- **Shell** — site-wide application chrome mounted once per application. Composes UI primitives; assumes no page/route/schema. (Shell→UI is an accepted forward-reference.)
+- **UI** — portable primitives composed by engineers in application code; no page/route/schema assumptions.
+- **Document** — blocks composed by authors through the system's authoring registry (MDX, CMS, rich text, etc.). A system with no authored content has an empty Document group.
+
+**Boundary = who composes, not file format.** The UI/Document boundary is the authoring registry. An engineer-placed snippet primitive belongs in UI even if it looks like code; an author-fenced block belongs in Document. The same concept may exist in both layers because composition context differs.
+
+**Sub-group vocabulary** — instantiate only the sub-groups a system populates; omit empty slots:
+
+- **UI** — Controls/Actions · Links · Display · Inputs · Feedback/Status
+- **Document** — Annotations · Figures & Media · Diagrams & Charts · Code · Embeds
+
+Sub-groups are first-class in the doc. How code folders mirror them — and when a flat folder must split — is a code-structure rule, out of scope for DESIGN.md.
 
 ## Semantic Systems Policy
 
@@ -732,7 +808,7 @@ Mode:
 
 * architectural and compositional
 
-Applies to: `Foundations → Layout` (grid, containers, imagery) and `Interaction Rules → Responsive Behavior`.
+Applies to: `Foundations → Layout` (grid, containers), `Foundations → Imagery`, and `Interaction Rules → Responsive Behavior`.
 
 Characteristics:
 
@@ -965,6 +1041,17 @@ Project-specific schema defines:
 * local structural conventions
 
 This layer specializes the universal contract for a specific product.
+
+---
+
+## Referenceable Contract Surface
+
+Sibling documents (rules, component maps, configs) reference DESIGN.md by heading path, often down to H4. Those heading paths form a contract surface rather than internal organization.
+
+- **Stable and complete.** Every section/subsection a sibling rule references must exist and stay present. Heading anchors are load-bearing identifiers — renaming one propagates to every referrer (`cross-reference-rules.md`).
+- **Pinned in the project schema.** The Project-Specific Schema fixes the exact subsection headings, the H4 anchors external rules cite, the pinned terminology (e.g. a project's chosen "Motion & Interaction" vs the generic "Motion"), and the doc↔code tagging convention.
+
+The universal contract defines the template. The project schema fixes the concrete instance that sibling rules reference.
 
 ---
 

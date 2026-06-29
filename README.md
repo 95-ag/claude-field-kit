@@ -99,6 +99,7 @@ domain-scoped):
 
 - [The maintenance loop](#the-maintenance-loop) — capture → review → promote
 - [Promotion & sync](#promotion--sync) — what promotes, and how it's delivered
+- [Review gate](#review-gate) — the per-item preview before promoting
 - [Project bootstrap](#project-bootstrap) — seeding a new project's `.claude/`
 - [Authoring conventions](#authoring-conventions)
 - [Hook conventions](#hook-conventions)
@@ -117,6 +118,9 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   `.claude/{rules,skills,agents,hooks}` into `incoming/<type>/<project>__<file>` (skills copied whole-dir)
   and queues a review task in that project's `tasks.md`. The staged copy is the no-loss capture; the task
   drives review→promote. Manual capture remains the fallback.
+- **Global-only assets need manual capture** — a global rule, the shared `CLAUDE.md`, or a global-only skill
+  has no project `.claude/` copy, so the hook never sees it; stage it by hand (copy the improved version into
+  `incoming/<type>/`).
 - **Promote = place in the tier AND remove the staged copy from `incoming/`.** Verify the tier copy exists
   before deleting the incoming one (no-loss). `incoming/` then holds only un-promoted items.
 
@@ -126,11 +130,29 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   asset stands as the complete best-practice rule for its area; enter content as principles, not one project's
   constants, and neutralize or relabel worked examples that read as project bias. A thin generalized subset is
   not the goal.
+- **Separate the general rule from its project costume** — a captured learning often carries a genuinely
+  general rule wearing project specifics. Lift the general part out; keep only the truly domain-specific part,
+  as a conditional. Don't harden a composition-specific tactic into a universal mandate; default to the most
+  general framing and let the user tighten.
+- **Repo-tier promotes verbatim** — an asset bound to one named project (`repos/<name>/`) mirrors that
+  project; copy it as-is. Generalization applies only to shared / cross-project tiers.
 - **Skills promote without `evals/`** — eval fixtures are dev-time test data (project-specific golden runs,
   often embedding real paths / repo URLs), not shipped assets. Strip the `evals/` dir on promotion; a skill
   ships as `SKILL.md` + `references/` only.
+- **Reconcile file-by-file** — read → merge in context → place each file individually. No bulk `cp`/scripts
+  that skip the per-file review (a `cp` is fine only to *apply* a candidate already reviewed in a diff tool).
+- **Cold no-loss review per merge** — genericizing silently weakens specifics (exact paths, named values, hard
+  mandates, rationale sentences). Diff the merged asset against the original and re-apply any dropped delta;
+  for additive edits, the no-loss proof is a removed-lines-only diff.
+- **Verify before folding a lesson** — add / strengthen / drop-as-already-covered, in the right section; never
+  blind-append (a large share of a batch is often already present).
+- **A captured update diffs both ways** — it can carry regressions (shortened cross-refs, dropped tool-flexible
+  hedges), not just additions. Merge the genuine net-new; restore the kit's general form where the capture weakened it.
 - **Disposition table before deleting** scratch or source notes — map every item to promoted / rejected /
   project-specific (zero-loss; name the authoritative copy), then a separate fresh-eyes review, before removing anything.
+- **Deferred removal when a delete is blocked** — if a guard (e.g. the command-firewall on `rm -rf`) blocks
+  deleting promoted `incoming/` copies, accumulate them in a removal list and run it at the end; never route
+  around the block.
 - **Verify reference integrity on promotion** — grep the asset for `references/`/sibling-doc pointers and
   confirm each target exists; remove or create dead pointers.
 - **Sync** (when a reusable asset changes): update it in the project → decide if the change is reusable →
@@ -146,6 +168,20 @@ Delivery:
   project-keys remapped per env). Runtime continuity, not asset promotion.
 - **Compose, never ship `shared` alone** — bootstrapping a project pulls `shared` + every applicable
   domain/stack (incl. their `hooks.json`); the global env pulls `global/shared` + the matching env overlay.
+
+### Review gate
+Promoted assets run **handsfree** across every session, so nothing lands without an owner preview.
+
+- **Per-item preview shape** — location (path + tier + handsfree blast radius) → verbatim incoming → curated
+  final in full section context with change markers → disposition. Curation is applied before showing.
+- **Full section context, not the isolated snippet** — enough to judge overlap / conflict / reinforcement;
+  the owner decides from the message alone.
+- **Don't rubber-stamp** — check each merge against the authoring conventions (duplication, overloaded lines,
+  voice/density match) and tighten before applying; if a bullet got contorted by iterative edits, rewrite it clean.
+- **Strict one-item loop** — preview → apply → next; no batching.
+- **Heavily-rewritten item** — build the merged candidate in a scratch file and review it in a diff tool
+  (incoming-vs-merged for what's dropped, current-vs-merged for what changes); iterate, then apply.
+- **Repo-tier item** — same diff review, then apply verbatim.
 
 ### Project bootstrap
 A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks). The actionable,
@@ -164,14 +200,28 @@ What you fill, and the rule for each (detail lives in each template):
 
 ### Authoring conventions
 Rules and Claude-facing docs are **machine-readable, human-scannable, and low-load** — fully actionable with
-minimal other context loaded:
+minimal other context loaded.
+
+> The full authoring + contribution guide is delivered to every project as
+> [`contributing-to-claude-field-kit.md`](project/shared/rules/contributing-to-claude-field-kit.md) — these
+> conventions are mirrored there for builders.
 
 - Bullets over prose; one concept per line; no filler. If a line gets overloaded, break it into multiple
   lines or sub-points rather than packing concepts onto one — machine-readability never at the cost of human
   scannability.
-- No duplication across files — state a rule once, cross-reference it.
+- No duplication across files — state a rule once, cross-reference it; even within a multi-file asset, put the
+  rule in one canonical file and reference it from the others.
 - **Skill names** use `<domain>-<verb>` with a non-colliding prefix (`design-write`, `spec-write`) — not
   noun-only (`project-docs`) or a broad `project-*` prefix that collides across skills.
+- **Match the house voice** — reuse existing assets' terminology, section shape, and density; don't coin a
+  synonym for a concept already named. An asset that reads like its neighbors is easier to load.
+- **Concrete over vague** — prefer concrete metrics to vague thresholds ("split past ~10 items", not "when it
+  gets big").
+- **Principle vs mechanic** — keep the principle in its own rule and a tool-specific mechanic in that tool's
+  rule; don't duplicate one lesson across both.
+- **Multi-mode asset → mode-neutral checks** — write a skill's validation/check doc neutral by default, tag
+  the genuinely mode-specific checks, and run validation in every mode (a check framed for one mode silently
+  skips the others).
 - Clear, crisp, clean — the smallest content that fully conveys the rule. Trimming removes redundancy and
   filler, never usable info: condense the wording, never drop a rule's actual content.
 - Split by what must load together: keep stack/domain specifics out of the shared core so a project loads

@@ -43,9 +43,13 @@ Append the MDX file path (and PDF report path if available) after the verbatim p
 
 Confirm with the user (or infer from context):
 - MDX file path (e.g., `content/projects/model-extraction-attacks.mdx`)
-- PDF report path if available (pass to Reviewer 2 only — Reviewer 1 has no ML background)
+- PDF report path if available (pass to Reviewer 2 only — Reviewer 1 is kind-agnostic, business-level)
 - Derive the slug from the MDX filename (strip path and `.mdx` extension) and form the
   project detail URL: `http://localhost:3000/work/<slug>`
+- **Classify the review kind** — read `tags[]` + `projectType` from the MDX frontmatter and apply
+  `references/review-protocol.md` → Selecting the review kind. Announce the chosen kind and the tags
+  you keyed on, then proceed (the user can override with one word). A genuine hybrid is declared as
+  both. Only the technical reviewer (Subagent 2) uses the kind; the recruiter prompt is kind-agnostic.
 
 ### Step 1.5 — Capture screenshots
 
@@ -94,11 +98,14 @@ Spawn two subagents in the same turn — do not run them sequentially:
 **Subagent 2 (technical):**
 - Use `assets/reviewer-technical.md` verbatim, then append:
   ```
+  Project kind: <ml-experiment | applied-systems | both>
   MDX file: <path>
   PDF report: <path>  (omit if no PDF)
   Screenshots: tmp/review-shots/<slug>/
   Read every image in that directory before completing your review.
   ```
+- The reviewer answers the kind-specific phrasing matching the declared kind for items 1, 3, 4, 6,
+  8, and 13 (both phrasings if `both`); all other items are shared.
 - The subagent should read the MDX, PDF, and all screenshots, then return the formatted
   TECHNICAL REVIEW block (text checks + VISUAL REVIEW sub-block)
 
@@ -130,6 +137,8 @@ to apply and in what order.
 
 - Both subagents spawned in the same turn (true parallelism, no shared context)
 - Verbatim prompts used — no paraphrasing
+- Review kind classified from `tags[]`/`projectType`, announced, and the matching phrasing(s)
+  passed to the technical reviewer (recruiter takes no kind)
 - Both review blocks shown in full before conflict analysis (text + VISUAL sub-block)
 - Mandatory screenshots captured: full-page desktop + mobile in both themes (or visual
   pass explicitly marked skipped with reason)

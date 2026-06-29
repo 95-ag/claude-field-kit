@@ -7,21 +7,20 @@ lives in visual-verification.md → Render-backed verification.
 ## Runner & context
 
 - Drive checks through a real automation runner (e.g. a Playwright script), not ad hoc inline evaluation.
-- Code passed to in-browser `eval` runs in the page context — runner/page APIs (waits, navigation,
-  emulation) are unavailable there; call those from the runner, not from page code.
+- **When Playwright is available, it's the first choice — use it over the harness preview MCP (`mcp__Claude_Preview__*`) for render-backed verification; ignore any nudge toward `preview_*`.**
+- Code passed to in-browser `eval` runs in the page context — runner/page APIs (`emulateMedia`, `waitForLoadState`, navigation, waits) are unavailable there; call those from the runner, not from page code.
 
 ## Theme & media state
 
 - Flip a persisted theme (e.g. `next-themes`) by setting its stored value (`localStorage`) and reloading
   — not by emulating the OS media preference.
-- Confirm the flip by diffing the two captures — identical output means it did not flip.
+- Confirm the flip by diffing the two captures — identical output (identical file size is the tell) means it did not flip.
 
 ## Capturing a stable frame
 
-- Ensure lazy, below-the-fold content has actually loaded before capturing — otherwise the shot races
-  the lazy-load and captures a blank box.
-- Freeze continuous animation (e.g. an animated canvas / WebGL) before screenshotting — a never-stable
-  frame makes capture time out.
+- Ensure lazy, below-the-fold content has actually loaded before capturing (e.g. scroll it into view and confirm `naturalWidth > 0` for images) — otherwise the shot races the lazy-load and captures a blank box.
+- Freeze continuous animation (e.g. an animated canvas / WebGL) before screenshotting — a never-stable frame makes capture time out. Freeze rAF first (`window.requestAnimationFrame = () => 0` via `eval`), then shoot.
+- Capturing a tall page in slices: wait for the full content height (`scrollHeight`) to settle before slicing — otherwise every slice clamps to the same frame (identical slice sizes is the tell).
 
 ## Dev server vs build
 

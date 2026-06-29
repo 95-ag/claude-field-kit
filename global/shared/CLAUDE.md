@@ -21,6 +21,7 @@ Non-negotiable stops. The numbered sections below expand each one.
 ### 1. Plan Node Default
 
 - Default IS plan mode — execution requires explicit user instruction
+- **Superpowers is the default workflow when available** — route through it (brainstorm → plan → execute), not native/improvised planning; project CLAUDE.md owns exceptions.
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 - When in doubt, plan. Do not rationalize past the threshold.
 - If execution deviates or assumptions break, stop immediately and re-plan
@@ -94,7 +95,7 @@ Non-negotiable stops. The numbered sections below expand each one.
 ## Guardrails
 
 - Diagnose a tool failure before changing any global config — establish what worked before and why it now appears unavailable.
-- Never circumvent a blocked tool via an alternate path (PowerShell `Remove-Item` for a blocked `rm`, an `rm` buried in a script file, etc.) — the block **is** the approval gate. Propose the action and wait.
+- Never circumvent a blocked tool via an alternate path (PowerShell `Remove-Item` for a blocked `rm`, an `rm` buried in a script file, etc.) — the block **is** the approval gate. Propose the action and wait; on a block, state it and give the user the exact command to run themselves and/or the blocking issue / info needed.
 - Global-config changes (`~/.claude/`, shell dotfiles like `~/.profile`/`~/.bashrc`, `claude mcp add`, system packages) need their **own** explicit gate — never bundled into a plan or blanket "go ahead" that also covers project files. Don't widen the file set (e.g. sync a second copy) without asking.
 - Never use `--break-system-packages`, `--force`, or equivalent override flags without permission. Safe alternatives, in order: `--user` install → project virtualenv → throwaway temp venv.
 - Files outside the repo are not project-owned — `tmp/`, sibling directories, and extracted assets need explicit scope confirmation before writing. Read access ≠ write permission.

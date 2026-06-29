@@ -113,6 +113,12 @@ Iteration Notes use bullet-first, concise, non-defensive writing. No prose walls
 
 Structural moves are not ordinary updates. Recommend a Realign pass — Structure-Only, Migration, or Architectural Migration depending on scope (`rewrite-passes.md`) — rather than performing the move as an edit.
 
+**Carve-out — Contained Migration.** Structural moves normally require a Realign. An exception is a single, user-approved move that is fully contained within one parent section, preserves the identifier, carries the content verbatim, and leaves all heading-path references intact.
+
+Such a move MAY be routed through **Update** instead of **Realign**. Announce the exception explicitly so the review trail records that a structural move was handled as an Update.
+
+Use **Realign** whenever the change extends beyond the contained move or contributes to broader cross-section drift.
+
 ---
 
 ## Specification Conflict

@@ -16,7 +16,9 @@ Constraints that keep DESIGN.md edits safe and auditable — across both everyda
   heading too deep) is reported as `NOTED`, not fixed inline — unsolicited edits make diffs hard to
   review. Recommend a targeted follow-up or a Realign.
 - **No structural moves.** Updates never relocate content across sections. A request that implies
-  relocation → recommend a Realign; do not move it yourself.
+  relocation → recommend a Realign; do not move it yourself. *Carve-out:* a single, fully-contained,
+  user-approved move may be routed through Update with an announced exception — see `edit-patterns.md`
+  → Structural Move.
 - **Hierarchy is mostly read-only.** An Update MAY add a subsection within an existing section, or a row
   to an existing table. It MUST NOT change heading depths, add top-level sections without explicit
   approval, or rename existing headings (renames propagate to cross-references — use a Realign or

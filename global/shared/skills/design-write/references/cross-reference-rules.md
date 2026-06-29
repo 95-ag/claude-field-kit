@@ -54,6 +54,8 @@ Do not update prose that happens to use the old words in a different context (e.
 
 Structural moves that alter heading paths follow the same propagation rules as renames.
 
+After any rename or structural move, also grep sibling **rule docs** for the old heading path, taxonomy, and terminology — and reconcile each (they restate the taxonomy in prose, not just reference it).
+
 ---
 
 ## Enumeration in Diff Summary

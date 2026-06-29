@@ -17,6 +17,7 @@
 - Prefix cross-shell calls with `MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'`.
 - Anything with multiple `/paths`, quoting, or `$(...)` is unreliable inline — write a **script file** and run it via `wsl … bash <script>`.
 - **NEVER use an inline `for`/`while` loop over paths inside `wsl … bash -lc '…'`.** The loop variable comes back **empty** in MSYS, so the body runs against the cwd instead of each item — `for f in a b; do rm -rf "/path/$f"; done` becomes `rm -rf "/path/"` and **deletes the parent directory**. No exceptions: use explicit `&&` chains, or write a script file and run it via `wsl … bash <script>`.
+- **Even a plain `$VAR` assignment empties through the bridge — not just loops.** `D=path; sed -i … "$D"` / `grep -r … $D` runs against an empty filename: `sed` no-ops (looks "not applied"); `grep -r` with an empty path walks the WHOLE repo incl. `.next`/`node_modules`. Any `$VAR` across the git-bash→`wsl` bridge is unsafe — use a script file with hardcoded absolute paths, or inline literal paths.
 - **Capture output to a file and read it** — terminal stdout/stderr interleave through the git-bash→`wsl` bridge is unreliable for parsing.
 
 ## Don't drive repo commands through PowerShell
@@ -42,6 +43,9 @@
 ## Long-running servers — keep alive, then free the port
 - A server backgrounded inside a one-shot `wsl -d ubuntu bash -lc '(… &)'` dies when the call returns. Start it with the **Bash tool's `run_in_background: true`** on a *foreground* command so it persists across turns. **Prefix the start with the MSYS guard** `MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'` — the background-start command is the easiest place to forget it, and a mangled `/home/...` script path fails with "No such file or directory".
 - Stopping that background task (`TaskStop`) kills the git-bash→`wsl` wrapper, but the WSL process (e.g. `next-server`) can keep listening → `EADDRINUSE` on the next start. Free the port before restarting with the **bracket trick**: `pkill -f 'next-serv[e]r'`. A plain `pkill -f next-server` also matches the shell running it (its own command line contains the literal `next-server`) and SIGTERM-kills itself (exit 143); the `[e]` character class matches the `e` in the real process's cmdline but not pkill's own bracketed pattern. Same trap with `"next dev"`.
+
+## WSL dev server / HMR — Windows-app edits don't fire inotify
+- Edits from the Windows desktop app (UNC `\\wsl.localhost\…`) often don't fire WSL inotify, so the dev server serves **stale** output while the file on disk is already correct. After editing, `touch <file>` **from WSL** to force a recompile, and verify the **served output** (e.g. `getComputedStyle` for CSS), not the file alone.
 
 ## Path translation (UNC ↔ WSL)
 - WSL `/home/ag-95/…` ⇔ Windows UNC `\\wsl.localhost\ubuntu\home\ag-95\…`.

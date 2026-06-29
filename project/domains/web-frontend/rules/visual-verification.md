@@ -31,3 +31,10 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
 - Ensure lazy-loaded and dynamically rendered content has finished loading before verification.
 - Use component-level captures for component verification and page-level captures for layout verification.
 - Ensure the captured state matches the state being evaluated.
+- Don't judge color or visual fidelity from a downscaled screenshot.
+
+## Local iteration
+
+- A style edit not reflecting on the dev server is usually a stale build/HMR cache, not a CSS mistake — verify the **computed** style (`getComputedStyle`) before re-tuning, and re-`touch` the edited file to force a recompile. The file on disk is the source of truth; a production build compiles it correctly regardless of the dev cache.
+- To clear the build-cache dir, `rm -rf` is blocked by the global `command-firewall` — move it aside (non-destructive) or hand the user the exact `rm`, then restart the dev server.
+- Render-to-compare for any visual choice: a throwaway scratch route rendering the real components/variants side-by-side (both themes) beats deciding from a description. Keep it uncommitted; delete it after the decision.

@@ -13,9 +13,9 @@ Build fails if any of these are missing or invalid.
 |---|---|---|---|
 | `title` | string | non-empty | Prefer recruiter-readable, action-led; use paper title only if it's already compelling |
 | `summary` | string | max 200 chars | One sentence, specific metric, honest framing. **Primary text on project cards — write for scannability, not long-form readability. Include the headline metric.** |
-| `projectType` | enum | `academic` \| `freelance` \| `personal` | Drives sort and display; never shown as a badge |
+| `projectType` | enum | `academic` \| `freelance` \| `personal` | Internal metadata, reserved for later scaling; unused in v1; never shown as a badge |
 | `publishedAt` | string | `YYYY-MM-DD` format | ISO 8601 date |
-| `order` | number | any number | Lower = earlier in lists; ties broken by publishedAt desc |
+| `order` | number | any number | Featured list: primary sort (lower = earlier); Work list: tiebreak after publishedAt |
 | `heroImage` | string | starts with `/` | Web path from `/public`; image, video, or animated SVG |
 | `heroAlt` | string | non-empty | Required for all hero types, including video |
 | `tags` | string[] | 1–8 items | 4–6 recommended; recruiter-recognizable keywords |
@@ -26,6 +26,16 @@ Build fails if any of these are missing or invalid.
 
 `heroPoster` is required when `heroImage` is a video (`.mp4` or `.webm`). Build fails
 without it when the hero is a video. Always a web path starting with `/`.
+
+### heroImage at content stage — never a placeholder
+
+The cover is generated later (the cover stage, after content). `heroImage` is optional and
+omitting it does **not** fail the dev build — the hero renders empty until the cover lands. So
+never invent a `placeholder`/`TBD`/`hero-placeholder` asset to force a build; the prose-guard hook
+blocks those tokens, correctly — the right response is to omit the field, not dodge the guard. The
+**production release** build (`VERCEL_ENV=production`) enforces a hero, so a heroless project can't
+ship. If a non-empty interim is genuinely wanted (e.g. for review screenshots), use the cover
+skill's typography-only fallback — a real asset — not a placeholder.
 
 ---
 

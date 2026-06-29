@@ -19,7 +19,7 @@ Full frontmatter schema, field definitions, and validation rules are in `docs/SC
 ## Project Type
 
 - `projectType` is internal metadata — never display it as a badge, label, or tag in the UI
-- It drives sort order and section visibility only — see `docs/SCHEMA.md` §3 for behavior
+- It is internal metadata, reserved for later scaling — not used for sort or section visibility in v1
 
 ## MDX Body
 

@@ -24,11 +24,13 @@ Cross-project engineering principles. These apply regardless of language, framew
 
 ## Comments
 
-Comments should explain decisions, not restate code.
+Comments capture genuine decisions and intent — never restate what the code already says.
 
-**Avoid comments that describe what the code obviously does.** If the code is clear, a comment restating it adds noise.
+**Default to no comment; add one only where it earns its place.** Write the right comments as you go, not by trimming afterward. A comment earns its place only when it states a *why* the code itself cannot show.
 
-**Use comments to explain:**
+**Never restate the code.** A comment describing what the names and structure already make clear is noise — and a shorter restatement is still a restatement. Code generation does this habitually; guard against it while writing, and re-read after to delete any that slipped in.
+
+**Use comments only to explain:**
 
 - non-obvious decisions and their reasoning
 - tradeoffs that were considered and rejected
@@ -37,6 +39,8 @@ Comments should explain decisions, not restate code.
 - performance constraints that shape the implementation
 - framework or runtime quirks being worked around
 - important context that would otherwise be lost
+
+**Never leave process or meta notes in shipped code** — "kept from the prior pass", "TODO later", and the like belong in the work log, not the source.
 
 **Complex or high-risk logic warrants more thorough explanation** than straightforward implementation code. The bar for comments scales with the cost of misunderstanding the code.
 
@@ -77,6 +81,8 @@ Comments should explain decisions, not restate code.
 **Prefer incremental changes over large rewrites.** Small changes are easier to review, safer to deploy, and easier to revert. Large rewrites introduce risk across the entire surface they touch.
 
 **Fix root causes, not symptoms.** Layering patches over underlying problems compounds the problem and makes the root cause harder to find later. For systematic root-cause diagnosis, reach for the `debugger` agent (evidence-first, propose-only).
+
+**Docs before code.** Once a change to a documented requirement, design, or spec is confirmed, update the owning doc FIRST, then implement to match — never patch code ahead of the doc and reconcile afterward (that breeds drift and patchwork).
 
 **Preserve working systems unless there is clear evidence they need restructuring.** Working code has value. The cost of restructuring includes the risk of introducing new bugs, losing implicit knowledge, and disrupting reviewability.
 

@@ -36,8 +36,8 @@ Always read first:
 
 Then read what the mode needs:
 
-- **Authoring** → the contract's Canonical Structure Model + Section-Type Writing Modes are your skeleton.
-- **Update** → `references/edit-patterns.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`.
+- **Authoring** → the contract's Canonical Structure Model + Section-Type Writing Modes are your skeleton; validate against `references/validation-heuristics.md`.
+- **Update** → `references/edit-patterns.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
 - **Realign** (recovery) → `references/rewrite-passes.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
 
 If the DESIGN.md already exists, read it in full first — you cannot maintain a voice you haven't read.
@@ -131,10 +131,15 @@ table for Realign passes: `rewrite-passes.md`.)
 - **Design identifiers are load-bearing** — token names, component names, semantic-role names,
   domain-component names, and stable terminology should not change without explicit instruction or a
   confirmed terminology migration. Before adding a token, confirm name, value, and role.
+- **Doc-first, templated, referenceable** — DESIGN.md describes what/why, never how the code wires it;
+  names tokens by role; and emits the project schema's full structure so sibling docs can bind to its
+  heading anchors (`writing-contract.md` → Doc-First, Token Naming Conventions, Referenceable Contract
+  Surface). Heading anchors are load-bearing.
 
-## Validation (after a Realign pass)
+## Validation
 
-Before reporting done, run `references/validation-heuristics.md`: canonical ordering preserved,
-two-layer model intact, compression targets met, token inventory lossless, every change in the manifest.
-Failed checks surface as a short remediation list. For a high-stakes realign, have a separate subagent
-verify losslessness and ordering so the author isn't grading their own work.
+Before reporting any work done — Authoring, Update, or Realign — run `references/validation-heuristics.md`.
+Most checks are mode-agnostic (structure, two-layer model, doc-first, naming, anti-patterns, template, tokens,
+terminology); the transform-only checks (losslessness, manifest completeness, Realign judgment) apply to the
+modes that file tags. Failed checks surface as a short remediation list. For a high-stakes realign, have a
+separate subagent verify losslessness and ordering so the author isn't grading their own work.
