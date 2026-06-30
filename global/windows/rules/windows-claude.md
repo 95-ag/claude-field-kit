@@ -20,6 +20,11 @@
 - **Even a plain `$VAR` assignment empties through the bridge — not just loops.** `D=path; sed -i … "$D"` / `grep -r … $D` runs against an empty filename: `sed` no-ops (looks "not applied"); `grep -r` with an empty path walks the WHOLE repo incl. `.next`/`node_modules`. Any `$VAR` across the git-bash→`wsl` bridge is unsafe — use a script file with hardcoded absolute paths, or inline literal paths.
 - **Capture output to a file and read it** — terminal stdout/stderr interleave through the git-bash→`wsl` bridge is unreliable for parsing.
 
+## Subprocess + git read-back across the bridge
+Same root cause as § Path mangling's capture-output caveat — bridge state isn't synchronously flushed.
+- **Child-process exit codes don't survive the git-bash→`wsl` bridge — `$?` reads 0 even after `sys.exit(3)`.** Gate failure-exit on a unit test (`pytest.raises(SystemExit)`) + the printed message, not `$?`; trust CPython semantics in the real terminal.
+- **`git rev-parse HEAD` right after `git commit` through the bridge can return the STALE sha.** Re-read HEAD in a clean separate command — never chained in the commit's `&&` line.
+
 ## Don't drive repo commands through PowerShell
 - PowerShell→WSL `$`/backtick escaping mangles commands. Use the git-bash Bash tool → `wsl` instead.
 
