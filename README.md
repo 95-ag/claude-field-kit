@@ -29,6 +29,15 @@ visualization), and want parity either way. So the kit delivers to **both** `~/.
 for everything common, `global/windows` and `global/wsl` for per-environment specifics (e.g. MSYS/WSL path
 rules). **Single-environment users can ignore the split** and use `global/shared`.
 
+**Double-loaded global config (Windows-app-over-WSL).** Claude Code loads every `CLAUDE.md` from the project
+folder up to the drive root. WSL projects sit under `/home/<user>/`, so it also loads `/home/<user>/.claude/CLAUDE.md`
+(+ its `rules/`) — the same `global/shared` already loaded from the Windows `~/.claude`. It loads twice. Fix:
+add to the **Windows** `~/.claude/settings.json` (`global-sync` keeps it; WSL-native doesn't need it):
+
+```json
+{ "claudeMdExcludes": ["**/<user>/.claude/CLAUDE.md", "**/<user>/.claude/rules/**"] }
+```
+
 ### What's inside
 Three asset tiers plus a staging area:
 
