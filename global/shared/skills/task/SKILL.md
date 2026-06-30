@@ -25,8 +25,9 @@ starting it.
 
 1. Locate `.claude/work/tasks.md` in the current project. If it's genuinely absent and the project uses the
    convention, create it from the `work/tasks.template.md` shape; otherwise ask where the task should go.
-2. Phrase the task as one checkbox line in the house format:
-   `- [ ] **<short title>** — <what + why, one line>` (append `(YYYY-MM-DD)` if the doc datestamps entries).
+2. Phrase the task as one **flat** checkbox line in the house format:
+   `- [ ] **<short title>** — <what + why, one line>`. Datestamp only Done/Deferred entries — a fresh Now/Backlog
+   add carries none. (Cluster grouping + a `plan: <path>` header are set at plan-time, not by this skill.)
 3. Place it:
    - **Now / active** section when the user marks it current or next.
    - **Backlog** (default) when it's a deferral / later item.
