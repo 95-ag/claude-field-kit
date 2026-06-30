@@ -55,7 +55,9 @@ project/             # copied into a new project's .claude/, composed per projec
 └── repos/<name>/    #   bound to ONE named project — reused within it, not composed into others
 
 incoming/            # staging (local-only, gitignored) — captured by asset TYPE; tier assigned at promotion
-└── skills/ · rules/ · agents/ · plugins/
+├── rules/ · skills/ · agents/ · hooks/   # auto-captured by the asset-capture hook
+├── notes/                                # hand-staged rough items (lessons, deferred global edits, ideas, hook bugs)
+└── plugins/                              # plugin refs
 ```
 
 ## Assets
@@ -120,16 +122,19 @@ Assets flow **project → incoming → review → tier**. Never promote straight
 improve in a project  →  incoming/<type>  →  review  →  promote to a tier
 ```
 
-- **Capture by type, not scope** — staging sorts by asset type (`skills/ rules/ agents/ plugins/`). The
+- **Capture by type, not scope** — staging sorts by asset type (`rules/ skills/ agents/ hooks/`). The
   reach-based [Placement rule](#placement--picking-a-tier-by-reach) picks the tier (global vs project, and
   which domain/stack/repo) at promotion, not at capture.
+- **`notes/` holds rough items, not finished assets** — a lesson you haven't placed yet, a global edit you
+  didn't want to make mid-task, an idea for a new asset, or a bug in an existing hook. At harvest these are
+  triaged: turned into a rule/asset and promoted, applied as a fix, or dropped.
 - **Capture is hook-driven** — the global `asset-capture` hook auto-stages any edit under a project's
   `.claude/{rules,skills,agents,hooks}` into `incoming/<type>/<project>__<file>` (skills copied whole-dir)
   and queues a review task in that project's `tasks.md`. The staged copy is the no-loss capture; the task
   drives review→promote. Manual capture remains the fallback.
 - **Global-only assets need manual capture** — a global rule, the shared `CLAUDE.md`, or a global-only skill
-  has no project `.claude/` copy, so the hook never sees it; stage it by hand (copy the improved version into
-  `incoming/<type>/`).
+  has no project `.claude/` copy, so the hook never sees it; stage a shaped fix by hand into `incoming/<type>/`,
+  or an unsure/deferred one into `incoming/notes/`.
 - **Promote = place in the tier AND remove the staged copy from `incoming/`.** Verify the tier copy exists
   before deleting the incoming one (no-loss). `incoming/` then holds only un-promoted items.
 

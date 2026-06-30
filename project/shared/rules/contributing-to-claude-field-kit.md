@@ -65,8 +65,12 @@ components).
   fail-open, so a missed hook silently loses the staging.
 - **Repo-bound asset** (hardcoded to this one project) → it goes to the kit's `repos/<name>/` verbatim.
 - **Spotted a global-asset fix while working here?** A global rule or the shared `CLAUDE.md` has no project
-  `.claude/` copy, so it won't auto-capture. Stage it by hand: write the improved version to a temp file, then
-  copy it into the kit's `incoming/<type>/`.
+  `.claude/` copy, so it won't auto-capture. Stage a shaped fix by hand: write the improved version to a temp
+  file, then copy it into the kit's `incoming/<type>/`. Unsure where it belongs, or don't want to touch it
+  mid-task? Drop a note in `incoming/notes/` instead (see below).
+- **Not a clean asset yet?** A candidate lesson with no clear rule home, a global edit you don't want to make
+  in-flow, an idea that might need a new asset, or a bug in an existing hook → drop a short note in the kit's
+  `incoming/notes/` rather than forcing it into a type bucket. The maintainer triages it.
 
 ## What happens next
 
