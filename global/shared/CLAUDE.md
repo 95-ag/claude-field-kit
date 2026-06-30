@@ -84,6 +84,8 @@ Non-negotiable stops. The numbered sections below expand each one.
 5. **Explain Changes**: Brief summary after each meaningful change
 6. **Capture Lessons**: Append to `.claude/work/lessons.md` after repeated corrections
 
+**Skill trackers don't discharge #1/#3**: a skill's in-session checklist (`subagent-driven-development`, `executing-plans`, harness TodoWrite/Task) is ephemeral — it supplements `.claude/work/`, never replaces it. Always mirror plan path + sub-tasks into `tasks.md` before execution and checkpoint `session.md` as tasks land.
+
 ## Git Discipline
 
 - Propose cluster(s) + exact single-line message(s) and wait for approval before any index-mutating command. Inside a plan, clusters must be written into the plan's Commits section — plan approval covers them; outside a plan, propose-and-wait in chat each time.
