@@ -49,6 +49,11 @@ with little change.
 - **Split by what must load together** — keep unrelated concerns in separate files so a reader loads only
   what applies.
 - **Keep an auto-loaded doc lean** — under ~200 lines; split a longer one by sub-topic.
+- **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
+  licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
+- **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
+  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off — strip any
+  pre-seeded answers first, or the test measures the hint, not the skill.
 
 ## Keep project-specifics minimal
 
@@ -59,6 +64,9 @@ components).
 - Don't add gratuitous project flavor to the general parts — that is drift the maintainer must strip every time.
 - Don't pre-generalize the specifics you *do* need — they are correct here; generalization is a promotion-time
   step, done kit-side.
+- **Show a reference project only as a labeled `Example (…)`, never as law** — under-generalizing (leaving a
+  specific as prose) and over-pinning (baking one project's constants in as the rule) are the same failure
+  from opposite sides.
 
 ## Contribute a reusable asset
 

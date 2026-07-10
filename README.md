@@ -246,6 +246,11 @@ minimal other context loaded.
   procedure (`project/shared/BOOTSTRAP.md`) drops the suffix when seeding a project.
 - Keep any single **auto-loaded** doc under ~200 lines; split longer ones by sub-topic. (This README is read
   on demand, not auto-loaded, so it may run longer.)
+- **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
+  licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
+- **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
+  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off — strip any
+  pre-seeded answers first, or the test measures the hint, not the skill.
 
 ### Hook conventions
 Hooks live in two tiers:
