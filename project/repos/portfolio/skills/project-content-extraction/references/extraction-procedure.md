@@ -189,26 +189,13 @@ alone.
 Run this pass before Reader Review. The reviewer should evaluate the version closest
 to what the user will actually see.
 
-### Tables that earn their place
+### Tables, figures, and components — defer the definitive call
 
-- Two-column comparison with analytical content (e.g., for adversarial ML: victim
-  vs. attacker strategy; for ablations: configuration vs. metric; for dataset
-  construction: source vs. count vs. provenance)
-- Results data that cannot be expressed as prose without losing precision
-- Any breakdown where the count or breakdown itself carries credibility
-
-### Tables that should become prose
-
-- Standard dataset properties (classes, image counts) — write as one sentence
-- Architecture layer groups (blocks, channels, downsampling) — write as one sentence
-- Hyperparameter dumps where only one parameter is actually interesting — pull that
-  one into prose with its rationale, drop the rest
-
-### Figures and tables on the same result
-
-If a table already expresses the result precisely, a figure is redundant unless it
-shows something the table doesn't (trend shape, spatial layout, image examples).
-Remove the redundant one.
+First-draft guidance only: don't dump academic furniture into the narrative — write
+standard dataset properties or trivial layer groups as a sentence, not a table. The
+definitive table-vs-prose-vs-diagram-vs-callout decisions for every content block are
+made in project-assets-generation (the representation layer) — see that skill's
+`asset-procedure.md` — Reader-first Selection. Leave a rough marker; don't optimize here.
 
 ### Lists
 
@@ -228,7 +215,7 @@ Each component has a specific role:
 - `<Callout>` — flags a core finding or non-obvious constraint. One per major section max.
 - `<Highlight>` — pull-quote for a single key conceptual insight. One per deep-dive max.
   Best where the *why* behind a mechanism deserves more weight than prose gives it.
-- `<Diagram>` / `<Figure>` — visual evidence that adds something prose cannot.
+- `<Diagram>` / `<Figure>` — visual evidence (definitive choice deferred to project-assets-generation).
 - `<DiagramRow>` — side-by-side panels for direct comparison.
 - `<CodeBlock>` — algorithm or config that would lose precision in prose.
 - H4 accent heading — lightweight highlighted sub-heading for a rationale point within

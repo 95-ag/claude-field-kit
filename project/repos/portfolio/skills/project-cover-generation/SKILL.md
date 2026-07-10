@@ -61,8 +61,8 @@ grounded, no annotations.
 **Accent discipline — one focal anchor, no exceptions:**
 
 Accent marks the single focal anchor of the composition — the one element that carries the
-project's central tension. Every other element is neutral structure (`--on-surface`,
-`--outline-variant`).
+project's central tension. Every other element is neutral structure (`--ink`,
+`--hairline`).
 
 - The anchor may be a single element OR a **coherent subject that reads as one thing** — e.g. a
   masked-input image whose scattered visible patches are accent *as a unit*. The unit is one focal
@@ -99,9 +99,9 @@ project-specific: real budget or query numbers, headline metrics, algorithm name
 distinctive architectural decisions. Propose 2–4 annotation directions with specific
 content options.
 
-Build only after the user selects a direction. Keep to 2–3 annotations targeting
-distinct diagram elements. Cut anything that could belong to any project in the same
-domain.
+Build only after the user selects a direction. Calibrate the count to the composition —
+**typically 3–5**, denser than a bare 2, bounded by overkill — each on a distinct diagram
+element. Cut anything that could belong to any project in the same domain.
 
 Annotation construction rules in `references/cover-standards.md`.
 

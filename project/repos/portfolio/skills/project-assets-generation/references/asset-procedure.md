@@ -5,60 +5,88 @@ portfolio assets. Authoritative reference for the project-assets-generation skil
 
 ---
 
-## Content Analysis Pass
+## Reader-first Selection
 
-This is how the required asset list is derived from content — not from MDX slots.
+How the converged asset list is derived from the explored candidate set (Phase 2). This
+replaces a necessity test ("does a visual add what prose can't?") with an enhancement
+test ("what representation makes the reader's understanding fastest and best?").
 
-### Inputs
+### Per content-unit selection
 
-- **Source visual inventory** — the candidate list built from paper/report/slides (page by page)
-- **MDX content** — the approved MDX read section by section (component refs noted as reference only)
+A content block is the smallest coherent narrative unit — typically an H2 or H3 section,
+not the whole page; a multi-part section is walked per sub-section.
 
-### Per-section evaluation
+For each content block, from its candidate representations choose the one that best
+serves the reader:
 
-For each MDX section (H2 and its body), work through these questions in order:
+1. **Reader value** — which representation lets the reader grasp the structure, mechanism,
+   or outcome fastest? Weigh both audiences: a scanning reader (domain/approach/outcome)
+   and a deep reader (information the prose cannot give as efficiently).
+2. **Best-fit form** — pick the representation that fits the content, across both
+   directions (see Representation Palette): keep as prose, promote to a table / code block
+   / callout / annotation, or render as a diagram / chart / screenshot / composition.
+3. **Overkill ceiling** — would a reader find this redundant or excessive here? If the
+   prose already lands it, or an adjacent visual already carries it, keep it as prose.
 
-1. **Does a visual add something the prose cannot?**
-   Check the prose 3–5 lines around any candidate placement. If the prose already covers
-   the same information — same structure, same takeaway — the visual is decorative. Do not
-   include it. Only include visuals where the reader gets something the text does not give them.
+### Density calibration
 
-2. **Does an adequate source figure exist?**
-   Scan the source inventory. Does any candidate figure from the paper, slides, or defense
-   cover this content clearly at ~760px portfolio width? If yes, use it (legacy crop).
-   If no adequate source figure exists and a visual is still warranted, generate one.
+Match visual density to the content's **genuine** visual richness — judged from the
+content itself, never from project metadata. A system / workflow / UI project carries
+many enhanceable moments → design a rich layer. A pure-numbers result carries few → a
+table or chart, not a manufactured diagram. Never manufactured, never starved.
 
-3. **Score the candidate on 4 criteria:**
-   - *Recruiter/scanning value* — does a non-technical reader understand domain, approach,
-     or outcome faster with this visual?
-   - *Technical/deep-read value* — does a technical reader get information the prose does not?
-   - *Rendered legibility* — is the image readable at ~760px? Is the aspect ratio workable?
-   - *Uniqueness* — does this visual show something no other element on the page conveys?
+### Building the converged list
 
-   Drop any candidate that scores low on all four. A visual earns its place on uniqueness
-   plus at least one other criterion.
+Produce a table with one row per evaluated candidate — including set-aside ones:
 
-### Building the required asset list
+| Content block | Representation (Dir 1/2) | Source (figure / generate / MDX-native) | Reader rationale | Decision |
+|---|---|---|---|---|
 
-After evaluating every section, produce a table with one row per evaluated candidate —
-including dropped ones:
+- **Decision** — `Keep` with the one-line reader rationale, or `Set aside` with the
+  reason (prose already lands it / lower reader value than a sibling / illegible at
+  rendered width / overkill here).
+- **Keep (conditional: \<condition\>)** — worth keeping, but feasibility is only knowable
+  after generation (e.g. legibility at rendered width). State the condition explicitly.
 
-| Section | Proposed visual | Source (page/slide or "generate") | Type | Score | Decision |
-|---|---|---|---|---|---|
+Including set-aside candidates keeps the pass auditable and lets the user tune ± at the
+gate. Present this table at the Phase 2 gate. No source files, no generation, no MDX
+edits until the user approves (or revises).
 
-- **Score** — which of the 4 criteria apply: recruiter value / technical value / legibility /
-  uniqueness. List the ones that are satisfied.
-- **Decision** — `Keep` with a one-line rationale, or `Drop` with the reason (prose covers it /
-  scores low on all criteria / illegible at rendered width / etc.).
+---
 
-Including dropped candidates makes the reasoning auditable. A table that only lists kept
-assets cannot be reviewed for whether the pass was done correctly.
+## Representation Palette
 
-This table is presented to the user for approval. No source files are written, no generation
-starts, and no MDX is modified until the user has approved the list (or revised it).
+The taxonomy the Phase 1 brainstorm walks per content block. Both directions are in the
+skill's remit (it owns the representation layer; it never rewrites narrative voice/claims).
 
-If the approved list differs from the MDX component refs (slots added, slots removed),
-update the MDX after approval — before generation begins.
+**Direction 1 — representational (MDX-native, no generated file):**
+- Table — comparison, breakdown, config-vs-metric, source/count/provenance
+- Code block — algorithm or config that loses precision in prose
+- Callout — flags a core finding or non-obvious constraint
+- Annotation — labels/markers on a figure or panel (via the MDX component)
+- Definition list — paired term/definition runs
+
+**Direction 2 — visual (generated files):**
+- Diagram — flow / pipeline / architecture / state / sequence (hand-SVG, shared theme)
+- Chart / graph — results with source numbers (matplotlib, shared style)
+- Screenshot / annotated screenshot — real UI / CLI / tool output
+- Video-grab — a still pulled from a screen recording
+- Composition / panel — side-by-side or annotated raster layouts
+- Illustration / poster — editorial visual where it genuinely aids comprehension
+- Legacy crop — a source figure cropped from PDF/slides (only when source exists)
+- Engineering-annotated figure, handwritten — arrows + handwritten callouts over a
+  diagram/screenshot, hero-cover register. **Render-blocked candidate** (see note).
+
+**Render-blocked candidate — handwritten engineering annotation.** The handwritten style
+is currently cover-only (DESIGN.md → Caveat = cover SVG annotations only); the body has no
+primitive to render it. The brainstorm MAY propose it where it would genuinely aid the
+reader, but if kept at the gate it carries a `render-blocked` flag and is surfaced to the
+user as a proposal — NOT generated, and never silently swapped for a different style.
+Render-blocked keeps recurring across projects are the signal to invest in the rework
+(user sign-off + a DESIGN/theme/skill build-out for a body annotation primitive).
+
+Categorization for generation (which tooling builds each Direction-2 type) is in Asset
+Categorization below.
 
 ---
 
@@ -73,20 +101,22 @@ Before generating any asset, categorize every visual in the approved asset list:
 | Legacy crop | Figure exists in PDF but no raw data available for regeneration | High-DPI PNG crop |
 | Composition | Annotated layouts, side-by-side image comparisons, raster panels | PNG |
 
-**Source-authoritative figures beat reconstructed diagrams.** Before assigning a type, check
-whether the source material (paper, thesis, defense slides) already contains a figure covering
-the same content. A direct PDF crop is more accurate than a hand-SVG/matplotlib reconstruction,
-avoids dimension/label errors, and cannot drift from the reference project's visual style.
-Assign a "Legacy crop" type and use the source figure. Generate from scratch only when no
-adequate source figure exists for the content you need to convey.
+Few data points (≤4, e.g. a couple of headline metrics) → prefer a hand-SVG summary /
+scorecard over a matplotlib chart. Matplotlib is for curves, multi-series, and genuine
+comparisons — not for two or three numbers.
 
-**Candidate evaluation** — score each visual using the four criteria and drop rule defined
-in Content Analysis Pass — Per-section evaluation above. Drop rule: uniqueness plus at least
-one other criterion; otherwise drop.
+**When a report, slides, or paper exists, checking the source for an existing figure is
+mandatory before assigning any type.** A direct PDF crop is more accurate than a
+hand-SVG/matplotlib reconstruction, avoids dimension/label errors, and cannot drift from the
+reference project's visual style — source-authoritative figures beat reconstructed diagrams.
+Assign a "Legacy crop" type and use the source figure. Repo-only projects have no such source,
+so every asset is generated. Generate from scratch only when no adequate source figure exists
+for the content you need to convey.
 
-**Drop visuals that duplicate nearby prose.** Check each placement against the prose 3–5 lines
-above and below. If the prose covers the same information, the visual is decorative — not
-communicative. Drop it.
+**Candidate evaluation** — apply the reader-first selection and overkill ceiling defined in
+Reader-first Selection above. Set aside any candidate whose reader value is low across both
+audiences, where the prose already lands the information, or where the visual would be
+redundant given an adjacent element.
 
 **Do not generate an asset without a source file.** The only exception is legacy PDF crops —
 document the crop procedure explicitly (tool, coordinates, padding applied) in a comment or

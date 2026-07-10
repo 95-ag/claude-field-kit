@@ -62,7 +62,7 @@ Accent color is permitted on **one single focal highlight element** in the base 
 one standout node, one data point, one structural element that carries the key tension.
 Do not spread accent across multiple structural elements.
 
-All structural elements use `--on-surface` (or `--outline-variant` for borders).
+All structural elements use `--ink` (or `--hairline` for borders).
 Accent is reserved for the single focal element and all annotation content.
 
 ### Rendering mode decision
@@ -117,10 +117,11 @@ Offer 2–4 annotation directions with specific content options. The user select
 
 ### Annotation count and placement
 
-Keep to 2–3 annotations maximum. Each must target a **distinct** diagram element.
-Do not cluster multiple annotations at the same region. If an annotation could belong
-to any project in the same domain, cut it. Balance them around the composition (e.g. one
-above, one below) rather than stacking them on one side.
+Calibrate to the composition's complexity — **typically 3–5**, denser than a bare 2
+(which reads too sparse), bounded by overkill. Each must target a **distinct** diagram
+element. Do not cluster multiple annotations at the same region or crowd the focal point.
+If an annotation could belong to any project in the same domain, cut it. Balance them
+around the composition (e.g. one above, one below) rather than stacking them on one side.
 
 ### Annotation direction
 

@@ -1,25 +1,29 @@
 ---
 name: project-assets-generation
 description: >
-  From an approved portfolio MDX, derives the required asset list from content analysis
-  (not from MDX slots), presents it for user approval, then generates each asset from
-  a tracked source file using shared tooling, frames and crops per the framing and crop
-  normalization principles, and places optimized exports in /public/projects/<slug>/ with
-  editable sources retained in assets-source/. Always generates from source — never
-  hand-edits production files directly.
+  From an approved portfolio MDX, brainstorms the full representation layer from the
+  content narrative and the system/repo (diverge), converges to a reader-first asset
+  list at a human density gate, then generates each approved asset. Visual assets are
+  generated from tracked source files and placed in /public/projects/<slug>/;
+  representational elements (tables, callouts, code blocks, annotations) are authored
+  directly in the MDX. Owns the page's representation layer — never rewrites narrative
+  voice or claims (that is project-content-extraction). Always generates visual assets
+  from source — never hand-edits production files directly.
 
   Use this skill after MDX is approved and the user says things like "generate the
-  assets for <slug>", "make the diagrams for <slug>", "build the figures", "create
-  the pipeline diagram", "generate the charts". Fire on any figure/diagram/chart
-  request tied to a portfolio page even without the word "asset". Do NOT fire for
-  hero cover generation (separate skill) or MDX content edits (separate skill).
+  assets for <slug>", "design the visuals for <slug>", "make the diagrams", "build the
+  figures", "create the pipeline diagram", "generate the charts". Fire on any
+  figure/diagram/chart/representation request tied to a portfolio page even without the
+  word "asset". Do NOT fire for hero cover generation (separate skill) or narrative MDX
+  rewrites (separate skill).
 ---
 
 # Project Assets Generation
 
-Two-phase skill. **Phase A** derives the required asset list from content analysis and gets
-user approval. **Phase B** generates the approved assets. Generation does not begin until
-the list is approved.
+Three-phase skill. **Phase 1 — Brainstorm** diverges to the full candidate
+representation set from the narrative + system. **Phase 2 — Converge & approve** lands
+the reader-first asset list at a human density gate. **Phase 3 — Generate** produces the
+approved assets. Generation does not begin until the list is approved.
 
 ## Before anything — read these references
 
@@ -33,64 +37,65 @@ the list is approved.
 
 ---
 
-## Phase A — Derive required asset list (do not generate yet)
+## Phase 1 — Brainstorm (diverge) — do not converge or generate yet
 
-### Step 1 — Inventory source visuals
+### Step 1 — Gather inputs
 
-Extract and review every figure, chart, diagram, slide image, and screenshot from the
-paper, report, defense slides, and any other source material — page by page. Build a
-candidate inventory noting: source reference (page or slide number), what it shows, and
-whether it is usable as-is (legacy crop), needs adaptation, or would need to be generated.
+- Read the approved MDX narrative end to end.
+- Survey the system/repo as raw material: architecture, data flow, components,
+  workflows, configs, UI, CLI output.
+- **When a report / slides / paper exists, inventory its figures and tables** (page by
+  page / slide by slide) — mandatory when present. Each figure/table is a brainstorm
+  candidate: a legacy crop, or an adaptation base for a generated asset. Repo-only
+  projects: inventory is N/A; every asset is generated.
 
-Note any assets already committed in `/public/projects/<slug>/` — these are not regenerated
-unless the user asks.
+Note any assets already committed in `/public/projects/<slug>/` — not regenerated unless
+the user asks.
 
-**This inventory is one of the two inputs to the content analysis. Do not propose assets
-before completing it.**
+### Step 2 — Diverge
 
-### Step 2 — MDX component refs (reference only)
+Walk the **Representation Palette** (`references/asset-procedure.md` — Representation
+Palette) per content block (content block = smallest coherent unit — typically an H2/H3
+section; see `references/asset-procedure.md` — Reader-first Selection). For each block,
+enumerate every representation that could make the reader's understanding faster or better
+— liberally, across both directions. **Do not prune here.**
 
-Read the approved MDX. List every `<Diagram>`, `<Figure>`, and `<Stack>` component reference.
-This list is a reference showing what was proposed at extraction time — it is **not** the
-required asset list. Do not treat it as the starting set to prune from.
+Extraction-time MDX representation — visual slots AND in-place Direction-1 elements
+(Highlight, Callout, draft tables) — are rough markers: candidates re-evaluated like any
+other, never preserved by default and never a floor. The brainstorm may keep, move,
+reshape, or drop any of them; the converged list may end up with fewer or more elements
+than the MDX currently holds.
 
-### Step 3 — Content analysis pass
-
-**This step is mandatory. It cannot be skipped regardless of how obvious the asset set
-appears.** Skipping it and treating the MDX slots as the required list is a process
-violation — MDX slots are a reference from extraction time, not a validated asset plan.
-
-Read the MDX content section by section. For each section, ask: *"does a visual genuinely
-improve comprehension here beyond what the prose provides?"* Derive the required asset list
-from this analysis — independent of the MDX slots.
-
-See `references/asset-procedure.md` — Content Analysis Pass — for the full evaluation
-procedure: prose-duplication check, source-availability check, 4-criteria scoring, and
-how to record the decision per candidate.
-
-The output of this step is a proposed asset table. Table format and column definitions
-(including Score and Decision columns, and the requirement to include dropped candidates)
-are in `references/asset-procedure.md` — Content Analysis Pass — Building the required
-asset list.
-
-**MDX slots are a reference, not a floor.** The required list may have fewer or more assets
-than the MDX currently references. If the content analysis removes a slot, note it; if it
-adds a visual not in the MDX, note it — the MDX will be updated after approval.
-
-### ← Gate: present required asset list for user approval
-
-Stop here. Present the proposed asset table with rationale. Do not generate, do not write
-source files, do not update the MDX. Wait for explicit user approval before proceeding.
-
-If the user modifies the list, revise the table and confirm before continuing.
+The output of this phase is the full explored candidate set, carried into Phase 2.
 
 ---
 
-## Phase B — Generate approved assets
+## Phase 2 — Converge & approve (gate)
+
+### Step 3 — Converge (reader-first selection)
+
+Apply the reader-first selection to the explored set — `references/asset-procedure.md` —
+Reader-first Selection (best representation per content unit, overkill ceiling, density
+calibrated to genuine content richness). Land the final list: each item carries its
+representation type (Direction 1 or Direction 2) and a one-line reader rationale.
+
+### ← Gate: present explored set + converged list for user approval
+
+Stop here. Present **both**:
+- the full explored candidate set, each set-aside item with its reason, and
+- the converged final list, each item with type + reader rationale.
+
+The user tunes the list ± at this gate — this is the density control. Do not generate,
+do not write source files, do not edit the MDX. Wait for explicit approval. If the user
+revises the list, update both and re-confirm before continuing.
+
+---
+
+## Phase 3 — Generate approved assets
 
 Begin only after the asset list is approved.
 
-### Step 3b — Sync MDX to approved list
+### Step 4 — Sync MDX to approved list
 
 If the approved asset list adds or removes slots relative to the current MDX component
 refs, update the MDX now — before writing any source file. Generation must match the MDX
@@ -109,7 +114,7 @@ Drafting at this stage, before the asset exists, forces the description to be ba
 what the asset is *supposed* to show. After generation, verify the draft against the
 actual output and correct any mismatch before moving to the gate.
 
-### Step 4 — Categorize
+### Step 5 — Categorize
 
 For each approved asset, assign a type using the decision table in
 `references/asset-procedure.md` — Asset Categorization. Source-authoritative figures
@@ -127,14 +132,14 @@ Charts and diagrams must be generated from a source script. Crop and composition
 rasters are the exception — the committed image in `/public` is the deliverable, and the
 crop recipe need not be retained (it depends on `tmp/`, which is not in git).
 
-### Step 5 — Audit source material (before generating)
+### Step 6 — Audit source material (before generating)
 
 Before writing or exporting anything, measure the content bounds of every asset you plan
 to produce or crop. See the audit rule in `references/asset-procedure.md` — Figure
 Composition and Framing. Know exactly what whitespace is present. It is easy to make
 framing worse under the assumption you are making it better.
 
-### Step 6 — Generate
+### Step 7 — Generate
 
 **Hand-authored SVG diagrams (shared theme):**
 1. Author the body in `assets-source/svg/<slug>/<name>.py` — supply `content_bbox`, `title`,
@@ -155,7 +160,17 @@ framing worse under the assumption you are making it better.
 - See `references/asset-procedure.md` — Legacy Crop Craft — for resampling, axes-border
   detection, and title-retention rules
 
-### Step 7 — Frame, place, and verify alt text + captions
+**Screenshots / annotated screenshots / compositions:**
+- Capture or compose the raster; annotate via the MDX component (`<DiagramPanel label=…>`),
+  not baked into the image. These are legitimate primary assets for applied/web work —
+  see `references/asset-standards.md` — Format Table.
+
+**Direction-1 representational elements (MDX-native):**
+- Tables, callouts, code blocks, annotations are authored directly in the MDX — no source
+  file, no /public export, no reproducibility script. Follow the design-system + MDX rules
+  (`rules/web-frontend/design-system.md`, `rules/web-frontend/mdx.md`).
+
+### Step 8 — Frame, place, and verify alt text + captions
 
 Apply framing rules from `references/asset-procedure.md` — Figure Composition and Framing:
 - Width hierarchy: technical diagrams default `width="narrow"`; result visuals earn full width
@@ -169,7 +184,10 @@ Place exports:
 - Production files → `/public/projects/<slug>/`
 - Source files → `assets-source/{svg,matplotlib}/<slug>/`
 
-After placing each asset, verify the alt text and caption drafted in Step 3b against the
+For a conditional keep, verify its stated condition during generation; if the condition
+fails, drop the item — it was already authorized at the gate, so no re-gate is needed.
+
+After placing each asset, verify the alt text and caption drafted in Step 4 against the
 actual generated output:
 - Does the `alt` text accurately describe what the asset shows — not what it was supposed
   to show?
@@ -181,7 +199,7 @@ Fix any mismatch before moving to the next asset. Do not defer to the gate.
 
 ## Visual Review Gate — mandatory before presenting for approval
 
-After Step 7, run this gate before handing assets to the user. **Any failed check is a hard
+After Step 8, run this gate before handing assets to the user. **Any failed check is a hard
 stop: fix the asset (regenerate, re-crop, re-frame, or drop it), then re-run the full gate
 from the top.** Do not continue to the next check after a failure. Do not present assets
 while any check is open.

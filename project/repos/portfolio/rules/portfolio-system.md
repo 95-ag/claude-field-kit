@@ -18,7 +18,7 @@ Each step requires explicit user approval before the next begins.
 | Skill | Owns | Key references |
 |---|---|---|
 | `project-content-extraction` | MDX content from report + repo | `evidence-and-modes.md`, `frontmatter-rules.md`, `extraction-procedure.md`, `narrative-structure.md` |
-| `project-assets-generation` | Diagrams, charts, legacy PDF crops | `asset-procedure.md`, `asset-standards.md` |
+| `project-assets-generation` | Representation layer — visual assets + representational elements (tables, callouts, code blocks, annotations) | `asset-procedure.md`, `asset-standards.md` |
 | `project-cover-generation` | Hero cover (3-gate: directions → base → annotations) | `cover-procedure.md`, `cover-standards.md` |
 | `project-review` | Two-pass QA (recruiter + technical hiring manager) | `review-protocol.md`, `assets/reviewer-*.md` |
 

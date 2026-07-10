@@ -64,27 +64,27 @@ Omit `heroImage` when using a live component — the cover registry handles rend
 
 | Use | Token |
 |---|---|
-| Structural elements (nodes, connectors, text) | `var(--on-surface)` |
-| Borders, edges | `var(--outline-variant)` |
-| Surface backgrounds | `var(--surface)`, `var(--surface-container)` |
+| Structural elements (nodes, connectors, text) | `var(--ink)` |
+| Borders, edges | `var(--hairline)` |
+| Surface backgrounds | `var(--surface)`, `var(--surface-deep)` |
 | Single focal highlight element (one only) | `var(--accent)` |
 | Annotation text and arrow strokes | `var(--accent)` |
 
 **Accent discipline:** One structural element in the base composition may use
-`var(--accent)` as a focal highlight. All other structural elements use `--on-surface`
-or `--outline-variant`. Annotations may freely use `--accent` for text and arrows.
+`var(--accent)` as a focal highlight. All other structural elements use `--ink`
+or `--hairline`. Annotations may freely use `--accent` for text and arrows.
 
 **Graded neutrals (technique, not a mandate):** when a composition needs neutral shades
 that *recede* in both themes (lighter-in-light, darker-in-dark), deriving a step from a
 theme-flipping token with `color-mix` keeps every value theme-aware without hardcoding —
-e.g. `color-mix(in srgb, var(--outline-variant) 65%, var(--surface))`. This is the same
-approach `globals.css` already uses for `--outline-hair`, and it preserves the
+e.g. `color-mix(in srgb, var(--hairline) 65%, var(--surface))`. This is the same
+approach `globals.css` already uses for `--hairline`, and it preserves the
 all-custom-properties rule. Reach for it only when a graded neutral is actually needed.
 
 **Faint fills must stay distinct from the page surface in BOTH themes.** A "receding" fill that
-matches the hero/card background disappears — e.g. `--surface-sunken` can collapse into the page
+matches the hero/card background disappears — e.g. `--surface-deep` can collapse into the page
 surface, making faint cells vanish. Derive the faint step by mixing toward the *figure* ink
-(`color-mix(in srgb, var(--on-surface) N%, var(--surface))`, small `N`) so it reads as present-but-
+(`color-mix(in srgb, var(--ink) N%, var(--surface))`, small `N`) so it reads as present-but-
 quiet in both light and dark, and confirm against the rendered cover, not just the markup.
 
 ---
@@ -104,7 +104,7 @@ quiet in both light and dark, and confirm against the rendered cover, not just t
   not their peers (e.g. the input/output) reads as incomplete. The cover must be legible standalone,
   without the page caption.
 - Structural labels are a separate layer from engineering annotations: neutral mono labels
-  (`--on-surface`, JetBrains Mono) name the parts; Caveat/accent annotations carry the
+  (`--ink`, JetBrains Mono) name the parts; Caveat/accent annotations carry the
   project-specific verdicts. Keep the real numbers for the annotation layer so the two don't compete.
 
 ### Shape vocabulary
@@ -203,7 +203,7 @@ only with a deliberate reason.
 ```
 Font:   Caveat (var(--font-caveat)) — the only permitted font in annotations
 Color:  var(--accent) for both text and arrow strokes — no other color
-Count:  2–3 annotations maximum; each targets a distinct diagram element
+Count:  typically 3–5, calibrated to composition complexity (denser than 2, bounded by overkill); each on a distinct element
 ```
 
 **Placement & attachment:**
@@ -261,7 +261,7 @@ fields — omit the overlay entirely when the field is absent or empty.
 - **Frontmatter field:** `logos[]` — each entry `{src, alt}`
 - **Placement:** bottom-left
 - **Render when:** `logos` array is non-empty in frontmatter; omit otherwise
-- **Spec:** 40×40px circle, white background, `outline-variant` border, `object-contain`
+- **Spec:** 40×40px circle, white background, `hairline` border, `object-contain`
   with 4px inner padding
 - **Purpose:** organizations, clients, institutions, companies
 
@@ -270,7 +270,7 @@ fields — omit the overlay entirely when the field is absent or empty.
 - **Frontmatter field:** `contributors[]` — each entry `{name, avatar, url?}`
 - **Placement:** bottom-right
 - **Render when:** `contributors` array is non-empty in frontmatter; omit otherwise
-- **Spec:** 24×24px circular avatars, −6px overlap stack, `outline-variant` border
+- **Spec:** 24×24px circular avatars, −6px overlap stack, `hairline` border
 - **Links:** active on detail page when `url` is present; presentational only in cards
 - **Purpose:** contributors, project contacts
 

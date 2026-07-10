@@ -15,6 +15,11 @@ and anti-patterns. Authoritative reference for the project-assets-generation ski
 | Raster images / photos | WebP | Compress before committing |
 | Assets requiring transparency | PNG | WebP if transparency + compression needed |
 | tldraw → SVG | SVG | Fallback only — spatial/custom layouts the SVG theme cannot express; no automated path, hand-produce |
+| Screenshots / annotated screenshots (real UI / CLI / tool output) | PNG or WebP | Annotate via the MDX component (`<DiagramPanel label=…>`), not baked into the image |
+| Video-grab (still from a screen recording) | PNG or WebP | Treat as a screenshot once extracted |
+| Video (only when motion is essential) | MP4/WebM, muted + poster | Per nextjs.md (autoPlay muted playsInline + poster) and motion.md |
+| Illustration / poster (editorial visual) | SVG preferred, WebP raster acceptable | Must aid comprehension, not decoration |
+| Direction-1 elements (table, callout, code block, annotation) | MDX-native — no file | No /public export, no source script, no reproducibility requirement; authored per design-system + mdx rules |
 
 ---
 
@@ -179,7 +184,9 @@ should plug into the existing visual system, not create a new one.
 
 ## Anti-Patterns
 
-- Screenshots instead of vector exports
+- Screenshotting what should be a vector export (a chart, plot, or flow/architecture
+  diagram). Real UI / CLI / tool screenshots are legitimate primary assets — this only
+  forbids faking a chart/diagram as a raster.
 - Inconsistent visual styles across diagrams for the same project
 - Oversized PNG charts that should be SVG
 - Unreadable labels at small sizes

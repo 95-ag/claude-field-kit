@@ -81,19 +81,24 @@ Leave all `overview.*` fields as empty placeholders for now.
 is reference material, not a transformation input. Keep only the file path and any
 frontmatter already confirmed correct. Pick the H2 spine that fits the project (ML /
 research or applied-systems) — see `references/extraction-procedure.md` Step 3 for
-both spines, the narrative arc, and the standalone-readability requirement.
+both spines, the narrative arc, and the standalone-readability requirement. Place only
+rough visual/representation markers where one seems likely — not definitive slots. The
+page's representation layer (which tables, diagrams, callouts; prose vs. visual) is
+designed in project-assets-generation, after the narrative stabilizes.
 
 **(c) Overview (after body is complete).** Return to write all `overview.*` fields
 once the body is finished. The project differentiator, core findings, and narrative
 arc are now established — write the overview to reflect them accurately. See
 `references/frontmatter-rules.md` §overview for field rules and density targets.
 
-### Step 4 — Density Reduction
+### Step 4 — Density Reduction (prose density only)
 
 Before finalizing, run the density checklist from `references/extraction-procedure.md`
-Step 4. Convert standard-dataset-property tables to one-sentence prose. Remove figures
-that duplicate table data. Pull the one interesting hyperparameter into prose with its
-rationale; drop the rest. Run the component audit at the end of this step.
+Step 4. This pass is **prose density only** — cut verbose narrative, pull the one
+interesting hyperparameter into prose with its rationale and drop the rest, keep prose
+lists in natural flow. Do **not** make definitive table-vs-prose-vs-diagram decisions
+here — those are the representation layer, owned by project-assets-generation. Run the
+component audit at the end of this step.
 
 ### Step 5 — Reader Review
 
