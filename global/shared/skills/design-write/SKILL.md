@@ -1,17 +1,17 @@
 ---
 name: design-write
 description: >
-  Authors and maintains a project's DESIGN.md — the visual design system / contract. Use it to WRITE a
-  DESIGN.md cleanly from scratch, and to UPDATE an existing one with targeted edits — adding or changing
-  a token, adding a component or section, updating a value, fixing a cross-reference, propagating a
-  terminology change. Trigger on "write/author DESIGN.md", "add a token/section/component to DESIGN.md",
-  "update the radius token", "rename a surface token", "fix the cross-reference to Foundations → Colors",
-  "tighten this section". It also REALIGNS a doc that has drifted out of compliance over many edits
-  ("realign/normalize DESIGN.md", "bring DESIGN.md back into compliance") — a recovery path, since a
-  well-authored, well-updated doc rarely needs it. Reach for it even when unnamed — any time the
-  deliverable is the writing, format, or structure of DESIGN.md. Do NOT use for non-design spec docs
-  (PRODUCT / ARCHITECTURE / SCHEMA / IMPLEMENTATION-PLAN — use spec-write) or to originate visual-design
-  decisions (invent tokens, components, rules) — it renders already-decided design intent.
+  Authors and maintains a project's DESIGN.md — the visual design system / contract. WRITE one
+  from scratch; UPDATE an existing one with targeted edits — add or change a token, add a
+  component or section, update a value, fix a cross-reference, propagate a terminology change.
+  Trigger on "write/author DESIGN.md", "update the radius token", "rename a surface token", "fix
+  the cross-reference to Foundations → Colors", "tighten this section". It also REALIGNS a doc
+  that has drifted over many edits ("realign/normalize DESIGN.md", "bring DESIGN.md back into
+  compliance") — a recovery path, rarely needed on a well-maintained doc. Reach for it even when
+  unnamed — whenever the deliverable is the writing, format, or structure of DESIGN.md. Do NOT use
+  for non-design spec docs (PRODUCT / ARCHITECTURE / SCHEMA / IMPLEMENTATION-PLAN — use
+  spec-write) or to originate visual-design decisions (invent tokens, components, rules) — it
+  renders already-decided design intent.
 ---
 
 # Design-Doc Writer & Maintainer

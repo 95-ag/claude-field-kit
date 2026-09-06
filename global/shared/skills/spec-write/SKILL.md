@@ -1,19 +1,17 @@
 ---
 name: spec-write
 description: >
-  Renders and maintains a project's non-design specification DOCS — and ONLY these archetype docs:
-  the product doc (PRODUCT.md / PROJECT.md), the implementation-plan doc (IMPLEMENTATION-PLAN.md),
-  the architecture doc (ARCHITECTURE.md), the schema doc (SCHEMA.md), and similar prose spec docs.
-  Invoke it ONLY when the user is explicitly authoring one of these archetype docs for the first time,
-  OR editing / restyling / realigning / aligning-to-code an existing one — e.g. "write PRODUCT.md",
-  "add a section to the architecture doc", "align SCHEMA to the schema", "restyle the implementation
-  plan", "strip section numbering / split prose into bullets in <that doc>". It is the doc RENDERER,
-  not a process: the brainstorming / writing-plans (superpowers) flow OWNS planning and spec work and
-  DELEGATES to spec-write when an archetype doc needs to be written or reshaped. spec-write never
-  brainstorms, never originates requirements or plans, and never substitutes for that flow or a
-  plan-gate. Do NOT use it for DESIGN.md (use design-write), and do NOT use it for anything that is
-  not one of the named spec archetypes — not general prose, notes, READMEs, work docs, comments,
-  commit messages, or ad-hoc writing. When the substance isn't already decided, stop — don't invent.
+  Renders and maintains a project's non-design specification DOCS — ONLY these archetypes:
+  PRODUCT.md / PROJECT.md, IMPLEMENTATION-PLAN.md, ARCHITECTURE.md, SCHEMA.md, and similar prose
+  spec docs. Invoke it ONLY to author one fresh, or to edit / restyle / realign / align-to-code an
+  existing one — e.g. "write PRODUCT.md", "add a section to the architecture doc", "align SCHEMA
+  to the schema", "restyle the implementation plan", "strip section numbering / split prose into
+  bullets in that doc". It is the doc RENDERER, not a process: the brainstorming / writing-plans
+  (superpowers) flow OWNS planning and spec work and DELEGATES to spec-write when an archetype doc
+  needs rendering; it never brainstorms, never originates requirements or plans, never substitutes
+  for that flow or a plan-gate. Do NOT use it for DESIGN.md (use design-write), general prose,
+  notes, READMEs, work docs, comments, commit messages, or other non-archetype writing. When the
+  substance isn't already decided, stop — don't invent.
 ---
 
 # Spec-Doc Writer & Maintainer
