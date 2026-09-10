@@ -41,6 +41,8 @@
  *     refuses to destroy a protected path, and nothing here can notice after the fact.
  *   - A content-identical rewrite bumps mtime and is treated as a change. Formatting is idempotent
  *     and capture is deduped by task marker, so the cost is wasted work, never a wrong result.
+ *   - Windows paths are translated, but that path has only been exercised with a synthetic UNC
+ *     payload. Nothing here has run against a real Windows harness.
  *   - Cost is roughly 80ms per Bash call, most of it node process startup for the two halves.
  *     Deriving the start time from the PostToolUse `duration_ms` would remove one spawn, but the
  *     hook only observes time AFTER the command, so the estimate would land later than the real
@@ -63,6 +65,24 @@ const CLAUDE_HOME = join(HOME, ".claude");
 const MANIFEST_PATH = join(CLAUDE_HOME, ".claude-sync-manifest.json");
 
 const ASSET_DIRS = ["rules", "skills", "agents", "hooks"];
+
+// Loaded at module scope, not lazily, because BOTH halves need the path translator below — the
+// PreToolUse half resolves the marker location before it can do anything else. The import costs
+// about a millisecond; getting the path wrong costs the whole hook, silently.
+let PATHS = null;
+try {
+  PATHS = await import(new URL("./lib/protected-paths.mjs", import.meta.url));
+} catch { /* reactive hook → degrade, never fail the call */ }
+
+// On the Windows delivery this hook runs inside WSL (global-sync wraps it in `wsl -d ubuntu bash`)
+// while the harness is Windows, so the payload carries Windows or UNC paths. Its siblings translate
+// for exactly this reason; without it every detector here would come back empty and say nothing.
+// The fallback is a separator normalize only — enough to keep matching sane if the lib is missing.
+const toWsl = (p) => (PATHS ? PATHS.toWslPath(p) : String(p ?? "").replace(/\\/g, "/"));
+
+// A translated path is only usable if it is POSIX-absolute. A Windows-local directory has no WSL
+// equivalent, so fall back rather than creating a directory named after a drive letter.
+const posixAbs = (p) => (p && p.startsWith("/") ? p : null);
 
 // Build artifacts and vendored trees — never worth dispatching, and large enough to matter.
 // code-formatter carries its own copy of this list: it is a project-tier hook delivered into each
@@ -90,7 +110,7 @@ const MARKER_TTL_MS = 60 * 60 * 1000;
 // ---------------------------------------------------------------------------
 
 function markerDir(input) {
-  const base = input?.scratchpad_dir || tmpdir();
+  const base = posixAbs(toWsl(input?.scratchpad_dir)) ?? tmpdir();
   return join(base, ".bash-write-adapter");
 }
 
@@ -250,7 +270,8 @@ function pre(input) {
   const dir = markerDir(input);
   mkdirSync(dir, { recursive: true });
   sweepStaleMarkers(dir);
-  writeFileSync(markerPath(input), JSON.stringify({ t: Date.now(), cwd: input?.cwd ?? process.cwd() }), "utf8");
+  const cwd = posixAbs(toWsl(input?.cwd)) ?? process.cwd();
+  writeFileSync(markerPath(input), JSON.stringify({ t: Date.now(), cwd }), "utf8");
 }
 
 async function post(input) {
@@ -265,7 +286,7 @@ async function post(input) {
     try { unlinkSync(marker); } catch {}
   }
   if (!since) return;
-  cwd = cwd || input?.cwd || process.cwd();
+  cwd = posixAbs(toWsl(cwd)) ?? posixAbs(toWsl(input?.cwd)) ?? process.cwd();
 
   const repoRoot = runGit(["rev-parse", "--show-toplevel"], cwd).trim();
 
@@ -273,16 +294,10 @@ async function post(input) {
   const assetChanged = ASSET_DIRS.flatMap((d) => walkNewer(join(cwd, ".claude", d), since));
   const hubChanged = manifestFilesChanged(since);
 
-  // Loaded here rather than at module scope so the PreToolUse half never pays for it.
-  let PROTECTED = null;
-  try {
-    PROTECTED = await import(new URL("./lib/protected-paths.mjs", import.meta.url));
-  } catch {}
-
   // Kept out of repoChanged deliberately: a protected file must be reported, never formatted or staged.
-  const protectedChanged = PROTECTED
+  const protectedChanged = PATHS
     ? [...new Set([repoRoot, cwd].filter(Boolean))].flatMap((root) =>
-        scanProtected(root, since, PROTECTED.HARD_BLOCK, PROTECTED.normalize),
+        scanProtected(root, since, PATHS.HARD_BLOCK, PATHS.normalize),
       )
     : [];
 
@@ -303,7 +318,7 @@ async function post(input) {
   const formatter = join(cwd, ".claude", "hooks", "code-formatter.mjs");
   for (const p of repoChanged) dispatch(formatter, writePayload(p), cwd);
 
-  await report(all, input, cwd, PROTECTED);
+  await report(all, input, cwd);
 }
 
 // ---------------------------------------------------------------------------
@@ -332,11 +347,11 @@ function proseFindings(paths, cwd) {
   return findings;
 }
 
-async function report(all, input, cwd, PROTECTED) {
+async function report(all, input, cwd) {
   const lines = [];
 
-  if (PROTECTED) {
-    const hit = all.filter((p) => PROTECTED.HARD_BLOCK.some((re) => re.test(PROTECTED.normalize(p))));
+  if (PATHS) {
+    const hit = all.filter((p) => PATHS.HARD_BLOCK.some((re) => re.test(PATHS.normalize(p))));
     if (hit.length) {
       const cmd = String(input?.tool_input?.command ?? "").slice(0, 400);
       lines.push(
