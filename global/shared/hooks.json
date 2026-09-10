@@ -12,7 +12,8 @@
         "matcher": "Bash|PowerShell",
         "hooks": [
           { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/command-firewall.mjs\"" },
-          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/git-commit-guard.mjs\"" }
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/git-commit-guard.mjs\"" },
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/bash-write-adapter.mjs\"" }
         ]
       }
     ],
@@ -20,7 +21,8 @@
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/session-checkpoint-nudger.mjs\"" }
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/session-checkpoint-nudger.mjs\"" },
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/bash-write-adapter.mjs\"" }
         ]
       },
       {
