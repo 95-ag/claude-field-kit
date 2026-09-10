@@ -41,7 +41,8 @@ rl.on("close", () => {
   let input;
   try { input = JSON.parse(raw || "{}"); } catch { process.exit(0); }
 
-  const filePath = input?.tool_input?.file_path ?? "";
+  // NotebookEdit sends `notebook_path`; every other edit tool sends `file_path`.
+  const filePath = input?.tool_input?.file_path ?? input?.tool_input?.notebook_path ?? "";
   if (!filePath) process.exit(0);
 
   const rel = claudeRel(filePath);

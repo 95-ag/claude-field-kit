@@ -113,7 +113,9 @@ rl.on("close", () => {
   let input;
   try { input = JSON.parse(raw || "{}"); } catch { process.exit(0); }
   if (!existsSync(KIT_ROOT)) process.exit(0); // claude-field-kit not on this machine → no-op
-  const fp = input?.tool_input?.file_path ?? "";
+  // NotebookEdit sends `notebook_path`; every other edit tool sends `file_path`. Reading only the
+  // latter would let a notebook inside a skill's references/ be edited without ever being staged.
+  const fp = input?.tool_input?.file_path ?? input?.tool_input?.notebook_path ?? "";
   if (!fp) process.exit(0);
   // Hand-staged note in the kit's incoming/notes/ → General resolve-task; never staged or Harvested.
   const fpw = toWslPath(fp);

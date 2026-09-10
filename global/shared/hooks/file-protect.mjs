@@ -62,7 +62,13 @@ rl.on("close", () => {
     process.exit(2);
   }
 
-  const filePath = input?.tool_input?.file_path || "";
+  // NotebookEdit is in this hook's matcher but sends `notebook_path`, not `file_path`. Reading only
+  // the latter meant the matcher promised coverage it never delivered: a notebook write to any
+  // protected path passed silently while the identical path through Edit was refused.
+  // asset-capture and hub-dirty-flag carry the same fallback for the same reason. code-formatter
+  // and ai-prose-guard deliberately do not: neither handles .ipynb, so registering them for it
+  // would be a matcher that can only ever no-op — the exact shape of the bug above.
+  const filePath = input?.tool_input?.file_path || input?.tool_input?.notebook_path || "";
   if (!filePath) process.exit(0);
 
   const p = normalize(filePath); // normalize separators; match the path directly
