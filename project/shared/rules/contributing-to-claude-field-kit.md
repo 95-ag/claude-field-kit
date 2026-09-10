@@ -71,8 +71,10 @@ components).
 ## Contribute a reusable asset
 
 - **It captures automatically.** An edit under `.claude/{rules,skills,agents,hooks}` is staged into the kit's
-  `incoming/` by the `asset-capture` hook. Confirm it fired (the `incoming/` copy updated) — capture is
-  fail-open, so a missed hook silently loses the staging.
+  `incoming/` by the `asset-capture` hook — through the Edit tools directly, and through the shell via
+  `bash-write-adapter`. Confirm it fired (the `incoming/` copy updated). Capture is fail-open, so a genuine
+  hook failure is silent; but if staging is ever missing, suspect the channel before the hook. The one
+  recorded case of "the hook lost my files" was a `sed -i` sweep that never reached it at all.
 - **Repo-bound asset** (hardcoded to this one project) → it goes to the kit's `repos/<name>/` verbatim.
 - **Spotted a global-asset fix while working here?** A global rule or the shared `CLAUDE.md` has no project
   `.claude/` copy, so it won't auto-capture. Stage a shaped fix by hand: write the improved version to a temp
