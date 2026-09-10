@@ -30,13 +30,18 @@
  * differs between the two halves, so neither can pair them; tool_use_id is the only key that does.
  *
  * KNOWN LIMITS — stated rather than papered over:
- *   - Writes outside the working repo and outside <cwd>/.claude/ are not detected. A command that
- *     cd's elsewhere and writes there is invisible to all three detectors.
+ *   - Writes outside the working repo are not detected at all. A cwd-relative write into a system
+ *     directory is neither prevented by command-firewall (the target carries no absolute path) nor
+ *     seen here. That combination has no coverage in either direction; only OS permissions stop it.
+ *   - The protected-path scan reaches two directory levels from the repo root. A secret nested
+ *     deeper than that is not reported.
  *   - The kit's own incoming/ is gitignored and sits outside .claude/, so a shell write there
  *     queues no review task. Only the Edit channel covers it.
+ *   - Deleting a file leaves nothing to detect, so deletion is prevention-only — command-firewall
+ *     refuses to destroy a protected path, and nothing here can notice after the fact.
  *   - A content-identical rewrite bumps mtime and is treated as a change. Formatting is idempotent
  *     and capture is deduped by task marker, so the cost is wasted work, never a wrong result.
- *   - Cost is roughly 75ms per Bash call, two thirds of it node process startup for the two halves.
+ *   - Cost is roughly 80ms per Bash call, most of it node process startup for the two halves.
  *     Deriving the start time from the PostToolUse `duration_ms` would remove one spawn, but the
  *     hook only observes time AFTER the command, so the estimate would land later than the real
  *     start and need a margin wide enough to re-detect the previous command's writes — which would
@@ -157,6 +162,38 @@ function walkNewer(dir, sinceMs, acc = []) {
   return acc;
 }
 
+// Protected files are almost always gitignored — that is the point of them — so the git detector is
+// blind to exactly the paths the alarm exists to report, and they do not live under .claude/ either.
+// A bounded walk of the repo root recovers the common case: protected material sits at the root or
+// one directory down (certs/, secrets/). Deeper nesting is still missed, and is stated as a limit
+// rather than papered over.
+const PROTECTED_SCAN_DEPTH = 2;
+const PROTECTED_SCAN_CAP = 2000;
+
+function scanProtected(root, sinceMs, hardBlock, normalize) {
+  const hits = [];
+  let examined = 0;
+  const walk = (dir, depth) => {
+    if (depth > PROTECTED_SCAN_DEPTH || examined > PROTECTED_SCAN_CAP) return;
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      if (examined++ > PROTECTED_SCAN_CAP) return;
+      const abs = join(dir, entry.name);
+      if (SKIP_DIR_RE.test(`${abs.replace(/\\/g, "/")}/`)) continue;
+      if (entry.isDirectory()) { walk(abs, depth + 1); continue; }
+      if (!entry.isFile()) continue;
+      const norm = normalize(abs);
+      if (!hardBlock.some((re) => re.test(norm))) continue;
+      try {
+        if (statSync(abs).mtimeMs >= sinceMs - MTIME_GRACE_MS) hits.push(abs);
+      } catch {}
+    }
+  };
+  walk(root, 1);
+  return hits;
+}
+
 function manifestFilesChanged(sinceMs) {
   try {
     const m = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
@@ -236,7 +273,20 @@ async function post(input) {
   const assetChanged = ASSET_DIRS.flatMap((d) => walkNewer(join(cwd, ".claude", d), since));
   const hubChanged = manifestFilesChanged(since);
 
-  const all = [...new Set([...repoChanged, ...assetChanged, ...hubChanged])]
+  // Loaded here rather than at module scope so the PreToolUse half never pays for it.
+  let PROTECTED = null;
+  try {
+    PROTECTED = await import(new URL("./lib/protected-paths.mjs", import.meta.url));
+  } catch {}
+
+  // Kept out of repoChanged deliberately: a protected file must be reported, never formatted or staged.
+  const protectedChanged = PROTECTED
+    ? [...new Set([repoRoot, cwd].filter(Boolean))].flatMap((root) =>
+        scanProtected(root, since, PROTECTED.HARD_BLOCK, PROTECTED.normalize),
+      )
+    : [];
+
+  const all = [...new Set([...repoChanged, ...assetChanged, ...hubChanged, ...protectedChanged])]
     .filter((p) => !SKIP_DIR_RE.test(p.replace(/\\/g, "/")));
 
   if (all.length === 0) return; // fast path — most Bash calls read rather than write
@@ -253,7 +303,7 @@ async function post(input) {
   const formatter = join(cwd, ".claude", "hooks", "code-formatter.mjs");
   for (const p of repoChanged) dispatch(formatter, writePayload(p), cwd);
 
-  await report(all, input, cwd);
+  await report(all, input, cwd, PROTECTED);
 }
 
 // ---------------------------------------------------------------------------
@@ -282,16 +332,8 @@ function proseFindings(paths, cwd) {
   return findings;
 }
 
-async function report(all, input, cwd) {
+async function report(all, input, cwd, PROTECTED) {
   const lines = [];
-
-  // Loaded here rather than at module scope: most Bash calls change nothing and never reach this
-  // point, so the import stays off the per-call cost. Reactive hook → a failed load degrades the
-  // alarm to silence rather than failing the call.
-  let PROTECTED = null;
-  try {
-    PROTECTED = await import(new URL("./lib/protected-paths.mjs", import.meta.url));
-  } catch {}
 
   if (PROTECTED) {
     const hit = all.filter((p) => PROTECTED.HARD_BLOCK.some((re) => re.test(PROTECTED.normalize(p))));
