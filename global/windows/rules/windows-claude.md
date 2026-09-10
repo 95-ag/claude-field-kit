@@ -98,3 +98,9 @@ Hooks run **WSL-first** (per the default model above). Verified 2026-06-16:
   `/^\/\/wsl(?:\.localhost|\$)\/[^/]+(\/.*)$/` → `$1`). Pure regex/string matchers (`file-protect`,
   `hub-dirty-flag`) are unaffected — they match path segments regardless of prefix. Confirmed: `asset-capture`
   + `code-formatter` silently no-op'd (fail-open) on every edit until they UNC-translated.
+- **The same applies to `cwd`, not just `file_path` (2026-09-10).** `bash-write-adapter` locates the repo,
+  walks the asset dirs and resolves project-tier hooks from the payload's `cwd`, so it translates that too —
+  untranslated, every detector returns empty and the hook reports nothing while appearing healthy. It also
+  ignores `scratchpad_dir` when the translation is not POSIX-absolute: a Windows-local temp dir has no WSL
+  equivalent, and joining one produces a directory named after a drive letter. Verified with a synthetic UNC
+  payload only — nothing here has run against a real Windows harness.
