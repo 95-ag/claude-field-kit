@@ -135,8 +135,11 @@ const ASK = [
   { cat: "pkg-mutation", re: /\bpnpm\s+(add|install|remove)\b/ },
   { cat: "pkg-mutation", re: /\byarn\s+(add|remove)\b/ },
   { cat: "pkg-mutation", re: /\bpip3?\s+(install|uninstall)\b/ },
-  { cat: "in-place-edit", re: /\bsed\s+-i\b/ },
-  { cat: "in-place-edit", re: /\bperl\s+-[a-z]*pi\b/ },
+  // In-place editing carried a blanket prompt here, on the command's NAME. It was the single
+  // largest source of prompts measured, and it asked the same question of a protected file and of
+  // an ordinary source file. The write-target guard below now judges the actual target: in-place
+  // editing a protected path blocks outright, and one under global config still asks. Prompting on
+  // the name as well would ask about files that are already decided, so it is gone.
   // powershell
   { cat: "ps:install", re: /\b(Install-Module|Install-Package)\b/i },
   { cat: "ps:exec-policy", re: /\bSet-ExecutionPolicy\b/i },
