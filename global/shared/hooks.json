@@ -9,6 +9,12 @@
         ]
       },
       {
+        "matcher": "Read|Grep",
+        "hooks": [
+          { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/file-protect.mjs\"" }
+        ]
+      },
+      {
         "matcher": "Bash|PowerShell",
         "hooks": [
           { "type": "command", "command": "node \"/home/ag-95/.claude/hooks/command-firewall.mjs\"" },

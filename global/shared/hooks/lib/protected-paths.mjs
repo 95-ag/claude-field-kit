@@ -14,20 +14,28 @@
  * No side effects, no I/O — importable from any hook regardless of its posture.
  */
 
-// Never writable by an agent, through any channel. exit 2, no bypass.
-export const HARD_BLOCK = [
-  /(^|\/)\.git(\/|$)/,
+// Secret material — the only paths whose CONTENTS are protected, not just their writability.
+// Separated from HARD_BLOCK because the read side must not inherit the whole list: refusing to read
+// .git or /etc would break ordinary diagnostics, while reading a credential is the one exposure that
+// cannot be undone afterwards — it lands in the transcript.
+export const SECRET_MATERIAL = [
   /(^|\/)\.env$/,
   /(^|\/)\.env\.(?!example$)[^/]+$/,
-  // secret material — never edit/overwrite via the file tools
   /(^|\/)\.credentials\.json$/,
   /(^|\/)session_cookies\.json$/,
-  // SSH material: id_rsa and friends carry no extension, so the .pem/.key rules below miss them.
+  // SSH material: id_rsa and friends carry no extension, so the .pem/.key rules miss them.
   /(^|\/)\.ssh(\/|$)/,
   /\.pem$/,
   /\.key$/,
   /\.p12$/,
   /\.pfx$/,
+];
+
+// Never writable by an agent, through any channel. exit 2, no bypass. Secret material is spliced in
+// rather than repeated, so the two lists cannot drift apart.
+export const HARD_BLOCK = [
+  /(^|\/)\.git(\/|$)/,
+  ...SECRET_MATERIAL,
   // system config — agent never edits machine-level files (undo if a real case comes up)
   /^\/etc\//i,
 ];
