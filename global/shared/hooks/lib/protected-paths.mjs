@@ -22,6 +22,8 @@ export const HARD_BLOCK = [
   // secret material — never edit/overwrite via the file tools
   /(^|\/)\.credentials\.json$/,
   /(^|\/)session_cookies\.json$/,
+  // SSH material: id_rsa and friends carry no extension, so the .pem/.key rules below miss them.
+  /(^|\/)\.ssh(\/|$)/,
   /\.pem$/,
   /\.key$/,
   /\.p12$/,
