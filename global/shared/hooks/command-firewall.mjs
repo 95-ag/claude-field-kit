@@ -15,6 +15,11 @@
  * same protected-path list file-protect uses. Without it, `Edit(".env")` was refused while
  * `cat > .env` succeeded: the same file, protected through one channel and open through the other.
  *
+ * READING a protected file is deliberately NOT guarded (owner decision, 2026-09-10). Copying a
+ * secret elsewhere, or piping it into a network call, is unguarded. Blocking writes does nothing
+ * about reads, and the honest version of a read guard would restrict ordinary legitimate use. This
+ * is a chosen gap, not an oversight — revisit it as a policy question, not as a missing pattern.
+ *
  * This NARROWS the gap; it does not close it. A target computed at runtime contains no literal and
  * no static check can see it. Nor can a cwd-relative write be judged: `cd /etc && echo x > passwd`
  * extracts `passwd`, which matches no /etc/ rule. Both are caught after the fact by
@@ -43,20 +48,37 @@ try {
 
 // --- combined-flag helpers (order/case/long-flag tolerant) -----------------
 
-// rm with BOTH recursive and force, any spelling: -rf, -fr, -Rf, -r -f, --recursive --force
+// Flag scans run per command segment, never across the whole line. Scanning the whole line tests
+// for the verb, the recursive flag and the force flag independently, so an unrelated flag on a
+// SECOND command fabricates a match: a plain single-file delete beside a recursive search reads as
+// a recursive force delete and hard-blocks. Splitting first keeps every true positive — a genuine
+// destructive call lives inside one segment — and removes that whole false class.
+function segments(cmd) {
+  return String(cmd).split(/(?:\|\||&&|[;|\n])/);
+}
+
+function anySegment(cmd, test) {
+  return segments(cmd).some(test);
+}
+
+// Deletion carrying BOTH recursive and force, in any spelling or order, short or long form.
 function isDestructiveRm(cmd) {
-  if (!/\brm\b/.test(cmd)) return false;
-  const recursive = /(^|\s)-[a-zA-Z]*[rR][a-zA-Z]*(\s|$)/.test(cmd) || /--recursive\b/.test(cmd);
-  const force = /(^|\s)-[a-zA-Z]*[fF][a-zA-Z]*(\s|$)/.test(cmd) || /--force\b/.test(cmd);
-  return recursive && force;
+  return anySegment(cmd, (seg) => {
+    if (!/\brm\b/.test(seg)) return false;
+    const recursive = /(^|\s)-[a-zA-Z]*[rR][a-zA-Z]*(\s|$)/.test(seg) || /--recursive\b/.test(seg);
+    const force = /(^|\s)-[a-zA-Z]*[fF][a-zA-Z]*(\s|$)/.test(seg) || /--force\b/.test(seg);
+    return recursive && force;
+  });
 }
 
 // PowerShell/cmd recursive force-delete: Remove-Item -Recurse -Force, rd /s /q, del /s /q, etc.
 function isDestructivePsRemove(cmd) {
-  if (!/\b(Remove-Item|ri|del|erase|rd|rmdir)\b/i.test(cmd)) return false;
-  const recursive = /-Recurse\b/i.test(cmd) || /(^|\s)-r\b/i.test(cmd) || /\/s\b/i.test(cmd);
-  const force = /-Force\b/i.test(cmd) || /(^|\s)-f\b/i.test(cmd) || /\/q\b/i.test(cmd);
-  return recursive && force;
+  return anySegment(cmd, (seg) => {
+    if (!/\b(Remove-Item|ri|del|erase|rd|rmdir)\b/i.test(seg)) return false;
+    const recursive = /-Recurse\b/i.test(seg) || /(^|\s)-r\b/i.test(seg) || /\/s\b/i.test(seg);
+    const force = /-Force\b/i.test(seg) || /(^|\s)-f\b/i.test(seg) || /\/q\b/i.test(seg);
+    return recursive && force;
+  });
 }
 
 // --- hard block: regex patterns (no bypass) --------------------------------
@@ -176,8 +198,10 @@ function splitArgs(s) {
 }
 
 // Redirections: > f, >f, >> f, 2> f, &> f, >| f. The target character class excludes & so that fd
-// duplication (2>&1, >&2) yields nothing — those redirect to a descriptor, not to a file.
-const REDIRECT_RE = /(?:\d+|&)?>>?\|?\s*("[^"]*"|'[^']*'|[^\s;&|<>()]+)/g;
+// duplication (2>&1, >&2) yields nothing — those redirect to a descriptor, not to a file. It also
+// excludes quote characters: a nested command (`bash -c 'echo x > .env'`) ends with the closing
+// quote glued to the path, and a target of ".env'" matches no rule while writing the real file.
+const REDIRECT_RE = /(?:\d+|&)?>>?\|?\s*("[^"]*"|'[^']*'|[^\s;&|<>()'"]+)/g;
 
 function redirectTargets(text) {
   return [...String(text).matchAll(REDIRECT_RE)].map((m) => m[1]);
@@ -193,9 +217,10 @@ function teeTargets(shell) {
 
 // In-place stream editing rewrites its trailing file arguments. The first bare argument is the
 // script UNLESS the script was already given by -e/-f, in which case every bare argument is a file.
+// perl -pi is the same shape and was already an ASK category, so it must reach the same verdict.
 function inPlaceEditTargets(shell) {
   const out = [];
-  for (const m of shell.matchAll(/\bsed\b([^\n;|&]*)/g)) {
+  for (const m of shell.matchAll(/\b(?:sed|perl)\b([^\n;|&]*)/g)) {
     const args = splitArgs(m[1]);
     const inPlace = args.some((a) => /^-[a-zA-Z]*i/.test(a) || a === "--in-place" || a.startsWith("--in-place="));
     if (!inPlace) continue;
@@ -211,11 +236,46 @@ function inPlaceEditTargets(shell) {
   return out;
 }
 
+// Anything whose last operand is a destination it will create or overwrite. install, rsync and ln
+// share cp/mv's shape and were reaching a protected path untouched.
 function copyMoveTargets(shell) {
   const out = [];
-  for (const m of shell.matchAll(/\b(cp|mv)\b([^\n;|&]*)/g)) {
+  for (const m of shell.matchAll(/\b(cp|mv|install|rsync|ln)\b([^\n;|&]*)/g)) {
     const args = splitArgs(m[2]).filter((a) => !a.startsWith("-"));
     if (args.length >= 2) out.push(args[args.length - 1]); // destination is the last operand
+  }
+  return out;
+}
+
+// dd names its destination with of=, which no redirection or operand rule would ever see.
+function ddTargets(shell) {
+  return [...shell.matchAll(/\bdd\b[^\n;|&]*?\bof=("[^"]*"|'[^']*'|[^\s;&|]+)/g)].map((m) => m[1]);
+}
+
+// Destroying a protected file is not a write, so no write rule catches it — and the post-hoc alarm
+// cannot either, because a deleted file leaves nothing to detect. Prevention is the only place this
+// can be caught at all. mv's SOURCE belongs here: moving a file away destroys it in place.
+function destructiveTargets(shell) {
+  const out = [];
+  for (const m of shell.matchAll(/\b(rm|unlink|shred|rmdir|truncate)\b([^\n;|&]*)/g)) {
+    const args = splitArgs(m[2]);
+    for (let k = 0; k < args.length; k++) {
+      const arg = args[k];
+      if (arg === "-s" || arg === "--size") { k++; continue; } // truncate's size operand
+      if (arg.startsWith("-")) continue;
+      out.push(arg);
+    }
+  }
+  for (const m of shell.matchAll(/\bmv\b([^\n;|&]*)/g)) {
+    const args = splitArgs(m[1]).filter((a) => !a.startsWith("-"));
+    if (args.length >= 2) out.push(args[0]); // source is destroyed by the move
+  }
+  for (const m of shell.matchAll(/\bRemove-Item\b([^\n;|]*)/gi)) {
+    const args = splitArgs(m[1]);
+    const named = args.findIndex((a) => /^-(Path|LiteralPath)$/i.test(a));
+    if (named !== -1 && args[named + 1]) { out.push(args[named + 1]); continue; }
+    const positional = args.find((a) => !a.startsWith("-"));
+    if (positional) out.push(positional);
   }
   return out;
 }
@@ -242,6 +302,7 @@ function writeTargets(shell) {
     ...inPlaceEditTargets(shell),
     ...copyMoveTargets(shell),
     ...powershellTargets(shell),
+    ...ddTargets(shell),
   ];
   return [...new Set(raw.map(normalizeTarget).filter(Boolean))].map(PATHS.normalize);
 }
@@ -268,7 +329,10 @@ function writesLiteral(text, token) {
     `\\bopen\\s*\\(\\s*${quoted}\\s*,\\s*["'][wax]`,                       // open(path, "w")
     `${quoted}\\s*\\)?\\s*\\.\\s*(write_text|write_bytes|write)\\s*\\(`,   // Path(path).write_text(...)
     `\\b(writeFileSync|appendFileSync|createWriteStream|writeFile|copyFileSync|renameSync)\\s*\\(\\s*${quoted}`,
-    `\\b(shutil\\.(copy\\w*|move)|os\\.(rename|replace))\\s*\\([^)]*${quoted}`,
+    `\\b(shutil\\.(copy\\w*|move|rmtree)|os\\.(rename|replace|remove|unlink))\\s*\\([^)]*${quoted}`,
+    `\\b(unlinkSync|rmSync|rmdirSync)\\s*\\(\\s*${quoted}`,
+    // Destroying the file is the same verdict as overwriting it — `rm .env` blocks, so must this.
+    `${quoted}\\s*\\)?\\s*\\.\\s*(unlink|rmdir)\\s*\\(`,
     `>\\s*["']?${literal}`,                                                // redirection nested in the body
   ];
   return bound.some((p) => new RegExp(p).test(text));
@@ -358,6 +422,13 @@ function writeGuardDecision(command, cwd) {
       }
     }
 
+    const destroyed = [...new Set(destructiveTargets(shell).map(normalizeTarget).filter(Boolean))].map(PATHS.normalize);
+    for (const target of destroyed) {
+      if (PATHS.HARD_BLOCK.some((re) => re.test(target))) {
+        return { decision: "block", category: "destroy:protected-path", detail: target };
+      }
+    }
+
     const interpreter = interpreterDecision(command, shell);
     if (interpreter?.decision === "block") return interpreter;
 
@@ -406,6 +477,8 @@ function ask(category, command, detail = "") {
 
 function guardMessage({ category, detail }) {
   switch (category) {
+    case "destroy:protected-path":
+      return `"${detail}" is a protected file and this command would destroy it. Deleting it is not a way around the rule against editing it.`;
     case "write:protected-path":
       return `"${detail}" is a protected file. file-protect refuses the same path through Edit, and the shell is not a way around that.`;
     case "interpreter:protected-write":
