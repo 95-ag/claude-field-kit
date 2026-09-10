@@ -131,7 +131,8 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
 - **Capture is hook-driven** — the global `asset-capture` hook auto-stages any edit under a project's
   `.claude/{rules,skills,agents,hooks}` into `incoming/<type>/<project>__<file>` (skills copied whole-dir)
   and queues a review task in that project's `tasks.md`. The staged copy is the no-loss capture; the task
-  drives review→promote. Manual capture remains the fallback.
+  drives review→promote. Manual capture remains the fallback. Shell edits count too — they reach the hook
+  through `bash-write-adapter`, which is why a `sed -i` sweep no longer stages nothing.
 - **Global-only assets need manual capture** — a global rule, the shared `CLAUDE.md`, or a global-only skill
   has no project `.claude/` copy, so the hook never sees it; stage a shaped fix by hand into `incoming/<type>/`,
   or an unsure/deferred one into `incoming/notes/`.
@@ -256,11 +257,17 @@ minimal other context loaded.
 Hooks live in two tiers:
 
 - **Global** (`global/shared/hooks/`) — the machine-wide safety net + workflow hooks: `command-firewall`,
-  `file-protect`, `git-commit-guard`, the `session-checkpoint-nudger`, and the `hub-dirty-flag` /
-  `asset-capture` / `plans-memory-sync` hooks. The `global-sync` tool delivers them to both `~/.claude/hooks/`
-  and registers them in `~/.claude/settings.json` — no per-project wiring.
+  `file-protect`, `git-commit-guard`, `bash-write-adapter`, the `session-checkpoint-nudger`, and the
+  `hub-dirty-flag` / `asset-capture` / `plans-memory-sync` hooks. Shared path lists live in
+  `global/shared/hooks/lib/` so the file channel, the shell channel and the post-hoc alarm judge a path
+  identically — a copied list drifts, and a drifted list is a hole. The `global-sync` tool delivers them to
+  both `~/.claude/hooks/` and registers them in `~/.claude/settings.json` — no per-project wiring.
 - **Per-project** (`project/<tier>/hooks/`) — repo-opinionated hooks composed into a project's `.claude/` at
-  bootstrap: `code-formatter` (every project) + `ai-prose-guard-mdx` (web-frontend).
+  bootstrap: `code-formatter` (every project) + `ai-prose-guard` (web-frontend).
+- **The Bash channel needs its own bridge** — a file changed by `sed -i`, `cat >` or an interpreter carries no
+  `file_path` and matches no file-tool matcher. `bash-write-adapter` detects what a shell command actually
+  changed and replays each file into the file hooks through their own stdin contract, so the Bash channel gets
+  the coverage the Edit channel always had. Prevention stays `command-firewall`'s job.
 
 The conventions below apply to both tiers:
 
@@ -270,6 +277,11 @@ The conventions below apply to both tiers:
   never `startsWith`/exact full-path. Block/ask tiers must be nested-safe; heuristics may be root-anchored.
 - **Normalize separators** — `\` → `/` before matching (Windows/WSL parity).
 - **Cross-shell** — command/commit hooks register for both `Bash` and `PowerShell`.
+- **A matcher is a claim about coverage — make it true** — a hook bound only to the file tools sees nothing a
+  shell command does, and a hook bound to a tool whose payload names its path differently sees nothing at all.
+  Both shipped here undetected, because a hook that is never entered and a hook that fails open look identical
+  from outside. Bind every channel that can produce the effect, read every field those tools send, and prove
+  it with a payload rather than by reading the matcher.
 - **Fail closed (security) / fail open (quality)** — on unparseable input, security guards (firewall,
   file/commit protection) BLOCK; quality hooks (formatter, prose, nudger) SKIP. Suppress subprocess stderr
   (e.g. git `fatal:`) so tool noise never leaks.
@@ -292,7 +304,9 @@ for which event + matcher each hook binds to.
   domain/stack `hooks.json` into the project's `.claude/settings.json`; PreToolUse/PostToolUse arrays
   concatenate; `"//"` keys dropped.
 - **Cross-shell:** command/commit hooks bind `"matcher": "Bash|PowerShell"`; file hooks bind
-  `Write|Edit|MultiEdit|NotebookEdit`.
+  `Write|Edit|MultiEdit|NotebookEdit`; content-reading guards bind `Read|Grep`. `bash-write-adapter` binds
+  `Bash|PowerShell` on **both** PreToolUse and PostToolUse — the pre half records the state the post half
+  compares against, and neither works alone.
 - **Command form:** global hooks → `node "/home/<user>/.claude/hooks/<hook>.mjs"`; per-project hooks resolve
   the script cwd-relative (never `$CLAUDE_PROJECT_DIR` — unset inside WSL hooks). The Windows-desktop-over-WSL
   environment wraps either **WSL-first** (`wsl -d ubuntu bash -lc '…'`) — see
