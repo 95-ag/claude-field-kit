@@ -139,4 +139,8 @@ Do not extract for a 1:1 doc mapping. Single-use static sections stay inline, do
 - The shared name is the bridge: doc→code = grep the `PascalExport`; code→doc = search DESIGN.md.
 - Tag each domain-component/page-section entry in DESIGN.md as **`[inline]`** (lives in a page) or
   **`[standalone]`** (has its own file).
+- A third state exists: an entry documented as design intent that produces no code, such as a reserved
+  layer or a static effect belonging to another component. Give it its own token (*Example:*
+  `[no component]`) so a tag-parsing tool meets a defined value, and define every token in DESIGN.md —
+  nothing else is self-describing about them.
 - Folder ↔ DESIGN.md section mapping lives in the Canonical mapping table above.
