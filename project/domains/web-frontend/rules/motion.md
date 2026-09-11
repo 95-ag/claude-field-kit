@@ -38,5 +38,6 @@ How motion is used and implemented. Timing, easing, and duration tokens live in 
 
 - Motion serves comprehension, feedback, continuity, and spatial orientation.
 - Prefer the smallest motion that communicates the change.
+- A property carrying state, not decoration, is correct on its first frame — never transition one.
 - Motion never blocks interaction or delays content availability.
 - Motion must not cause layout shifts, jank, or measurable degradation of interaction performance.

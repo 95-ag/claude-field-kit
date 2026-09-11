@@ -15,6 +15,7 @@ Reusable accessibility requirements for web UI. Spec values (focus-ring token, e
 - All functionality is available without a mouse or hover interaction.
 - Use `:focus-visible`, not `:focus`, for visible keyboard focus indication.
 - Never remove focus styles without providing an accessible replacement.
+- Never animate a focus indicator — it must be correct on the frame it appears, not after a transition.
 - Never create an unintended keyboard trap.
 - Modals and overlays trap focus while open and restore focus to the triggering element when closed.
 
