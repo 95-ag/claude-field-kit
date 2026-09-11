@@ -1,6 +1,6 @@
 # Rewrite Passes
 
-Five pass types. Run one per invocation unless explicitly combined.
+Seven pass types. Run one per invocation unless explicitly combined.
 
 ---
 
@@ -157,6 +157,45 @@ This pass runs alone. It MUST NOT be combined with other passes.
 
 ---
 
+## 7. Residue Pass
+
+**Purpose:** Clear accumulated decision-history out of canonical sections without destroying the
+constraints buried inside it.
+
+The contract bans residue (`writing-contract.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
+only ever accumulates. Example: one sweep of a mature DESIGN.md and PROJECT.md pair found seventeen pieces
+of residue — and ten of them were load-bearing.
+
+**The trap:** a passage can read as history and still be the only thing preventing a recurrence — a
+mechanical token merge that erased a scale, an override that defeated a type role's own colour, an artefact
+in a traced asset that must not be re-traced. Deleting those on a keyword match loses knowledge with no
+other home.
+
+**Sort every hit into one of two classes before touching anything:**
+
+| Class | Test | Action |
+|---|---|---|
+| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Delete, or move to `Iteration Notes`. |
+| Constraint stated as history | The sentence exists to prevent a recurrence. Removing it makes a specific mistake available again. | Reword forward into a present-tense rule. **Never delete.** |
+
+Rewording forward drops the narration and keeps the prohibition: "we removed the gold-on-gold pairing
+because it erased the scale" becomes "do not pair gold on gold — it erases the scale".
+
+Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was
+removed", and self-justifying absence ("isn't a component, so no file").
+
+What does NOT change:
+- Token names and values — Design Identifiers still applies.
+- Any hit whose class is unclear. Flag it and leave it in place; an ambiguous hit is the user's call.
+
+Manifest entries: REMOVED (pure history only), MOVED (to Iteration Notes), REWORDED (constraint kept,
+narration dropped), FLAGGED (class unclear).
+
+Report the hit count and the split across classes. A pass that reports only deletions on a mature doc has
+almost certainly destroyed a constraint.
+
+---
+
 ## Combined Passes
 
 If the user requests more than one pass, run them in this order:
@@ -164,7 +203,8 @@ If the user requests more than one pass, run them in this order:
 2. Structure-Only
 3. Migration / Reorganization (if needed)
 4. Normalization
-5. Section-by-Section Rewrite
-6. Terminology
+5. Residue
+6. Section-by-Section Rewrite
+7. Terminology
 
 Segment the manifest by pass type with a `--- PASS: name ---` divider.

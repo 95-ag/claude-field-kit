@@ -56,9 +56,20 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 - **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
 - **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `writing-contract.md` → Prose Anti-Patterns); history lives in Iteration Notes.
+- **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `writing-contract.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
 - **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
 - **Template completeness** — every subsection the Project-Specific Schema requires is present.
 - **Anchor resolution** — every heading anchor sibling rules/docs reference resolves to a real heading.
+
+## Residue
+
+*(Realign — the sweep. Authoring and Update only avoid adding new residue, which the Anti-patterns check above already covers.)*
+
+The ban on decision-history in canonical sections is a rule about what may be written; this is the check that it has not accumulated anyway. Residue only ever grows, so sweep rather than assume.
+
+- Sweep the canonical sections for the banned decision-history (`writing-contract.md` → Prose Anti-Patterns).
+- **Sort every hit before touching it** — a keyword match is not a verdict. The shapes to sweep for, the two classes, and the reword-forward procedure are in `rewrite-passes.md` → Residue Pass.
+- Report the hit count and the split by class. A hit reworded forward is logged `REWORDED`, never `REMOVED`.
 
 ## Lossless
 

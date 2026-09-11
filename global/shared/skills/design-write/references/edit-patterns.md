@@ -32,6 +32,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 3. Find and replace all markdown body references (prose, bullets, component spec blocks).
 4. Find and replace in sibling docs the user names (e.g. project config, session/work notes, rules files).
 5. Diff summary lists every touched location — registry first, then markdown body, then sibling docs.
+6. **Read the changed section's prose end to end.** A rename is a find-and-replace; a rule change is not, and both arrive through the same edit. A sweep that renames every symbol correctly and builds green will still leave a section asserting the retired rule in words — a blanket "shadows are tinted with green ink" sentence surviving directly beneath the three elevation recipes that had already replaced it with a surface-dependent rule.
 
 ---
 
@@ -60,7 +61,9 @@ For adding a row to a surface hierarchy, typography roles, interaction semantics
 
 1. Confirm with the user — never remove without explicit instruction.
 2. Check for cross-references to the removed section and update or remove them.
-3. Diff summary: `REMOVED: section/component name — N cross-references updated`
+3. **Grep for the identifier, then read the prose around every hit.** The identifier sweep finds symbols; it does not find the sentences around them. A deletion is not done when the definition is gone — it is done when nothing in the doc still describes the thing.
+4. **Sweep for descriptions that never name it.** A red thread passing "through the event cards" survives every grep for `event-card`. Retiring two components once left behind a surviving doc entry, three prose mentions, a gallery specimen, sample data named after one of them, four explanatory comments, and two notes asserting a drift the deletion had already resolved.
+5. Diff summary: `REMOVED: section/component name — N cross-references updated`
 
 ---
 

@@ -66,5 +66,9 @@ Constraints that keep DESIGN.md edits safe and auditable — across both everyda
 - **Cross-references are upkept.** Renaming a token, term, or heading means updating every reference in
   the doc — and in any sibling docs the user names — enumerated individually in the manifest, never a
   vague "updated references." (Process: `cross-reference-rules.md`.)
+- **A deletion is done when nothing still describes the thing.** Removing the definition is the start,
+  not the end. Losslessness cuts both ways: content must not vanish silently, and a deleted thing must
+  not survive as description — including in passages that never name it. (Process: `edit-patterns.md`
+  → Remove a section or component.)
 - **Terminology is auditable.** Every replaced term is logged `UNIFIED: "old" → "new" (N occurrences)`;
   whole-doc sweeps propose the full unification list and wait for confirmation before applying.

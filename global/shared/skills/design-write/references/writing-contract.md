@@ -550,6 +550,7 @@ Avoid:
 * repeating identical information across prose and YAML
 * process/source metadata in canonical sections — cross-doc citations ("see PRODUCT.md §7.4"), open-question markers, and self-containment notes ("Restated from X for self-containment") are transient authoring artifacts, not design-system content. Open decisions belong in `Iteration Notes → Open Decisions`; gaps belong in `Iteration Notes → Known Gaps`.
 * decision-history / iteration narration in canonical sections — "we renamed X→Y", "chose A over B", "previously…", migration residue, and self-justifying placement ("isn't a component, so no file"). Canonical content states the current decision, not the path to it; decision history → `Iteration Notes`, never inline.
+* unlocated evidence claims — a sentence asserting that a measurement, a rationale, an option set, or a prior decision *exists* without naming where it lives (a file path, a named heading, a commit) and without stating the fact inline. DESIGN.md is the design contract, so an unverifiable claim in it propagates into code. Prefer stating the fact inline; a pointer is only as durable as its target's next prune.
 
 ---
 

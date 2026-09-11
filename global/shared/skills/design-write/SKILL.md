@@ -48,6 +48,11 @@ One skill, three modes. Pick from the doc's state and the request — not a sepa
 and Update are the everyday path; Realign is a fallback.
 
 **Authoring — write it right the first time** (primary)
+- **Confirm the content section by section before writing anything.** "Docs before code" assumes the
+  substance is decided, and it frequently is not. Walk the intended sections with the user and confirm each
+  one's content before the first draft. A review that lands after the write becomes a rewrite: one pre-write
+  review changed a schema in nine places, every one of which would otherwise have been written and
+  immediately undone. This is the operational form of "render decided intent, never originate it".
 - Build from the contract's Canonical Spine, and write each section in its mode from the Section-Type
   Writing Modes — correct structure, compression targets, two-layer model, and zero anti-patterns from
   the first draft. The discipline a rewrite would later enforce is applied up front, so the doc is born
@@ -116,10 +121,17 @@ UNIFIED: "tonal depth" → "tonal layering" (7 occurrences)
 RENAMED: "## Do's and Don'ts" → "## Do's & Don'ts" — update cross-references
 FLAGGED: "surface-scrim" — possible duplicate of surface-nav (awaiting confirmation)
 NOTED: nearby prose wall in "About" — out of scope, left as-is
+MIRRORS: "surface / section / ground" vocabulary — restated in the design-system gallery; not edited
 ```
 
 The manifest is the audit trail: if something changed and isn't in it, that's a defect. (Full entry-type
 table for Realign passes: `rewrite-passes.md`.)
+
+**Name the mirrors.** A doc's rules are frequently restated in prose elsewhere — a gallery, a README, an
+onboarding page, a storybook description. Those copies typecheck, lint and render while asserting the
+opposite of the doc, so nothing detects the mismatch afterwards. At the end of an Update run, list the rules
+that changed and add a `MIRRORS:` entry for each one that has a restatement elsewhere. You cannot edit the
+mirror and should not — naming it is the whole job.
 
 ## Behavioral Defaults
 
@@ -131,6 +143,11 @@ table for Realign passes: `rewrite-passes.md`.)
 - **Design identifiers are load-bearing** — token names, component names, semantic-role names,
   domain-component names, and stable terminology should not change without explicit instruction or a
   confirmed terminology migration. Before adding a token, confirm name, value, and role.
+- **Ask whether the change is visual or behavioural** — at the end of an Update run, for each changed
+  entry, ask whether it alters only how something looks, or also what it does: described behaviour, scope,
+  or a named surface. A behavioural change hands off to `spec-write` — recommend it and name the entry.
+  Never edit the spec doc yourself. Retiring a component and leaving PRODUCT.md still describing it is the
+  failure this prevents.
 - **Doc-first, templated, referenceable** — DESIGN.md describes what/why, never how the code wires it;
   names tokens by role; and emits the project schema's full structure so sibling docs can bind to its
   heading anchors (`writing-contract.md` → Doc-First, Token Naming Conventions, Referenceable Contract
