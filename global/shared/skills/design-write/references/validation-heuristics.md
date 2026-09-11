@@ -63,12 +63,20 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Residue
 
-*(Realign — the sweep. Authoring and Update only avoid adding new residue, which the Anti-patterns check above already covers.)*
+*(All modes — Authoring and Update sweep the sections they touch; Realign sweeps the whole doc via `rewrite-passes.md` → Residue Pass.)*
 
 The ban on decision-history in canonical sections is a rule about what may be written; this is the check that it has not accumulated anyway. Residue only ever grows, so sweep rather than assume.
 
-- Sweep the canonical sections for the banned decision-history (`writing-contract.md` → Prose Anti-Patterns).
-- **Sort every hit before touching it** — a keyword match is not a verdict. The shapes to sweep for, the two classes, and the reword-forward procedure are in `rewrite-passes.md` → Residue Pass.
+- Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `writing-contract.md` → Prose Anti-Patterns.
+- **Sort every hit before touching it** — a keyword match is not a verdict:
+
+| Class | Test | Action |
+|---|---|---|
+| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Delete, or move to `Iteration Notes`. |
+| Constraint stated as history | The sentence exists to prevent a recurrence. Removing it makes a specific mistake available again. | Reword forward into a present-tense rule. **Never delete.** |
+
+- Rewording forward drops the narration and keeps the prohibition: "we removed the gold-on-gold pairing because it erased the scale" becomes "do not pair gold on gold — it erases the scale".
+- An ambiguous hit is the user's call — flag it and leave it in place.
 - Report the hit count and the split by class. A hit reworded forward is logged `REWORDED`, never `REMOVED`.
 
 ## Lossless

@@ -52,18 +52,17 @@ Before writing anything, read both references:
 
 If the target doc already exists, read it in full first — you cannot maintain a voice you haven't read.
 
+**Confirm the content before writing it — section by section, in either mode.** "Docs before code" assumes
+the substance is decided, and it frequently is not. Walk the sections you are about to write or change with
+the user and confirm each one's content first. A review that lands after the write becomes a rewrite. This
+is the operational form of the Scope Guardrail — render decided intent, never originate it.
+
 ## Two Modes
 
 The same skill handles both first-time authoring and ongoing maintenance. Pick the mode from the doc's
 state and the request — not from a separate sub-skill.
 
 **Authoring** — the doc is absent or being built fresh.
-- **Confirm the content section by section before writing anything.** "Docs before code" assumes the
-  substance is decided, and it frequently is not. Walk the intended sections with the user and get each
-  one's content confirmed before the first draft. A review that lands after the write becomes a rewrite:
-  one pre-write review changed a schema in nine places, every one of which would otherwise have been
-  encoded and immediately undone. This is the operational form of the Scope Guardrail — render decided
-  intent, never originate it.
 - Start from the archetype's required structure in `references/doc-archetypes.md`. Each archetype
   assigns a voice: Tier 1 (product docs — design-agnostic, reasoning-rich), Tier 2 (companion docs —
   terse, specific), or procedural (the implementation-plan doc). Read that tier's definition in
@@ -124,11 +123,10 @@ For a full first-time authoring, output the complete doc plus a short summary of
 - **Boundaries are load-bearing** — keep each doc in its lane (product = what/why, plan = build
   order/gates, architecture = system structure, schema = information structure). Drift across docs is a
   defect, not a style choice.
-- **A product change often needs a design change behind it** — at the end of a maintenance run, for
-  each changed entry, ask whether it alters something DESIGN.md describes: a named section, a component,
-  an affordance, a state. If so, recommend `design-write` and name the entry. Never edit DESIGN.md
-  yourself; the Scope Guardrail owns that boundary and this is only the prompt that makes you notice it
-  was crossed.
+- **A product change often needs a design change behind it** — at the end of a run, ask for each changed
+  entry whether it alters something DESIGN.md describes: a named section, component, affordance, or state.
+  If so, recommend `design-write` and name the entry. The Scope Guardrail owns the boundary; this is the
+  prompt that makes you notice it was crossed.
 - **No silent deletion** — flag anything you remove so the user can audit it.
 
 ## Alignment Procedure (optional)

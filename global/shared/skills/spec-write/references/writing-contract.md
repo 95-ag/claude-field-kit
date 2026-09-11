@@ -109,13 +109,9 @@ Reject these on sight — they're the failure modes this contract exists to prev
   specs anywhere but DESIGN.md.
 - **Invented substance.** A requirement, metric, or decision that no source supports. If it isn't
   decided, mark it `TODO:` and flag it — never manufacture it to fill a section.
-- **An unlocated evidence claim.** A sentence asserting that evidence, a measurement, a set of
-  options, or a prior decision *exists* — "three ways out are recorded", "the benchmark is
-  documented", "we decided this in review" — must name where it lives (a file path, a named
-  heading, a commit) or state the fact inline instead. Prefer inline: a pointer into a working doc
-  is only as durable as that doc's next prune, and a pruned or gitignored source leaves the claim
-  unverifiable while it still reads as authoritative. The greppable shape is *"X is recorded /
-  documented / measured / decided"* with no location.
+- **An unlocated evidence claim.** A sentence asserting that evidence, a measurement, or a prior
+  decision *exists* must name where it lives, or state the fact inline instead. Prefer inline — a
+  pointer is only as durable as its target's next prune.
 - **Future-tense product description.** "We will build…" in a doc that should declare what the
   product *is*. (The implementation-plan doc is the exception — it is legitimately forward-looking.)
 
