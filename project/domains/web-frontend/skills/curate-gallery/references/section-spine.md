@@ -13,7 +13,7 @@ three layers below, so the universal template stays cleanly separated from this 
   and the visualizer adopts the project's own treatments (radius, depth, semantic type) — all resolved
   from DESIGN.md, never hardcoded. Visualizer-level P2 detail lives in `visualizer-kit.md`.
 - **P3 — Actual inputs (instance).** The real data fed to the section (the actual token list, the real
-  component set). Whether the concrete values are written here as a portfolio answer-key or stated
+  component set). Whether the concrete values are written here as a worked example or stated
   generically is decided per section. **Completeness:** P3 captures everything DESIGN.md defines for that
   section — miss nothing. Completeness means **all items / all key points**, captured concisely: the
   gallery is a visual catalog with key info injected, NOT a verbatim copy of DESIGN.md prose. Tokens and
@@ -167,7 +167,7 @@ dividers + spacing from the project's tokens; the right-column sample renders at
 DESIGN.md → Typography. Each `{ token, family, size, weight, lh, sample, responsive? }`. `sample` =
 a one-line description of **where the token is used** (from the DESIGN.md "Role" column) — not lorem,
 not an alphabet run. `responsive` only for tokens that resize across tiers. The token count and values
-are project instance (portfolio: 19) — they live in `sections/`, not pinned here.
+are project instance (example: 19) — they live in `sections/`, not pinned here.
 
 ---
 
@@ -184,7 +184,7 @@ source:  "src/styles/prose.css → .prose-content"
 — no `Specimen`/`SpecimenGroup`/`Card`. The prose IS the demo. One representative instance of each prose
 element the layer styles: a heading and a sub-heading (h3, h4), a paragraph (with an inline link, bold,
 and inline code), an unordered list, an ordered list, a blockquote, a table (header + a couple of rows),
-a horizontal rule, and a closing paragraph. Zero the top margin of the wrapper's first child (portfolio: `[&>*:first-child]:mt-0`) so it sits flush — otherwise that first element's own top margin stacks on the GallerySection gap and doubles the space above the sample.
+a horizontal rule, and a closing paragraph. Zero the top margin of the wrapper's first child (example: `[&>*:first-child]:mt-0`) so it sits flush — otherwise that first element's own top margin stacks on the GallerySection gap and doubles the space above the sample.
 
 **P2 — Visual alignment:** wrap the sample in the **project's prose-layer class** (here `.prose-content`)
 plus the P1 first-child margin reset, and add NO OTHER overrides — that layer owns every type token,
@@ -192,7 +192,7 @@ margin, list marker, and border. The reset is the sole exception (a layout-colli
 override); the prose otherwise styles itself (dogfood).
 
 **P3 — Actual inputs:** the **element set** = whichever elements the project's prose layer styles, read
-from DESIGN.md → Prose (portfolio: `h3`, `h4`, `p` + inline `a`/`strong`/`code`, `ul`, `ol`,
+from DESIGN.md → Prose (example: `h3`, `h4`, `p` + inline `a`/`strong`/`code`, `ul`, `ol`,
 `blockquote`, `table` with `thead` + two rows, `hr`). The body **text is descriptive of each element and
 its usage** (self-documenting — e.g. "A blockquote, an aside set off from the body copy"); never lorem
 or filler.
@@ -219,7 +219,7 @@ spacing scale (full rules → `visualizer-kit.md` → BarScale → P2).
 - **Base step scale** (always) — every step the project defines.
 - **Optional extra groups** — non-step spacing the project defines (e.g. layout gutter/margins), each
   under its own sub-label.
-*(Portfolio: base `xs…5xl` (9 steps) + layout `gutter`/`margin-mobile`/`margin-desktop`.)*
+*(Example: base `xs…5xl` (9 steps) + layout `gutter`/`margin-mobile`/`margin-desktop`.)*
 
 ---
 
@@ -242,7 +242,7 @@ code/identifier token; usage = caption; gaps from spacing (full rules → `visua
 radius tokens OR unnamed-but-distinct radius values used across the design — read **complete** from
 DESIGN.md → Shapes. The count is project-determined, not fixed. Each `ShapeItem =
 { token, radius (CSS value), value (human), usage }`; for an unnamed radius, `token` is its usage-category
-label. *(Portfolio: 4 — `none` · `sm` · `md` · `pill`.)*
+label. *(Example: 4 — `none` · `sm` · `md` · `pill`.)*
 
 ---
 
@@ -276,7 +276,7 @@ real elevation tokens):
 - an **accent-edge** level → a single-side accent border (e.g. `border-l-2` accent), not a full border.
 
 All levels render in `DepthGrid`; any "exclude this level" rule (e.g. a sunken level dropped from a
-z-index stack) belongs to `LayerStack`, never here. *(Portfolio: 6 levels, 0–5.)*
+z-index stack) belongs to `LayerStack`, never here. *(Example: 6 levels, 0–5.)*
 
 ---
 
@@ -302,7 +302,7 @@ DurationScale + EasingCurves → P2).
   value (P3 data, like ms or hex). **Note:** DESIGN.md may only NAME the easings; the curve numbers then
   come from the code (theme/CSS) — a doc↔code gap to flag. The rendering math (coordinate transforms) is
   P1, not P3.
-- Counts project-determined. *(Portfolio: 3 durations, 2 easings.)*
+- Counts project-determined. *(Example: 3 durations, 2 easings.)*
 
 ---
 
@@ -342,7 +342,7 @@ Dogfooding gate → No gratuitous boxes). Never box anything else.
 
 **P3 — Actual inputs:** the **primitive set** = the layout primitives the project's layout layer defines
 (DESIGN.md → Layout), each mapped to its recipe by kind. Ids and exact demo content are instance.
-*(Portfolio: `Stack` (3 cells) · `Grid` (12 numbered cells) · `Divider` · combined
+*(Example: `Stack` (3 cells) · `Grid` (12 numbered cells) · `Divider` · combined
 `Container · Section · Sticky` scaffold — ids `layout-stack` / `layout-grid` / `layout-divider` /
 `layout-scaffold`.)*
 
@@ -366,7 +366,7 @@ visual specimens.
 
 **P3 — Actual inputs:** the imagery guidance, read from DESIGN.md → Imagery, grouped by the project's
 categories — **each category's key points captured** (expand past a single line, but key info only, not
-every sub-bullet verbatim). *(Portfolio: **Photography** — monochrome/muted, restrained, editorial;
+every sub-bullet verbatim). *(Example: **Photography** — monochrome/muted, restrained, editorial;
 supportive not decorative; avoid stock/oversaturated. **Diagrams** — production-quality + consistent;
 hand-authored SVG (primary), matplotlib charts, tldraw fallback.)*
 
@@ -406,9 +406,9 @@ align wrapper is a gallery layout constant.
 
 **P3 — Actual inputs:**
 - **Icon families** = the families the project defines (DESIGN.md → Iconography), each → a grid of ALL its
-  real icons. *(Portfolio: Material/system + Brand.)*
-- **Catalog grid size** = the largest contextual size *(portfolio: 20px)*.
-- **Icon-sizes** = the project's contextual size→context table, read **complete** *(portfolio: 20px
+  real icons. *(Example: Material/system + Brand.)*
+- **Catalog grid size** = the largest contextual size *(example: 20px)*.
+- **Icon-sizes** = the project's contextual size→context table, read **complete** *(example: 20px
   standalone · 18px buttons/mobile-nav · 16px nav/LinkPill/chevron · 12–14px inline)*.
 - **Usage principles** (key points from DESIGN.md → Iconography): icons communicate function; nav pairs
   icon + text; buttons use leading icons; Material for system, distinct monochrome marks for brands.
@@ -447,7 +447,7 @@ layer.
 
 **P3 — Actual inputs:** the background layers/components the project defines (DESIGN.md → Background), each
 mapped to its demo by nature. Sample captures / clips / posters are **dev-only, theme-paired**, sourced via
-the asset pipeline. *(Portfolio specimens, in order:* `AsciiField` (id `ascii-field`) → `ThemeShot`
+the asset pipeline. *(Example specimens, in order:* `AsciiField` (id `ascii-field`) → `ThemeShot`
 (light+dark PNG) · `MeteorShower` (id `meteor-shower`) → `ThemeVideo` (light+dark mp4 + posters) ·
 `particle color tokens` (id `background-particle-tokens`) → `SwatchGrid` (meteor RGB via `swatchValue`) ·
 `BackgroundLayer · SurfaceContext` (id `background-orchestration`) → prose: roles + the key conditional
@@ -499,7 +499,7 @@ further token resolution.
 DESIGN.md → Components → Shell (root-layout singletons), confirmed against the component-structure rule
 (see Cross-section pins → Component home). Each → a `Specimen` in a `ChromeFrame` with the height + guard
 appropriate to its nature.
-*(Portfolio, in order:* `PillNav` (`shell-nav`, `height 120`, no InertDemo) · `MobileNav`
+*(Example, in order:* `PillNav` (`shell-nav`, `height 120`, no InertDemo) · `MobileNav`
 (`shell-mobile-nav`, `height 420 ariaHidden`, scrim + positioned `MobileNavPanel`, InertDemo) · `Footer`
 (`shell-footer`, no height) · `ScrollToTop` (`shell-scroll-to-top`, `height 160`, `forceVisible`,
 InertDemo, no ariaHidden).*)
@@ -563,7 +563,7 @@ project's heading treatment (Full-page header rule). No token resolution beyond 
 
 **P3 — Actual inputs:** the UI components + their **sub-groups, read from DESIGN.md → Components → UI**
 (the sub-taxonomy is a general vocabulary — Controls/Actions · Inputs · Links · Display · Feedback/Status
-— populate the subset the project has). *(Portfolio, 3 sub-groups:*
+— populate the subset the project has). *(Example, 3 sub-groups:*
 - **Controls / Actions** — `Button` (id `ui-button`; 4 variants primary/secondary/primary+icon/as-link,
   2-up, `InertDemo`) · `ThemeSelector` (id `ui-theme-selector`; both variants Pill + Inline side-by-side,
   `InertDemo`; the live Inline instance is the page header's — this is the framed copy).
@@ -571,7 +571,7 @@ project's heading treatment (Full-page header rule). No token resolution beyond 
   `ui-copy-link`; live copy, no guard).
 - **Display** — `Heading` (id `ui-heading`; all `type` levels) · `Tag` (id `ui-tag`; a few sample chips) ·
   `CopyableCode` (id `ui-copyable-code`; live copy, no guard).
-*The portfolio has no Inputs/Forms/Feedback — those general-only sub-groups are omitted.)*
+*This example has no Inputs/Forms/Feedback — those general-only sub-groups are omitted.)*
 
 `ThemeSelector` is in Controls/Actions (an interactive control), not Display.
 
@@ -613,7 +613,7 @@ primitive merely reachable from the author registry (e.g. a re-exported Layout p
 member — its folder/doc home wins.
 
 **CodeBlock real-pipeline detail (when required):** render a real fenced block (`SAMPLE_CODE_MDX`) through
-the project's MDX + build-time highlighter inside a `.prose-content` wrapper. *Example (portfolio): Shiki
+the project's MDX + build-time highlighter inside a `.prose-content` wrapper. *Example: Shiki
 dual-theme `vitesse-light`/`vitesse-dark`, `defaultColor: false` (CSS vars only, so the dark override
 works via cascade), scoped to `.prose-content` (without the wrapper the colors don't map).* Full technique
 → `hard-to-demo.md` → demo through the real pipeline + `.prose-content` scope caveat.
@@ -623,7 +623,7 @@ CodeBlock colors come from the project's highlighter theme (scoped per its requi
 resolution beyond layout.
 
 **P3 — Actual inputs:** the Document components + sub-groups, read from DESIGN.md → Components → Document.
-*(Portfolio: **Annotations** — `Callout` (id `mdx-callout`) · `Highlight` (id `mdx-highlight`); **Figures &
+*(Example: **Annotations** — `Callout` (id `mdx-callout`) · `Highlight` (id `mdx-highlight`); **Figures &
 Media** — `Figure` (id `mdx-figure`, sample `figure.svg`); **Diagrams & Charts** — `Diagram` (id
 `mdx-diagram`, sample `diagram.svg`) · `DiagramRow·DiagramPanel` (id `mdx-diagram-row`, samples
 `panel-a/b.svg`); **Code** — `CodeBlock` (id `mdx-code-block`, real Shiki pipeline — DESIGN.md requires
@@ -635,7 +635,7 @@ build-time highlighting). No Embeds.)*
 
 **The most project-specific bucket.** A project's domain areas (its pages / routes / features) are
 whatever DESIGN.md → Domain Components defines — **derive them; don't assume a fixed set.** Everything
-below is the generic method; the portfolio appears only as a worked example.
+below is the generic method; project values appear only as worked examples.
 
 **P1 — Composition + recipe (per domain area):**
 - One `GallerySection` per domain area DESIGN.md → Domain Components defines. **Section order = DESIGN.md
@@ -646,6 +646,12 @@ below is the generic method; the portfolio appears only as a worked example.
     re-implement the markup).
   - **[standalone]** (own component file, imported by the page) → a live `Specimen`: the real component +
     **placeholder demo data** + a usage `description` + its code-path `source`.
+  - **Pending design** (a placeholder entry whose design is not finished, under whatever token the
+    project's DESIGN.md legend defines — e.g. `[pending design]`) → a **placeholder card**: a `Specimen`
+    frame with no demo, a "Not yet designed" label, and one line naming what is pending. **Never rendered
+    or built.** It cannot sit with the `[inline]` or `[standalone]` entries because it is neither yet, so
+    it goes **last in its area**. Once designed, the doc gives it `[inline]` or `[standalone]` and it
+    renders normally. Per `rules/web-frontend/component-structure.md` → Doc ↔ code bridge.
 - An **all-inline** area = just an `InlineList` (no specimens). A **mixed** area = standalone specimens +
   a **trailing `InlineList` wrapped in its own `Specimen`** (name "Inline sections", with `source` +
   `description`) — so the inline remainder reads as a labeled sub-section, not a bare list.
@@ -675,7 +681,7 @@ size. No token resolution beyond what the components bring.
 **P3 — Actual inputs:** the domain areas + their components + [inline]/[standalone] tags, ALL read from
 DESIGN.md → Domain Components; the demo-data shape from the project's content schema.
 
-> **Example (portfolio) — 5 domain areas, in DESIGN.md order** (ids in parens):
+> **Example — 5 domain areas, in DESIGN.md order** (ids in parens):
 > - **Home Page** (`home`) — all `[inline]` → `InlineList` (Hero · Featured Projects Grid).
 > - **Work Index** (`work`) — `[inline]` → `InlineList` (listing grid).
 > - **Project Detail** (`project`) — mixed. Standalone specimens (live, fed one `demoProject` constant —
@@ -725,10 +731,10 @@ token. (Full visualizer rules → `visualizer-kit.md` → SpanTable / DeviceRule
 
 **P3 — Actual inputs:**
 - `ZONES` (SpanTable) = the project's responsive zones, read from DESIGN.md → Responsive Behavior; each
-  `{ name, width, changes[] }` with the **key** layout changes per zone. *(Portfolio: Desktop(xl) ·
+  `{ name, width, changes[] }` with the **key** layout changes per zone. *(Example: Desktop(xl) ·
   Tablet(md) · Mobile(base).)*
 - `ZONE_BARS` (DeviceRuler) = the fixed silhouette standard (geometry below) + which breakpoints the
-  project marks `used`. *(Portfolio: base/md/xl used.)*
+  project marks `used`. *(Example: base/md/xl used.)*
 - **Touch-targets** + **Collapsing-strategy** = **explicit bullet (`<ul>`) prose**, key points, read
   complete from DESIGN.md → Touch Targets + Collapsing Strategy.
 
@@ -767,7 +773,7 @@ text** / token = code / value = eyebrow; radius always 0 (full rules → `visual
 
 **P3 — Actual inputs (`Z_INDEX_LAYERS`):** the project's z-index tokens, read **complete** from DESIGN.md
 → Z-Index Scale; each `{ token, value, role }`. `LayerStack` sorts ascending by value internally — pass in
-any order. *(Portfolio: 6 — `--z-base` (0) · `--z-sticky-content` (20) · `--z-scroll-to-top` (40) ·
+any order. *(Example: 6 — `--z-base` (0) · `--z-sticky-content` (20) · `--z-scroll-to-top` (40) ·
 `--z-pill-nav` (50) · `--z-mobile-menu-overlay` (55) · `--z-mobile-menu-panel` (60).)*
 
 ---

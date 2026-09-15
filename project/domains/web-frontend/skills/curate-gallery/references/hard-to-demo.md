@@ -20,7 +20,7 @@ For chrome that duplicates a live page landmark (nav, footer already present on 
 set `ariaHidden` on the `ChromeFrame` so assistive technology does not encounter inert duplicate
 landmarks.
 
-**Applied in the portfolio gallery:**
+**Example:**
 
 | Specimen | ChromeFrame height | ariaHidden | InertDemo? |
 |---|---|---|---|
@@ -49,7 +49,7 @@ side-effecting logic. The gallery renders the panel directly.
 Route state the panel needs (current `pathname`, active link) is passed as a **prop** instead of
 read from a hook, so a server page can render it without a client boundary at the panel level.
 
-**Portfolio example:** `MobileNavPanel` extracted from `MobileNav`. The gallery renders
+**Example:** `MobileNavPanel` extracted from `MobileNav`. The gallery renders
 `<MobileNavPanel pathname="/about" />` inside a `ChromeFrame`, showing the drawer open as a right-
 aligned side panel. `InertDemo` wraps the whole frame because the panel contains buttons (close,
 theme toggle, links).
@@ -87,7 +87,7 @@ and a cap small enough to trigger that overflow. The production cap is often vie
 **compact fixed cap** (e.g. 200px) and pass a **long sample list** so the list overflows the cap
 and the indicator appears.
 
-**Portfolio example:** `demoSections` on `SectionProgressNav`. The demo passes a 12-item list so
+**Example:** `demoSections` on `SectionProgressNav`. The demo passes a 12-item list so
 the section list overflows the capped height, the proportional indicator appears, and hover reveals
 it. `forceVisible` on `ScrollToTop` is the same pattern — it bypasses the scroll-depth gate.
 `SectionProgressNav` is wrapped in `ChromeFrame height={260} ariaHidden` with no `InertDemo` (the
@@ -117,7 +117,7 @@ output is identical to what users see.
 not monochrome text). A bare component is a defect — flag and fix it before marking the section
 done.
 
-**Portfolio example — CodeBlock via MDX + Shiki:**
+**Example — CodeBlock via MDX + Shiki:**
 
 ```
 // In sections/components.tsx:
@@ -159,7 +159,7 @@ is correct but the colors do not appear — the CSS variables are defined only w
 The pipeline rendering alone is not sufficient — the scope wrapper is also required. Both must be
 present for the specimen to show the correctly styled output.
 
-**Portfolio example:** Shiki dual-theme (`defaultColor: false`) emits `--shiki-light` and
+**Example:** Shiki dual-theme (`defaultColor: false`) emits `--shiki-light` and
 `--shiki-dark` variables. The CSS that maps those to actual colors is scoped to `.prose-content` in
 `src/styles/prose.css`. Without the wrapper, the highlighting markup is present but renders as
 unstyled monochrome text. The specimen MUST be wrapped in `<div className="prose-content">`.
@@ -187,7 +187,7 @@ Supply **full representative sample data** — multiple logos and multiple contr
 single placeholder. The overlay's layout logic (spacing, truncation, max-item behavior) is only
 visible with realistic data counts.
 
-**Portfolio example:** `HeroMetaOverlay` receives two logos and two contributors:
+**Example:** `HeroMetaOverlay` receives two logos and two contributors:
 
 ```
 const demoLogos = [
@@ -306,7 +306,7 @@ generator / pipeline (reproducible scripts or otherwise), generate the samples T
 the project's asset style and stay consistent. **Timing — don't block the build:** specimens without a
 sample get a placeholder + gap note during the build; when the gallery is built, present the needed-asset
 list and **ASK the user** whether to generate each via the asset system or keep the placeholder.
-*Example (portfolio): Python generators in `assets-source/` (pinned deps) emit
+*Example: Python generators in `assets-source/` (pinned deps) emit
 SVG to `public/<route>/samples/`; match the DESIGN.md → Imagery specs (diagram style, bordered vs
 contained).*
 

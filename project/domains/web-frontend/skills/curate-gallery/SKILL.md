@@ -9,7 +9,7 @@ description: >
   visible enough to author its DESIGN.md from (code-first discovery). Stack-agnostic
   (Next.js/React verified; static-HTML specified). Do NOT use to author DESIGN.md (use
   design-write) or to generate production component/foundation code (that is the
-  scaffold-from-spec hand-off).
+  scaffold-design-system hand-off).
 ---
 
 # curate-gallery
@@ -19,8 +19,12 @@ the project's design system so a human can see it. Three jobs:
 
 1. **Scaffold-first** — finalize components visually before building pages; the gallery
    confirms every token, component, and pattern looks right before page work starts.
-2. **Living reference** — see DESIGN.md rendered in the browser; kept honest against
-   the code over time so doc drift surfaces immediately.
+2. **Living reference** — see DESIGN.md rendered in the browser. `[standalone]` entries
+   render live; `[inline]` ones are listed with their page location, never recreated; entries still pending
+   design show a placeholder card.
+   Drift surfaces when the parity gate runs (`verification.md` → Gate 0) — it is a
+   gate the skill performs, not a property the gallery has by existing. A gallery
+   left unreviewed contradicts its doc while typechecking, linting and rendering clean.
 3. **Code-first discovery** — make a messy or undocumented codebase visible enough to
    author its DESIGN.md from (the gallery catalogs what exists, then design-write
    documents it).
@@ -33,7 +37,7 @@ in Inventory mode to surface what exists before authoring the doc.
 
 The gallery renders the design system **with** the design system (dogfooding), so the
 gallery itself can't silently drift from it. It never authors DESIGN.md (that is
-`design-write`) and never generates production code (that is `scaffold-from-spec`).
+`design-write`) and never generates production code (that is `scaffold-design-system`).
 
 ---
 
@@ -93,9 +97,17 @@ per-project instance — they supply this project's token data and compose the k
 
 ---
 
-## Pinned structure (law — reproduce exactly)
+## Pinned structure (per-stack law — reproduce exactly)
 
-The gallery produces exactly these files with exactly these names:
+**Concept pins are stack-neutral; the file tree is per-stack.** What every gallery must contain regardless
+of stack — the catalog primitives, the 9 visualizer roles, the 21-section spine, the build order — is
+universal law (below + `architecture.md`). The physical file/folder tree is the **layout pin**, selected by
+the same stack detection that picks the adapter (mode-decision step 1). Reproduce your stack's tree exactly:
+
+- **React/Next (VERIFIED)** — the tree below; full annotated version in `architecture.md`.
+- **Static-HTML (SPECIFIED)** — `stack-adapters.md` → Static-HTML pinned structure (equal-authority sibling).
+
+The React/Next gallery produces exactly these files with exactly these names:
 
 ```
 <gallery-route>/
@@ -189,6 +201,17 @@ are used only where the design itself uses them (color swatches, depth cards, ic
 production component with representative sample data. Never hand-fake markup that approximates the
 component's output.
 
+**Every rendered affordance traces to a doc rule.** The other rules govern HOW something renders; this
+one governs WHETHER it may render at all. A gallery may frame its own demo — labels, inert wrappers,
+chrome, click guards, "this control is disabled in the preview" — but it may NEVER invent product
+behavior. An action, link, field, or state with no rule behind it in DESIGN.md or the product doc is
+drift that a build, a linter, and a type checker all report as fine.
+
+**Sample data is bounded by the content schema.** Schema-valid is the floor, not the test. Sample data
+may not introduce a field the real schema does not have — a demo field manufactures the affordance
+built on top of it. Where a shape is missing
+and the demo needs one, that is a gap to report, not to fill.
+
 **Real imports.** Every import path resolves in the actual codebase. Fabricated or placeholder
 imports fail the build.
 
@@ -274,9 +297,9 @@ changes). See `references/boundaries-and-handoff.md` for the carve-out rules and
 | Mismatch detected | Fixer (invoke on user confirmation) |
 |---|---|
 | Doc out of line with intent/code | `design-write` |
-| Code out of line with doc | `scaffold-from-spec` (align mode) |
-| Code missing | `scaffold-from-spec` (fresh mode) |
-| Repeats in code but not extracted | Both — `scaffold-from-spec` (extract) + `design-write` (document) |
+| Code out of line with doc | `scaffold-design-system` (align mode) |
+| Code missing | `scaffold-design-system` (fresh mode) |
+| Repeats in code but not extracted | Both — `scaffold-design-system` (extract) + `design-write` (document) |
 
 Full boundary rules, the carve-out, and handoff protocol: `references/boundaries-and-handoff.md`.
 
@@ -293,7 +316,7 @@ Read each reference when the task enters that area — do not pre-load all of th
 | `references/section-spine.md` | The **fixed 21-section template**: ordered sub-sections, which visualizer/structure renders each, prose-vs-box rule; Components Shell/UI/Document sub-grouping; Domain order + `[inline]`/`[standalone]`; real-import + sample-data requirement |
 | `references/scaffold-kit.md` | Building the project-agnostic scaffolding — `GallerySection` / `SpecimenGroup` / `Specimen` / `Card` as pseudocode; `ChromeFrame`; click-guards (`DemoViewOnly` / `InertDemo`); theme-media (`ThemeShot` / `ThemeVideo`) |
 | `references/visualizer-kit.md` | Building or consuming any token visualizer (SwatchGrid, TypeScaleList, BarScale, ShapeRow, DepthGrid, DurationScale, EasingCurves, LayerStack, DeviceRuler, SpanTable); the dogfooding gate; prop types; exact card/layout structure |
-| `references/boundaries-and-handoff.md` | The code-write boundary; the production carve-out and its patterns; the inform-only handoff; the fixer triad; design-write and scaffold-from-spec interaction boundaries |
+| `references/boundaries-and-handoff.md` | The code-write boundary; the production carve-out and its patterns; the inform-only handoff; the fixer triad; design-write and scaffold-design-system interaction boundaries |
 | `references/hard-to-demo.md` | Demoing a fixed/page-coupled component (ChromeFrame, demo-affordance prop, presentational extraction); the Shiki/MDX pipeline (REQUIRED for code specimens) + `.prose-content` scope caveat; overlay-on-hero (separate specimen); TOC rail handling; live-vs-screenshot; sample assets via the project's generators |
 | `references/stack-adapters.md` | Any stack-specific seam: creating a dev-only route; rendering a component live; running build-time transforms; flipping themes; excluding from production; discovering components/tokens in code. React/Next (verified); static-HTML (specified, unverified) |
 | `references/verification.md` | The **builder per-section doc→code self-review (Gate 0)**; render-backed verification (playwright, theme-flip, rAF freeze, PNG diff); build gate; the maintainer-only skill self-test (parity dogfood — needs a reference gallery) |
@@ -317,10 +340,14 @@ Before handing off to the user, confirm all items pass:
 - [ ] **Real components imported** — every import path resolves; no hand-faked markup
 - [ ] **Sample assets handled** — every specimen needing an image/diagram/media sample has one or a
       placeholder + gap note; the needed-asset list was surfaced and the user asked (generate / placeholder)
-- [ ] **Builder doc→code self-review done** — each of the 21 sections checked against its DESIGN.md
-      sub-section + the reference: visualizer choice, per-item token-data fidelity, item completeness,
-      prose-vs-box, inline-vs-standalone, component home, property-block scope, no construction leaks
-      (`references/verification.md` → Gate 0)
+- [ ] **Doc→gallery parity review done** — every section (Build) or every changed section (Sync)
+      compared against its mapped DESIGN.md sub-section, rule for rule, **by something that did not
+      make the edits**: claim fidelity, visualizer choice, per-item token-data fidelity, item coverage
+      in both directions, new shapes exercised, prose-vs-box, inline-vs-standalone, component home,
+      property-block scope, no construction leaks (`references/verification.md` → Gate 0). Where no
+      separate reviewer was available, that is stated rather than the gate being recorded as fully met.
+- [ ] **No invented affordance** — every rendered action, link, field and state traces to a rule in
+      DESIGN.md or the product doc; sample data introduces no field the real schema lacks
 - [ ] Render-backed verification done — real browser render at relevant viewport(s) and both themes
 - [ ] Build gate green — linter, typecheck, and production build pass; gallery route prerenders; zero
       duplicate ids

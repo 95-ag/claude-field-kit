@@ -112,7 +112,7 @@ Out: pure-rule sections (interaction rules, accessibility rules, cross-cutting c
 behavior rather than render a visual specimen. These are documented in DESIGN.md but not cataloged in
 the gallery.
 
-Example (portfolio): Foundations · Colors through Technical · Z-Index Scale = 21 `<h2>` gallery
+Example: Foundations · Colors through Technical · Z-Index Scale = 21 `<h2>` gallery
 sections; pure-rule sections (Interaction, Accessibility, Cross-Cutting) stay out.
 
 ### Domain sections
@@ -120,7 +120,9 @@ sections; pure-rule sections (Interaction, Accessibility, Cross-Cutting) stay ou
 Domain components listed as `[inline]` (page-section content embedded in a page, not a standalone
 component file) are **listed, not rendered** — render as a `<div class="prose-content"><ul>…</ul></div>`
 (a local `InlineList` helper), noting their page location. Domain components listed as `[standalone]`
-(have their own component file) are **rendered live** via `Specimen` blocks.
+(have their own component file) are **rendered live** via `Specimen` blocks. Entries the doc marks as
+pending design get a placeholder card, last in their area, never a demo — see `section-spine.md` →
+Bucket 4: Domain.
 
 When `[inline]` / `[standalone]` tags are absent from DESIGN.md, infer from code: a component with its
 own file is standalone; a JSX block that only appears inside a single page file is inline. Missing tags
@@ -137,6 +139,13 @@ hand-faked markup.** This is non-negotiable in Build mode:
   placeholder images from other sources.
 - Placeholder data (e.g. `demoProject`, `demoLogos`, `demoContributors`) must be schema-valid (passes
   the project's type/Zod validators) so the rendered output matches a real instance.
+- **Schema-valid is the floor, not the test. When a schema gains a shape, at least one sample carries a
+  non-empty instance of it in the same change.** A sample exists to exercise a shape, not to satisfy a
+  compiler: filling a new nested collection with `[]` everywhere typechecks clean and leaves the check
+  surface unable to render the shape just introduced — the gallery then hides the defect it exists to
+  expose. Empty and zero states are worth a specimen of their own; they are not a substitute for one.
+- **Sample data may not introduce a field the real schema does not have** — see `SKILL.md` → Dogfood
+  gate. A demo field manufactures the affordance built on top of it.
 - The `slug` in any demo `Project` object MUST be a real registered slug — components like `HeroMedia`
   dispatch by slug to load registered covers; a fake slug produces no output.
 - Components that render through a build pipeline (e.g. `CodeBlock` via Shiki + MDX) MUST use that
@@ -194,14 +203,27 @@ has evolved — tokens changed, components were added or removed, documentation 
 
 ### Sync procedure
 
+**Sync has three artifacts, not two.** The doc, the code, and **the gallery's own rendered prose** —
+its section intros, rule lists, specimen specs and captions, which restate the doc's rules in a second
+copy that drifts silently. A gallery asserting the opposite of its doc typechecks, lints and renders
+clean. Check all three pairs, not just doc-to-code.
+
 1. Start from DESIGN.md sub-sections (the authoritative item list for Sync).
-2. For each section, verify the code counterpart exists and matches the documented intent.
-3. Note mismatches: documented but no code; code exists but undocumented; values differ between doc and
-   implementation.
-4. Update the gallery sections to reflect current code (within the gallery's own area).
-5. Report all mismatches via the inform-only handoff protocol — see `boundaries-and-handoff.md`.
+2. For each section, verify **both** counterparts against the documented intent: the code, and the
+   prose the gallery section renders.
+3. Note mismatches on either axis: documented but no code; code exists but undocumented; values differ
+   between doc and implementation; **the gallery asserts something the doc does not say, contradicts,
+   or has since changed**.
+4. Update the gallery sections to reflect the doc and the current code (within the gallery's own area).
+5. **Re-run Gate 0 for every section whose mapped sub-section changed** — `verification.md` → Gate 0.
+   This is the step that catches the prose axis; without it a doc edit lands with nothing comparing the
+   two. Walk the sub-section rule for rule rather than searching the gallery for remembered phrases.
+6. Report all mismatches via the inform-only handoff protocol — see `boundaries-and-handoff.md`.
 
 The gallery **never edits DESIGN.md or production code** during Sync. It detects and reports.
+
+**A doc change has a cost in the gallery.** Every rule the gallery restates needs a matching edit;
+budget it into the doc change — it is not follow-up work.
 
 ---
 
@@ -210,7 +232,7 @@ The gallery **never edits DESIGN.md or production code** during Sync. It detects
 **When:** DESIGN.md is present and structurally sound, but no code exists yet.
 
 There is no gallery to build — the code layer does not exist. Bootstrap mode terminates with a
-**hand-off to the scaffold-from-spec skill** (see `boundaries-and-handoff.md`), which can
+**hand-off to the scaffold-design-system skill** (see `boundaries-and-handoff.md`), which can
 materialize the code layer from DESIGN.md.
 
 ---
@@ -243,9 +265,11 @@ When classification evidence is weak or contradictory, surface a concern rather 
 
 - **Repeats but not extracted** — a pattern appears multiple times in code but has no standalone
   component and no DESIGN.md entry. Signal: flag as a candidate for **both** code extraction and
-  documentation. Suggested fixer: scaffold-from-spec (extract mode) + design-write. Do not auto-invoke either.
+  documentation. Suggested fixer: scaffold-design-system (extract mode) + design-write. Do not auto-invoke either.
 - **Missing `[inline]`/`[standalone]` tags** — a DESIGN.md component entry with no tag and no clear
-  code signal. Surface as a documentation gap; suggest the user add the tag.
+  code signal. Surface as a documentation gap; suggest the user add the tag. A pending-design token defined
+  in the project's DESIGN.md legend is a tag, not a missing one — report the entry as an open design gap
+  for `design-write` instead.
 - **Single-file monolith with repeated clusters** — each repeated cluster is a provisional reusable
   candidate; clusters that appear only once are provisional inline. Flag the entire classification as
   pending user review when the codebase is too tangled to infer confidently.

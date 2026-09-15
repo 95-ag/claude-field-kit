@@ -236,7 +236,7 @@ export default function DesignSystemPage() {
 }
 ```
 
-> Component + type-token names in this template are the project's — portfolio examples shown. Substitute
+> Component + type-token names in this template are the project's — examples shown. Substitute
 > the project's own **theme-control component** and **display / lead / eyebrow / caption** type tokens; the
 > page **structure** (wrappers, rail-outside-article, header, uniform-gap article, section order) is what's
 > fixed.

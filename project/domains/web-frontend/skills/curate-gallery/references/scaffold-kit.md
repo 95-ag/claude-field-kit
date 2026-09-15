@@ -5,9 +5,9 @@ data — all token bindings and structural rules apply to any project that uses 
 Stack mechanics (portal implementation, static-image import type, theme-hook name, motion
 hook name) → `stack-adapters.md`.
 
-**Token names in this file are portfolio project examples.** The pseudocode below uses
+**Token names in this file are examples from one project.** The pseudocode below uses
 concrete token names (`mono-anchor`, `body-primary`, `heading-component`, `--spacing-*`,
-`--radius-*`, etc.) — these are the portfolio project's design-system tokens shown as an
+`--radius-*`, etc.) — these are one project's design-system tokens shown as an
 example. A consuming project substitutes its own equivalent tokens for each role; the
 **structure** (DOM layout, element order, class roles) is what is fixed and must be reproduced
 faithfully. Token names adapt to the project.
@@ -111,7 +111,10 @@ props:
   name:          string      // heading text; rendered at h3 or h4
   source?:       string      // import/file path shown in mono-code below the heading
   description?:  string      // body-primary caption shown below source, before children
-  spec?:         string      // mono-anchor note shown BELOW children (token list, variant notes)
+  spec?:         string | string[]
+                             // mono-anchor note shown BELOW children (token list, variant notes)
+                             // string   → one block, as prose
+                             // string[] → a list inside the SAME block, one concept per entry
   headingLevel:  3 | 4 = 3  // 3 at section level; 4 when inside a SpecimenGroup
   children:      node        // the demo (live render, ChromeFrame, ThemeShot, etc.)
 
@@ -127,12 +130,23 @@ structure:
 
     {children}
 
-    {spec && <div class="mono-anchor">{spec}</div>}
+    {spec && <div class="mono-anchor">
+               {isArray(spec) ? <ul>{spec.map(s => <li>{s}</li>)}</ul> : spec}
+             </div>}
 
   </div>
 
 field order (top to bottom): heading → source → description → children → spec
 spec is ALWAYS last — it annotates the demo that precedes it.
+
+**Prefer the array for anything multi-part.** The house convention is bullets, one concept per line,
+and a spec is where it matters most — a multi-clause spec written as one string renders as a wall of
+prose under the demo it is meant to annotate, and readers skip it. The string form stays for a genuinely
+single-clause spec. Both forms share the same `mono-anchor` block, so the token binding and the field
+order do not change either way.
+
+`note`-shaped fields elsewhere in the kit (`SwatchGrid` and friends) already take a node and can hold a
+list as-is — they need no widening.
 
 **Full width by default:** the children container **stretches** (`align-items: stretch`) — each demo fills
 the column, correct for the majority (cards, tables, chrome, diagrams, layer stacks, def-lists). The only
@@ -188,7 +202,7 @@ token bindings:
   mono-code       label text
 
 law: Card adopts the project's existing card treatment exactly.
-  border = --hairline, fill = --surface-deep, radius = per project (none in portfolio).
+  border = --hairline, fill = --surface-deep, radius = per project (e.g. none).
   Never introduce new elevation, shadows, or radius values.
 
 cover-grid usage: cover component specimens use className="aspect-video p-0" to give the

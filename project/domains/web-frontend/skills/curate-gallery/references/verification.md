@@ -4,18 +4,41 @@ Verification is non-negotiable and render-backed. A gallery that passes a build 
 been observed in a real browser is unverified. Run all gates before
 marking the gallery complete.
 
-**Gate sequence:** Builder self-review (Gate 0) → Render (Gate 1) → Build (Gate 2). Gate 0 is the
-builder's OWN per-section doc→code check against DESIGN.md. Passing Gate 2 without Gate 0 is not a
+**Gate sequence:** Parity review (Gate 0) → Render (Gate 1) → Build (Gate 2). Gate 0 compares each
+gallery section against the DESIGN.md sub-section it maps to. Passing Gate 2 without Gate 0 is not a
 passing state. (A maintainer-only skill self-test follows the gates — not part of a normal build.)
 
 ---
 
-## Gate 0 — Builder doc→code self-review (per section)
+## Gate 0 — doc→gallery parity review (per section)
 
-**Run by the builder, before declaring the gallery done — not by an external reviewer.** A green build
-(right files, right spine) does NOT guarantee per-section fidelity — that is exactly what slips through.
-After building the sections, walk EACH of the 21 sections with fresh eyes and check it against its
-DESIGN.md sub-section (and the reference implementation, if one exists). For each section confirm:
+A green build (right files, right spine) does NOT guarantee per-section fidelity — that is exactly what
+slips through. Walk each section against the DESIGN.md sub-section its `mapsTo` names (and the
+reference implementation, if one exists).
+
+**When it runs:**
+
+- **Build mode** — every section, before declaring the gallery done.
+- **Sync mode** — every section whose mapped sub-section changed. A DESIGN.md edit that lands without
+  this gate is the drift the gallery exists to prevent.
+
+**Who runs it: something that did not make the edits.** Dispatch a fresh-context reviewer given only
+the mapped DESIGN.md sub-section and the gallery section — no conversation history, no summary of what
+changed. The author greps for what they remember changing, which is structurally different from
+comparing two artifacts, and it misses whole classes of defect that survive repeated self-review. Where
+no separate reviewer is available, say so in the report rather than recording the gate as fully met.
+
+**Walk the sub-section rule for rule.** Do not search the gallery for phrases you remember editing —
+grepping proves what you changed, never that the two agree.
+
+For each section confirm:
+
+- **Claim fidelity** — every sentence the section renders is a claim, and each one traces to a rule in
+  the mapped sub-section: section intro, rule-list bullets, specimen `spec` and `description`, group
+  labels, visualizer captions, and any code comment a reader of the rendered page reaches. A claim the
+  doc does not make is drift even when it is true; a claim the doc contradicts is a defect. Named
+  values (hex, ratios, sizes, counts) are checked against the doc, not against memory — a section that
+  counts its own doc sub-section's entries recounts them.
 
 - **Visualizer / structure choice** — renders via the visualizer or prose structure pinned in
   `section-spine.md` (Colors → SwatchGrid, Elevation → DepthGrid, Z-Index → LayerStack, …); no
@@ -23,12 +46,23 @@ DESIGN.md sub-section (and the reference implementation, if one exists). For eac
 - **Per-item data fidelity** — token data matches the project's REAL tokens (DepthGrid: L2 blur vs L3
   raised, L4 bordered; all meteor color tokens enumerated; DeviceRuler uses the standard silhouette
   geometry; LayerStack container has no border). Verify against the real CSS/tokens, not memory.
-- **Item completeness** — every item the source defines is present (all icons, all covers, both meteor
-  tokens, all 6 depth levels). Nothing silently dropped.
+- **Item coverage, both directions.** Section-level coverage is not enough: a sub-section that already
+  maps to a gallery section can gain a documented item and stay green while that item has no specimen.
+  Enumerate items from the doc at check time, never from a remembered inventory.
+  - **Forward** — every item the mapped sub-section defines has a specimen, or a stated reason it has
+    none. Count them; do not recognise them.
+  - **Backward** — every shipped design asset traces to a specimen or to an explicit exclusion: icon
+    files, the favicon and other metadata assets, fonts, sample assets, background layers. An asset
+    that ships and appears nowhere in the gallery is the class this direction exists to catch, and the
+    forward direction cannot see it.
+- **New shapes are exercised, not just compiled.** For each schema or content shape that changed since
+  the last run, name the specimen that renders a non-empty instance of it. A sample filled in to
+  satisfy the type checker leaves the gallery unable to show the shape just introduced.
 - **Prose-vs-box** — plain-prose sections (Imagery, inline domain lists, orchestration notes) render as
   `.prose-content`, not boxed; boxes appear only where the design system itself uses them.
 - **Inline-vs-standalone** — `[inline]` compositions are listed in an `InlineList` (never recreated);
-  `[standalone]` components are plugged in live.
+  `[standalone]` components are plugged in live; pending-design entries show a placeholder card last in
+  their area, never a demo.
 - **Component home** — each component sits in the section matching its real folder home (the
   `component-structure` rule); verify the import path (e.g. `SectionProgressNav` → Domain · Project
   Detail, not Shell).
@@ -58,7 +92,7 @@ one-liners, and not the harness preview MCP. The preview MCP hangs on full-viewp
 backgrounds and renders in a panel-constrained viewport. A script-file runner gives element/clip
 captures, theme control, and reliable rAF-freeze.
 
-*Example (portfolio):* playwright-cli driven via a WSL script file (not an inline one-liner); the
+*Example:* playwright-cli driven via a WSL script file (not an inline one-liner); the
 WSL script-file pattern is documented in `rules/node/browser-testing.md`.
 
 ### Theme flip
@@ -82,6 +116,11 @@ Do not infer that theming works from inspecting CSS variables. Observe it.
 
 ### What to verify
 
+- **Every measurable rule the gallery renders, verified on the gallery itself, at the value it states.**
+  The gallery is the one page guaranteed to contain the design system's rules, so each stated threshold
+  is a ready-made test case — a minimum viewport, a touch-target floor, a contrast ratio, a reflow
+  claim. Render at the stated value and check the gallery obeys it. A gallery that breaks a rule it
+  prints is the cheapest defect in the system to find and the easiest to overlook.
 - Key sections in both themes (confirm colors, type, spacing render from tokens — no overrides).
 - Fixed-chrome / page-coupled demos render inside their `ChromeFrame` bounds and show click-guard
   tooltips on interaction.
@@ -116,6 +155,13 @@ Run the full toolchain before marking the gallery done:
 Static HTML: no build step — run a static linter or validator and a DOM duplicate-id check in the
 browser.
 
+*Static-HTML per-specimen render-check (SPECIFIED):*
+whole-page dup-id is not enough — check each `.ds-frame` actually paints content. Three signals per
+specimen: **bad** (empty / zero-height box), **thin** (rendered height below a min threshold),
+**variantsIdentical** (two variants with identical computed render — a dead-variant / dead-CSS tell). This
+is the automated form of the `.fam-member` catch (a specimen that rendered but painted nothing); a dup-id
+gate cannot see it.
+
 A green build is necessary — not sufficient; Gate 0's per-section self-review catches what compiles but diverges.
 
 ---
@@ -145,24 +191,27 @@ projects:
 
 | Stack | Modes verified | Status |
 |---|---|---|
-| **React/Next** (portfolio) | Build, Sync | VERIFIED |
-| **Static-HTML** (wedding site) | Inventory | Specified — UNVERIFIED (see `stack-adapters.md` → Static-HTML adapter contract) |
+| **React/Next** | Build, Sync | VERIFIED |
+| **Static-HTML** | Inventory (shakedown) | SPECIFIED — adapter shape built + render-checked; awaits a static-HTML project with a forward-written DESIGN.md (see `stack-adapters.md` → Static-HTML pinned structure) |
 
-The React/Next adapter verification (this project's gallery) satisfies the first proof. The
-static-HTML adapter verification is deferred to the wedding project phase. Until that verification
-completes, the skill is confirmed for React/Next and specified-but-unconfirmed for static HTML. Do
-not describe the skill as fully stack-agnostic in materials that imply both adapters are tested.
+The React/Next adapter verification satisfies the first proof. The static-HTML
+Inventory shakedown built and render-checked the adapter shape and harvested
+the pinned structure + component-build contract, but the **authoritative dogfood waits for a static-HTML
+project with a forward-written DESIGN.md** — a reverse-engineered doc is too debt-ridden to verify
+the fidelity gates against. Until that dogfood completes, the skill is confirmed for React/Next and
+specified-but-unconfirmed for static HTML. Do not describe the skill as fully stack-agnostic in
+materials that imply both adapters are tested.
 
 ---
 
 ## Cross-links
 
 - Runner setup and theme-flip detail → the host project's browser-testing rule.
-  *Example (portfolio):* `rules/node/browser-testing.md`
+  *Example:* `rules/node/browser-testing.md`
 - Stack-specific build commands and exclusion confirmation → `stack-adapters.md`
 - Visual-verification principles (render-backed vs inferred labeling) — stated inline above; see
   also the host project's visual-verification rule.
-  *Example (portfolio):* `rules/web-frontend/visual-verification.md`
+  *Example:* `rules/web-frontend/visual-verification.md`
 - Pinned file/folder structure and 21-section spine → `architecture.md`
 - Per-section template (which visualizer per section, prose-vs-box) → `section-spine.md`
 - Visualizer pseudocode and dogfood constraints → `visualizer-kit.md`

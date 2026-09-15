@@ -36,8 +36,8 @@ Before implementing the toggle:
 
 ## React/Next adapter (VERIFIED)
 
-Verified against the portfolio project (App Router, next-themes, Tailwind CSS v4, MDX via next-mdx-remote +
-rehype-shiki, Biome, release-allowlist deployment).
+Verified against a project using App Router, next-themes, Tailwind CSS v4, MDX via next-mdx-remote +
+rehype-shiki, Biome and release-allowlist deployment.
 
 ### (a) Dev-only route
 
@@ -53,7 +53,7 @@ section file named `layout.tsx` inside `src/app/design-system/sections/` will be
 the route layout and break the build. Suffix section/module files to avoid the collision:
 `layout-section.tsx`, `error-display.tsx`, etc.
 
-Example (portfolio): name section modules `*-section.tsx` (e.g. `layout-section.tsx`), never a
+Example: name section modules `*-section.tsx` (e.g. `layout-section.tsx`), never a
 reserved Next.js filename (`layout`/`page`/`loading`/`error`/`not-found`/`template`/`route`/`default`)
 — a reserved name is silently adopted as the route file and breaks the build.
 
@@ -114,7 +114,7 @@ is the primary gate, but if the route is ever accidentally present in a build (a
 staging environment, a preview deploy), the noindex declaration prevents it from being indexed by
 search engines. These two layers are independent and both should be present.
 
-Example (portfolio): in a React/Next App Router route, export a `metadata` object from the route's
+Example: in a React/Next App Router route, export a `metadata` object from the route's
 `page.tsx`:
 
 ```ts
@@ -183,10 +183,56 @@ Classification is provisional and user-confirmed — see `modes.md` for the full
 
 ## Static-HTML adapter contract (SPECIFIED — UNVERIFIED)
 
-> **Status: SPECIFIED / UNVERIFIED.** This contract is designed for a raw-static project (no build
-> step, no bundler, single HTML file or folder of HTML files). It will be co-developed and verified
-> against the first static-HTML project that adopts the skill. Do not treat the implementation details
-> as confirmed. Defer any concrete code to that project's phase.
+> **Status: SPECIFIED.** The adapter shape below was built and render-checked in one Inventory shakedown
+> — treat the file tree and substrate mapping as concrete. It stays SPECIFIED
+> (not VERIFIED) until **a static-HTML project with a forward-written DESIGN.md** adopts the skill: a
+> reverse-engineered doc full of documented debt (dead CSS, no spacing scale, off-token colors) is too
+> vague a target to verify the fidelity gates against. The per-primitive and visualizer HTML expressions
+> are built out on that project.
+
+### Static-HTML pinned structure (SPECIFIED)
+
+The static-HTML gallery is the **layout pin** for this stack — the equal-authority sibling of the
+React/Next tree in `architecture.md`, selected by the same stack detection. Same concept pins (catalog
+primitives, 9 visualizer roles, 21-section spine, build order); different substrate. The "kits" do not
+disappear — they change from component files to **CSS classes + a small JS shim**. Reproduce these files
+with these names:
+
+```
+design-system/
+├── index.html            ← page shell + all 21 section blocks   (≈ page.tsx + sections/*.tsx)
+├── gallery.css           ← gallery chrome: .ds-* catalog + visualizer classes
+│                            (≈ gallery.css + scaffold-kit + visualizer-kit)
+├── gallery.js            ← click-guard + copied-handler stubs    (≈ click-guards capture-phase logic)
+└── <site-styles>.css     ← the project's REAL CSS, linked live (verbatim copy when the source has no
+                             separate stylesheet — e.g. inline <style> in a monolith)
+   + copied static assets (backgrounds/images the real CSS references) and CSS-shape stand-ins
+```
+
+**Output-parity map** — every React pinned piece has a static-HTML equivalent, so both adapters emit the
+same gallery (21 sections, specimen frames, visualizers, noindex, dev-only banner) in different clothes:
+
+| React/Next pinned piece | Static-HTML equivalent |
+|---|---|
+| `page.tsx` (metadata, header, mounts sections) | `index.html` — noindex `<meta>`, header, section blocks |
+| `gallery.css` (route-scoped dev rules) | `gallery.css` (chrome only) |
+| `scaffold-kit/*.tsx` (GallerySection/Specimen/Card/ChromeFrame/guards) | `.ds-section` / `.ds-specimen` / `.ds-frame` / `.ds-chrome-frame` classes + `gallery.js` stubs |
+| `visualizer-kit/*.tsx` (9 visualizers) | `.ds-swatch-grid` / `.ds-type-row` / `.ds-bar-scale` / `.ds-shape-row` / `.ds-depth-grid` / `.ds-motion-*` classes |
+| `sections/*.tsx` (token data + composition) | section `<section>` blocks inline, values as `var(--token)` |
+| imported real components | copied markup (monolith) OR included partials (multi-file) |
+| `public/<route>/samples/` | copied assets + CSS-shape stand-ins |
+
+**Specimen marker (SPECIFIED).** Give each specimen a
+machine-readable descriptor comment so the gallery is scannable and (optionally) publishable to a
+claude.ai/design project:
+`<!-- @specimen group="Components·UI" name="card" variants=".tc/.fam-card/.ev-card/.cc" status="live|posed|dead" -->`.
+`group` reuses the bucket-prefixed section vocabulary.
+
+**Split trigger.** Keep the React and static-HTML trees co-located in `architecture.md` while one stays a
+single table. When BOTH need full treatment (tree + page template + gallery.css + primitive expressions),
+split by stack into symmetric siblings — `architecture.md` (neutral spine + router), `architecture-react.md`,
+`architecture-static-html.md` — so a builder loads only its stack's layout pin. Not asymmetric (React-in-main,
+HTML-in-adapter) — that scatters one concept across two docs.
 
 ### (a) Dev-only route
 
@@ -196,9 +242,35 @@ files. It is reachable by opening the file in a browser or via a local dev serve
 
 ### (b) Live render
 
-Copy or inline the components (HTML fragments + their CSS classes) from the project into the gallery
-file. No import system — include the same CSS file(s) the project uses so tokens and styles are live.
-Theme-adaptive specimens apply the project's theme class/attribute to their wrapper.
+**Component-build contract — reference vs rebuild.** The split is stack-agnostic; only the "call" verb
+changes with the production reuse boundary:
+
+- **Reusable component with a real reuse boundary** → reference it, never rebuild. "Reference" = the
+  stack's instantiation verb: React `import`, web-component mount, templated-static `include`/partial,
+  or (CSS-component projects) apply the canonical class to canonical markup.
+- **Single-file monolith with no reuse boundary** → nothing to call; **copy the
+  canonical markup verbatim + link the same CSS**. The gallery is doing Inventory here, not referencing
+  a system — which is why a monolith's specimens are hand-copied markup, not imports.
+- **Foundations / tokens** (any stack) → never referenced; always a **visualizer specimen** consuming
+  `var(--token)`. A token is a value, not a callable unit.
+- **Domain / page compositions** → reference if extracted into a boundary; else copy canonical markup inline.
+
+Map production's reuse boundaries (`rules/web-frontend/component-structure.md` taxonomy: portable
+ui/layout/icons → shell → domain): reference exactly what production reuses; visualize foundations; copy
+inline page sections. Include the same CSS file(s) so tokens and styles are live; theme-adaptive specimens
+apply the project's theme class/attribute to their wrapper.
+
+**Posed, not live (static-HTML).** The gallery does not run the site's own `<script>`, so anything the JS
+reveals or drives is hidden/blank at rest. Audit **every** JS-driven reveal/toggle pattern — not just the
+obvious one — and force each visible inside `.ds-frame`:
+
+- Scroll-reveal (`.sr`, `.tl-row` → `.in`): `.ds-frame .sr { opacity:1 !important; transform:none !important }`.
+- Any OTHER JS-toggled hidden state has its own class — e.g. `.fam-member` starts `opacity:0` and only
+  reveals when JS adds `.photo-visible`. Missing that one override leaves the whole grid rendered but
+  invisible. There is no single universal reveal class — grep the source for `opacity:0` / `max-height:0` / `.classList.add` and cover each.
+- Stub JS handlers for copied `onclick` attributes (`toggleFam`/`toggleEvent`/`submitRSVP`/`closeNav`) in
+  `gallery.js` so copied markup doesn't throw. Countdown / scroll-progress are posed with sample values,
+  explicitly labeled.
 
 ### (c) Build-time transforms
 

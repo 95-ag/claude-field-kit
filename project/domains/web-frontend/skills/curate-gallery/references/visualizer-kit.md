@@ -24,8 +24,8 @@ much pinning):
 - **P2 — Visual alignment (dogfood, derived from DESIGN.md).** The visualizer adopts THIS project's own
   visual treatments, each resolved from the project's DESIGN.md — never hardcoded: card radius = the
   project's card radius, depth/elevation = the project's card depth, each text role → the semantically
-  correct project type token, spacing/grid → the project's spacing rules. The portfolio appears only as
-  a worked *example* ("Example (portfolio): radius-none, because ProjectCard is 0px"); the instruction
+  correct project type token, spacing/grid → the project's spacing rules. Project values appear only as
+  worked *examples* ("Example: radius-none, because ProjectCard is 0px"); the instruction
   is always "resolve from DESIGN.md → §X".
 - **P3 — Actual inputs (instance).** The real token data fed into the visualizer. This does NOT live
   here — visualizers carry zero baked data. It lives in the project's `sections/` modules and is
@@ -385,7 +385,9 @@ the card demonstrates the level by being styled with it. `{MIN_H}` is a gallery 
 ### P2 — Visual alignment (resolve from DESIGN.md)
 
 - **`{T_NAME}` · `{T_META}` · `{T_CAPTION}`** — card label text by role: name = primary label · spec =
-  eyebrow / metadata · usage = caption.
+  eyebrow / metadata · usage = caption. **Type role only — no color.** The card's surface is P3 data,
+  so its text must inherit and let a dark level set its own ink; see Dogfooding gate → Never pin a
+  foreground color on a caller-supplied surface.
 - **`{sp}`** — grid gap + card padding from the spacing scale.
 
 The per-card elevation treatments themselves are **P3** — read each level's surface / border / blur from
@@ -545,7 +547,7 @@ Fixed:
 - **Geometry** (gallery layout constants — size to the text band, don't undersize): `PLANE_H` = each
   plane's uniform `min-height` (its 3-line text band + padding); `dy` ≈ that text band so the next plane
   clears the previous plane's label; `dx` < `dy` (lean vertical); `MIN_W` = scroll min-width. Verify in a
-  render that no text is hidden; scale with the project's type. *(Example (portfolio): PLANE_H 150 · dy
+  render that no text is hidden; scale with the project's type. *(Example: PLANE_H 150 · dy
   104 · dx 44 · MIN_W 480.)*
 
 ### P2 — Visual alignment (aesthetic — sign-mapped dogfood)
@@ -762,11 +764,11 @@ A needed pairing with no token is a design-system gap. The fix is:
 
 Never override to fill the gap.
 
-Each label role maps to a specific token. The table below shows the portfolio project's
+Each label role maps to a specific token. The table below shows one project's
 type-scale tokens as a concrete example mapping — a different project substitutes its own
 equivalent tokens for each label role; the role column is what is fixed, not the token names.
 
-Example (portfolio):
+Example:
 
 | Label role | Token |
 |---|---|
@@ -775,6 +777,25 @@ Example (portfolio):
 | Descriptions, secondary text | `body-caption` |
 | Primary names and labels | `body-emphasis` |
 | Intro / paragraph text | `body-primary` |
+
+### Never pin a foreground color on a caller-supplied surface
+
+Some visualizers render content on a surface that comes from **project data**, not from the visualizer:
+`DepthGrid` cards (each card IS the level, styled with that level's real `className`), swatch cells,
+stock/surface grids, any cell whose fill is the thing being demonstrated. In these, **text color
+inherits — the visualizer sets none.** A level that establishes a dark ground sets its own ink there;
+a visualizer that pins one paints the first dark specimen's own label invisible, and the defect only
+appears when a dark level is added, long after the visualizer was reviewed.
+
+This is the same failure as a typography override and for a different reason: the override is not
+wrong-looking, it is wrong-*scoped*. The visualizer does not know what surface its caller will supply.
+
+- Where the project's **type role already owns a color**, that is the design system's call and stands
+  — the visualizer adds nothing either way.
+- Where the role owns none, the temptation is to supply one. Do not. Let it inherit, and let the
+  surface's own treatment decide.
+- **Exercise it:** a visualizer of this kind is not verified until rendered with at least one dark or
+  otherwise inverted surface among its data. A grid of uniformly light cells cannot show the bug.
 
 ### No gratuitous boxes
 

@@ -23,7 +23,14 @@ Certain components cannot be meaningfully demoed without a small hook in the pro
 
 **When it applies:** a component that is `position:fixed`, page-coupled (DOM-scraping, route-reading, scroll-tracking), or breakpoint-gated cannot be demoed live in a bounded frame without some affordance. The gallery cannot fake this from outside. See `hard-to-demo.md` for the techniques.
 
-**Gate:** the carve-out is permitted **only with explicit per-case user agreement**. The gallery surfaces the need, proposes the minimal change, and waits for confirmation. It never adds a production touch-point unilaterally.
+**Gate — it binds the gallery.** The carve-out is an exception to *the gallery's* read-only rule, so the per-case gate is the gallery's: it surfaces the need, proposes the minimal change, and waits for **explicit per-case user agreement**. It never adds a production touch-point unilaterally.
+
+**scaffold-design-system is pre-authorized** to emit an affordance at generation time — it never had a read-only rule to except — when **both** conditions hold:
+
+- the mechanism is one of the two patterns below, **and**
+- the component matches one of the triggers this section names: fixed, page-coupled, breakpoint-gated, or hard side-effects.
+
+Both are required. The trigger is the occasion, the pattern is the mechanism; bounding by mechanism alone would licence any prop. A novel affordance, or one of these two patterns on a component matching no trigger, still needs per-case agreement. Procedure — which pattern applies, how each touch-point is named and recorded — is `scaffold-design-system/references/components.md`.
 
 **Constraint:** keep every touch-point minimal. Prefer a **prop** (the simplest possible hook) or a **presentational sub-component extraction** (splitting the presentational panel out of a side-effecting wrapper) over logic changes to the production component. The production callers always omit the demo prop; the sub-component is wrapped by the real component for production use.
 
@@ -34,7 +41,7 @@ Certain components cannot be meaningfully demoed without a small hook in the pro
 | **Demo-affordance prop** | A fixed/page-coupled component that needs live rendering — e.g. a section-progress nav or a scroll-to-top button. | See `hard-to-demo.md` |
 | **Presentational sub-component extraction** | A component with hard side-effects (focus-trap, scroll-lock, route/resize/escape handlers) where a prop alone can't neutralize them — e.g. a mobile nav. | See `hard-to-demo.md` |
 
-Example (portfolio): the three verified touch-points in this repo are `demoSections` on the section-progress nav (demo-affordance prop), `forceVisible` on the scroll-to-top button (demo-affordance prop), and `MobileNavPanel` extracted from the mobile nav (presentational extraction). These are named as the known reference implementations; the patterns generalize to any project.
+Example: three verified touch-points are `demoSections` on the section-progress nav (demo-affordance prop), `forceVisible` on the scroll-to-top button (demo-affordance prop), and `MobileNavPanel` extracted from the mobile nav (presentational extraction). These are named as the known reference implementations; the patterns generalize to any project.
 
 ---
 
@@ -50,7 +57,7 @@ The handoff protocol:
 4. **Wait** — the user decides whether to act and which fixer to invoke.
 5. **Invoke only on confirmation** — if the user confirms, invoke the suggested fixer. Never pre-emptively invoke.
 
-The gallery never authors DESIGN.md and never runs design-write or scaffold-from-spec without explicit user confirmation.
+The gallery never authors DESIGN.md and never runs design-write or scaffold-design-system without explicit user confirmation.
 
 ---
 
@@ -59,9 +66,9 @@ The gallery never authors DESIGN.md and never runs design-write or scaffold-from
 | Mismatch | Suggested fixer (on user confirmation) |
 |---|---|
 | Doc is out of line with intent or code | **design-write** (update DESIGN.md) |
-| Code is out of line with the doc | **scaffold-from-spec** in Align mode (bring code to match DESIGN.md) |
-| Code is missing (documented but not built) | **scaffold-from-spec** in Fresh mode (create from spec) |
-| Repeats in code but not extracted as reusable | **both** — scaffold-from-spec (extract) and design-write (document it) |
+| Code is out of line with the doc | **scaffold-design-system** in Align mode (bring code to match DESIGN.md) |
+| Code is missing (documented but not built) | **scaffold-design-system** in Fresh mode (create from spec) |
+| Repeats in code but not extracted as reusable | **both** — scaffold-design-system (extract) and design-write (document it) |
 
 When "both" applies, surface both needs together. The user may confirm one, both, or neither.
 
@@ -75,13 +82,8 @@ The gallery's section vocabulary (bucket structure: Foundations · Background ·
 
 ---
 
-## scaffold-from-spec boundary
+## scaffold-design-system boundary
 
-scaffold-from-spec materializes the design system's **code layer** from DESIGN.md — foundations (token/theme CSS) and reusable components (portable, shell, document). Its scope:
+scaffold-design-system materializes the design system's **code layer** from DESIGN.md — foundations (token/theme CSS) and reusable components. **Its scope is its own**, defined in `scaffold-design-system/SKILL.md` → Scope; it is not restated here.
 
-- **Touches:** foundations + reusable components (standalone / portable / shell / document).
-- **Never touches:** inline or page-specific code; page composition; content wiring; the gallery's own area; DESIGN.md.
-- **Operations:** Fresh (create from spec) and Align (refine existing code to match).
-- **Follows the target repo's own rules** — coding conventions, folder structure, naming, testing requirements.
-
-scaffold-from-spec is a separate skill invokable by the user directly, or dispatched by the gallery's handoff flow on user confirmation. The gallery defines the seam; scaffold-from-spec owns the execution.
+What this file owns is the seam: the gallery is read-only on production code (above), it is inform-only on handoff (above), and scaffold-design-system is one of the fixers it dispatches to on user confirmation. It is equally invokable by the user directly. The gallery defines the seam; scaffold-design-system owns the execution.
