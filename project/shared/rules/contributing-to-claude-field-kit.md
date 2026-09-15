@@ -49,11 +49,20 @@ with little change.
 - **Split by what must load together** — keep unrelated concerns in separate files so a reader loads only
   what applies.
 - **Keep an auto-loaded doc lean** — under ~200 lines; split a longer one by sub-topic.
+- **The frontmatter `description` fails invisibly.** Keep it ≤1024 characters with no angle brackets — the
+  claude.ai Skill validator rejects longer and reads `<that doc>` as a tag, though both load fine locally.
+  Measure the *folded* string, and re-wrap with hyphen-breaking off: a break inside `spec-write` folds back
+  as `spec- write` — valid YAML, wrong text. Condense wording; never drop a rule.
 - **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
   licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
 - **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
-  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off — strip any
-  pre-seeded answers first, or the test measures the hint, not the skill.
+  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off. Strip any
+  pre-seeded answers first, and check what the target project auto-loads — its agent-instruction files may
+  import session notes, task lists, or lessons that restate the very decisions under test, so a genuinely
+  cold trial needs a project that never made them. Otherwise the test measures the hint, not the skill.
+- **Adopting a better output does not teach the asset.** When a run produces something better than the
+  reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
+  reproduce a rule nobody wrote down, and the next run reverts.
 
 ## Keep project-specifics minimal
 
