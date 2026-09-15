@@ -24,7 +24,7 @@ When to split: start in one global file; move a concern into its own file once i
 - Use semantic color tokens only — never raw hex values in components. Token names → DESIGN.md → Foundations → Colors.
 - Respect the defined accent system; do not introduce accent variants outside the design system.
 - Evaluate color-system changes at the token level, not by patching individual components.
-- Verify accessibility and contrast requirements before adopting palette changes.
+- Verify contrast before adopting palette changes with a token-level pass — work in OKLCH to adjust lightness predictably, compute the WCAG contrast matrix for every text/background pair rather than eyeballing screenshots, and pair the numbers with the `audit-color-contrast` skill for the qualitative read. The requirement itself → accessibility.md → Color & contrast.
 
 ## Typography
 
@@ -66,6 +66,7 @@ When to split: start in one global file; move a concern into its own file once i
 - Interactive states (hover, focus, active, selected, disabled) derive from design-system tokens and patterns.
 - Do not create one-off interaction styling outside the system.
 - State changes should remain visually consistent across components.
+- Disable text selection (`user-select: none`) only on chrome, control labels, decorative SVG text, and structural-metadata type; content — prose, headings, captions, code, tables — stays selectable. Never disable selection on content a reader may want to copy.
 
 ## Motion
 

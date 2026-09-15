@@ -19,12 +19,14 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
 - Verify the actual state being discussed (default, hover, focus, active, expanded, loading, error, success, etc.).
 - For responsive behavior, verify the relevant viewport sizes rather than assuming layout behavior.
 - For theme-specific behavior, verify each theme independently.
+- Judge a visual treatment (color, blend, texture, grain, shadow, glow) on the real surface at the density it will be seen at — its effect depends on that surface, so a stand-in measures nothing. *Example:* soft-light barely registers on near-white, since its effect shrinks toward both black and white.
 
 ## Evidence
 
 - Base conclusions on observed rendered output, not implementation intent.
 - When reporting findings, identify what was visually confirmed versus what remains inferred.
 - If a visual defect cannot be reproduced in a rendered environment, report the limitation rather than guessing.
+- Beating a failed alternative is not success — "better than multiply" only shows multiply is worse. Measure each candidate against the real surface on its own terms; the best of a set may still not work.
 
 ## Capture guidance
 

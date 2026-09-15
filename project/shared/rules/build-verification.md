@@ -18,6 +18,12 @@ tool-specific commands (e.g. `stacks/node/rules/build-verification.md`).
   can break tests outside the task's scope, so a passing task-scoped run does not mean the whole suite passes.
 - Outward-facing / integration-boundary behavior is verified against real data before a PR — a passing unit
   suite is not sufficient evidence on its own.
+- **A passing build does not prove an artifact reached the output.** A bundler can tree-shake, skip, or
+  silently drop a file the build never errors on. Assert the artifact's presence in the **built** output,
+  not in the source and not from a green exit code.
+- **Confirming a symptom is not confirming its mechanism.** A plausible cause that explains the symptom is a
+  hypothesis, not a finding — name a cause only after removing it and observing the symptom change. A fix
+  built on an unfalsified cause encodes the wrong rule even when the symptom disappears.
 
 ## Batch gate, not per-commit
 
