@@ -87,6 +87,11 @@ surface, making faint cells vanish. Derive the faint step by mixing toward the *
 (`color-mix(in srgb, var(--ink) N%, var(--surface))`, small `N`) so it reads as present-but-
 quiet in both light and dark, and confirm against the rendered cover, not just the markup.
 
+**Outline strokes must survive the thumbnail.** A structural outline (hollow shape, border, frame)
+on `--hairline` can vanish at card scale — use `--hairline-strong` or `--ink` for any outline that
+must read in the ≈320×180 crop. Same test as faint fills: confirm on the rendered thumbnail, not
+the full-size markup.
+
 ---
 
 ## Composition Principles
@@ -106,6 +111,25 @@ quiet in both light and dark, and confirm against the rendered cover, not just t
 - Structural labels are a separate layer from engineering annotations: neutral mono labels
   (`--ink`, JetBrains Mono) name the parts; Caveat/accent annotations carry the
   project-specific verdicts. Keep the real numbers for the annotation layer so the two don't compete.
+
+#### Label typography — standardized tiers
+
+Live-cover label sizes were drifting per cover (18px vs 20px for the same role). Standardize on
+these tiers; a live cover imports them from the shared module
+`src/components/project/covers/cover-styles.ts` rather than redefining sizes inline, so the standard
+can't fork. (Sizes are theme-independent raw px — covers are decorative `aria-hidden` SVG and can't
+consume the HTML type-scale classes; color is applied per use via the SVG `fill` attribute.)
+
+| Tier | Constant | Size | Spacing | Pair with |
+|---|---|---|---|---|
+| Primary structural label (names the main parts) | `COVER_LABEL` | 18px | 0.05em | `--ink` |
+| Secondary structural label (supporting context — source names, frame captions) | `COVER_SUBLABEL` | 15px | 0.06em | `--ink-muted` |
+| Engineering annotation (Gate-3 Caveat note) | `COVER_ANNOTATION` | 30px | — | `--accent` |
+
+- Most covers need only the primary tier (all labels are peers, one size — cf. masked-autoencoders).
+  Add the secondary tier only when the composition has a genuine primary-vs-context split.
+- The annotation tier restates the Caveat/accent standard in `### Construction rules` — one source,
+  one size.
 
 ### Shape vocabulary
 
@@ -208,6 +232,10 @@ Count:  typically 3–5, calibrated to composition complexity (denser than 2, bo
 
 **Placement & attachment:**
 - Place the note in open negative space, not over structure.
+- **Anchor to elements at the composition's edge, not its interior.** A leader from an edge element
+  (first/last stage, corner node, outermost figure) lives in the outer negative space; one from an
+  interior element must cross other structure to reach open space. Prefer annotating the outermost
+  elements.
 - Attach the leader at the **text block's edge facing the figure, at that edge's mid-height** (e.g.
   the left-middle when the figure is to the left) — reads as one leader, not anchored to a stray glyph.
 - **Fixed, equal gap at both ends.** Use one gap value (≈8px is a good default) between the figure
@@ -225,11 +253,24 @@ Count:  typically 3–5, calibrated to composition complexity (denser than 2, bo
 - **Keep the arrowhead tangent-aligned** or it looks detached. Recipe (with the head at the note);
   note `headGap` here is the *internal* path↔arrowhead gap (the 7–9px above), distinct from the
   external ≈8px text/figure gaps:
-  pick the final tangent unit vector `u` (the direction the line travels into the tip); set
+  pick the final tangent unit vector `u` (the direction the line travels into the tip) — `u` is
+  CHOSEN, never derived from the straight tail→tip chord (a chord-derived arrowhead points the wrong
+  way and reads as "stuck on"); set
   `tip` at the fixed external gap from the text; `path-end E = tip − headGap·u`; lock the Bézier's end
   tangent with the last control `P2 = E − k·u` (e.g. `k≈30`); draw barbs to `tip + L·rotate(−u, ±θ)`
   (e.g. `L≈10`, `θ≈28°`). The same recipe works for either direction — just put `tip` at whichever
   end carries the head.
+
+**Resolving a leader's shape with the user — grid handoff, offered after the FIRST miss.**
+Eye-tuning a curve's angles from a screenshot does not converge. The moment the first attempt at a new
+leader is rejected, switch method — do not keep nudging by eye:
+- Render the cover with a labeled viewBox grid overlaid (gridlines every 50, labels every 100) and have
+  the user read the exact **tail** and **tip** coordinates off it; snap the `leader()` endpoints to those.
+- Capture the two shape inputs explicitly: the **exit intent** (`startDeg` in plain words — "down",
+  "right-then-down") and **which text edge the arrowhead enters**. These two are what cost the extra
+  rounds when left implicit.
+- Confirm with a single render, iterating in small increments. Offer this handoff early, not as a last
+  resort — it beats both eye-guessing and extracting marks from a freehand-annotated image (no round-trip).
 
 **Example structure** (head at the note; figure element is to the lower-left of the text):
 ```tsx

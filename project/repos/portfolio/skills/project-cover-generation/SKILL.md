@@ -107,13 +107,17 @@ Annotation construction rules in `references/cover-standards.md`.
 
 ## Output
 
-- **Live component:** `src/components/project/covers/<slug>.tsx` + registered in index
-- **Static asset:** `/public/projects/<slug>/hero-cover.webp` (or `.png`)
+- **Live component:** `src/components/project/covers/<slug>.tsx` + registered in index.
+- **Static asset (theme-independent covers only):** `/public/projects/<slug>/hero-cover.webp` (or `.png`).
+- **Static OG raster — every live cover also needs one.** A 1200×675 dark-theme snapshot of the
+  *finalized* live component on `--surface-deep`, saved to `/public/projects/<slug>/cover.png` and wired
+  as `heroImage`. This is NOT the on-page hero (the registry still renders the live component) — it is the
+  social / OpenGraph / JSON-LD image, which cannot be a React component. Omit it and the page unfurls with
+  no project image. Dark is the established static-cover convention.
 
-After Gate 3 (or Gate 2 if no annotations): run the final visual review — a separate-agent
-"fresh eyes" pass (see `references/cover-procedure.md` → Visual review). Update `heroImage` /
-`heroAlt` in the MDX last — omit `heroImage` if using a live component (the cover registry
-handles rendering).
+After the last gate: run the final visual review — a separate-agent "fresh eyes" pass (see
+`references/cover-procedure.md` → Visual review). Then rasterize the live cover to its static OG image and
+set `heroImage` (a static-asset cover already is its own `heroImage`); update `heroAlt` last.
 
 Stop here — hand off for user approval. Do not run the project-review reviewers (Stage 4) or
 generate other assets.
@@ -127,3 +131,5 @@ generate other assets.
 - Slug registered in `src/components/project/covers/index.ts`
 - Composition encodes the project's specific technical idea — not generic ML aesthetics
 - Thumbnail readable at card scale (≈320×180px crop)
+- Live cover also has a static OG raster (`cover.png`, dark) with `heroImage` wired — the social /
+  OpenGraph / JSON-LD image exists

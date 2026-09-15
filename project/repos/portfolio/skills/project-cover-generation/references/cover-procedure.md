@@ -152,9 +152,14 @@ live DOM rather than eyeballing: the arrowHEAD tip sits the fixed gap (≈8px) o
 (recompute its coordinates — `getBBox`, circle `cx`/`cy`). Confirm the head is at the note and the
 tail at the figure, not reversed.
 
+If a leader's curve shape doesn't land on the first try, stop eye-tuning and use the **grid handoff**
+(`references/cover-standards.md` → Engineering Annotations → "Resolving a leader's shape with the user"):
+render a labeled viewBox grid, have the user read tail/tip coords off it, and capture the exit intent +
+entry edge explicitly. Offer it after the FIRST miss, not the seventh.
+
 **If Playwright-CLI or browser rendering is unavailable, stop and ask the user how to proceed
 before using any alternative.** Do not substitute pixel analysis or HTML inspection for a
-rendered-page check (see `lessons.md` → Visual verification).
+rendered-page check (see `web-frontend/visual-verification.md` → Render-backed verification).
 
 ## Visual review (final gate, after the last gate)
 
@@ -170,11 +175,24 @@ If readability or coherence is broken, fix the composition — do not add a work
 
 ---
 
+## Static OG raster (live covers)
+
+A live component renders the on-page hero, but the social / OpenGraph / JSON-LD image can't be a React
+component — so a live cover ALSO ships a static raster (see `SKILL.md` → Output). After the visual review:
+- Rasterize the finalized live cover at 1200×675, **dark theme** (the established static-cover convention),
+  on `--surface-deep`, via Playwright: set `data-theme=dark`, blow the `svg[viewBox="0 0 1200 675"]` up to a
+  fixed 1200×675 frame with a `--surface-deep` background, and screenshot that element.
+- Save to `/public/projects/<slug>/cover.png` and set `heroImage` to it. Do NOT omit `heroImage` for a live
+  cover — without it the page unfurls with no image and the JSON-LD carries no `image`.
+
+---
+
 ## Sequence summary
 
 ```
 Read MDX/PDF → propose 3–4 directions (with typography fallback) → [gate: direction approval]
 → build base composition → [gate: base approval]
 → (optional) propose annotation directions → build annotations → [gate: annotation approval]
-→ visual review (separate-agent fresh eyes) → update MDX heroImage/heroAlt if static → hand off
+→ visual review (separate-agent fresh eyes) → rasterize live cover to static OG image + wire heroImage
+  (static-asset cover already is its heroImage) → update heroAlt → hand off
 ```
