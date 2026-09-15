@@ -226,6 +226,9 @@ minimal other context loaded.
   scannability.
 - No duplication across files — state a rule once, cross-reference it; even within a multi-file asset, put the
   rule in one canonical file and reference it from the others.
+- **Never cite a work file as a source.** `lessons.md`, `session.md` and `tasks.md` are gitignored and
+  pruned, so a pointer into one dangles once the entry is promoted or cut. Carry the rule in the asset, or
+  cross-reference the rule it was promoted into. Naming one as a target, as `checkpoint` does, is not citing it.
 - **Skill names** use `<domain>-<verb>` with a non-colliding prefix (`design-write`, `spec-write`) — not
   noun-only (`project-docs`) or a broad `project-*` prefix that collides across skills.
 - **Match the house voice — kit conventions ONLY.** Reuse existing assets' terminology, section shape, and
@@ -247,11 +250,20 @@ minimal other context loaded.
   procedure (`project/shared/BOOTSTRAP.md`) drops the suffix when seeding a project.
 - Keep any single **auto-loaded** doc under ~200 lines; split longer ones by sub-topic. (This README is read
   on demand, not auto-loaded, so it may run longer.)
+- **The frontmatter `description` fails invisibly.** Keep it ≤1024 characters with no angle brackets — the
+  claude.ai Skill validator rejects longer and reads `<that doc>` as a tag, though both load fine locally.
+  Measure the *folded* string, and re-wrap with hyphen-breaking off: a break inside `spec-write` folds back
+  as `spec- write` — valid YAML, wrong text. Condense wording; never drop a rule.
 - **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
   licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
 - **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
-  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off — strip any
-  pre-seeded answers first, or the test measures the hint, not the skill.
+  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off. Strip any
+  pre-seeded answers first, and check what the target project auto-loads — its agent-instruction files may
+  import session notes, task lists, or lessons that restate the very decisions under test, so a genuinely
+  cold trial needs a project that never made them. Otherwise the test measures the hint, not the skill.
+- **Adopting a better output does not teach the asset.** When a run produces something better than the
+  reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
+  reproduce a rule nobody wrote down, and the next run reverts.
 
 ### Hook conventions
 Hooks live in two tiers:

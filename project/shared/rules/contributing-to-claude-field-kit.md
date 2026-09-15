@@ -30,6 +30,9 @@ with little change.
   scannability.
 - **No duplication — state a rule once, cross-reference it.** Even within a multi-file asset (a skill's
   `SKILL.md` + `references/`), put the rule in one canonical file and reference it from the others.
+- **Never cite a work file as a source.** `lessons.md`, `session.md` and `tasks.md` are gitignored and
+  pruned, so a pointer into one dangles once the entry is promoted or cut. Carry the rule in the asset, or
+  cross-reference the rule it was promoted into. Naming one as a target, as `checkpoint` does, is not citing it.
 - **Name for what it does.** Skills use `<domain>-<verb>` with a non-colliding prefix (`design-write`,
   `spec-write`) — never noun-only or a broad `project-*` prefix that collides. Rules are noun-named like their
   siblings.
@@ -73,9 +76,9 @@ components).
 - Don't add gratuitous project flavor to the general parts — that is drift the maintainer must strip every time.
 - Don't pre-generalize the specifics you *do* need — they are correct here; generalization is a promotion-time
   step, done kit-side.
-- **Show a reference project only as a labeled `Example (…)`, never as law** — under-generalizing (leaving a
-  specific as prose) and over-pinning (baking one project's constants in as the rule) are the same failure
-  from opposite sides.
+- **Show a reference project only as a neutral `Example:`, never as law** — no project name and no date,
+  since the kit is public. Under-generalizing (leaving a specific as prose) and over-pinning (baking one
+  project's constants in as the rule) are the same failure from opposite sides.
 
 ## Contribute a reusable asset
 
