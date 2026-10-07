@@ -34,6 +34,7 @@ Non-negotiable stops. The numbered sections below expand each one.
   - each cluster must list: name, exact file paths to stage, exact single-line commit message
   - if a task produces no commits, state that explicitly. Plan approval covers listed clusters — no re-ask at execution time.
 - Verification Section: how to confirm the work is correct end-to-end before marking done.
+- Once a plan document under `/home/ag-95/.claude/plans/<name>.md` is finalized, run `plan-visualize` on it before presenting the plan for chat sign-off. Advisory only — a skipped or failed visual pass never blocks or replaces the sign-off.
 
 
 ### 2. Subagent Strategy
