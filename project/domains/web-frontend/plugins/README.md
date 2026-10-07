@@ -12,7 +12,7 @@
 | plugin | scope | status | source |
 |--------|-------|--------|--------|
 | frontend-design | project / web-frontend | catalogued | claude-plugins-official |
-| playwright-cli | project / web-frontend | installed (skill) | direct skill install |
+| playwright-cli | project / web-frontend | installed (npm CLI + skill) | npm — `@playwright/cli` |
 
 ## Plugins / skills
 
@@ -28,8 +28,13 @@
 
 ### `playwright-cli`
 
-- A standalone **skill** the user installs in frontend / web projects — distinct from the marketplace
-  `playwright` MCP plugin (different delivery mechanism). Not vendored.
+- Delivered as an **npm package**, not through a marketplace: `npm i -g @playwright/cli`, or run it
+  per-project with `npx playwright-cli`. Not a plugin install, not a skill install. Not vendored.
+- Two parts, one tool: the **skill body carries the instructions**, the **npm CLI is the runner** that
+  executes them. The skill alone cannot drive a browser; the CLI alone has no house conventions.
+- **Distinct from the marketplace `playwright` MCP plugin** — that one installs via
+  `/plugin install` and exposes browser control as MCP tools. Different package, different delivery,
+  different mechanism; catalog and install them separately.
 
 | type  | name | what it does |
 |-------|------|--------------|
