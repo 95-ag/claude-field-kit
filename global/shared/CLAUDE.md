@@ -102,6 +102,7 @@ Non-negotiable stops. The numbered sections below expand each one.
 - Global-config changes (`~/.claude/`, shell dotfiles like `~/.profile`/`~/.bashrc`, `claude mcp add`, system packages) need their **own** explicit gate — never bundled into a plan or blanket "go ahead" that also covers project files. Don't widen the file set (e.g. sync a second copy) without asking.
 - Never use `--break-system-packages`, `--force`, or equivalent override flags without permission. Safe alternatives, in order: `--user` install → project virtualenv → throwaway temp venv.
 - Files outside the repo are not project-owned — `tmp/`, sibling directories, and extracted assets need explicit scope confirmation before writing. Read access ≠ write permission.
+- Never kill a process by name pattern — `pkill -f "next dev"` matches every project's copy on the machine, including a server the user is running. Resolve the PID from the port: `ss -ltnp | grep ':<port>' | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u | xargs -r kill` (macOS: `lsof -nP -iTCP:<port> -sTCP:LISTEN -t | xargs -r kill`).
 
 ## Context and Memory
 
