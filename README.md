@@ -145,6 +145,9 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   asset stands as the complete best-practice rule for its area; enter content as principles, not one project's
   constants, and neutralize or relabel worked examples that read as project bias. A thin generalized subset is
   not the goal.
+- **Scan for over-pinning before promoting** — worst-hiding first: a value stated as a requirement, then
+  literal values as file contents, then paths and un-caveated names, then names and dates. Full procedure →
+  [`contributing-to-claude-field-kit.md`](project/shared/rules/contributing-to-claude-field-kit.md).
 - **Separate the general rule from its project costume** — a captured learning often carries a genuinely
   general rule wearing project specifics. Lift the general part out; keep only the truly domain-specific part,
   as a conditional. Don't harden a composition-specific tactic into a universal mandate; default to the most
@@ -265,9 +268,25 @@ minimal other context loaded.
   pre-seeded answers first, and check what the target project auto-loads — its agent-instruction files may
   import session notes, task lists, or lessons that restate the very decisions under test, so a genuinely
   cold trial needs a project that never made them. Otherwise the test measures the hint, not the skill.
+  An `Example:` stating what one project *chose* is itself a pre-seeded answer — give the shape of the
+  decision and let the run reach the value.
+- **Name who runs a gate, and dispatch it.** A reviewer with no conversation context compares two
+  artifacts; an author greps for what they remember changing, which is a different act and finds less. An
+  asset that calls its own gate a "self-review" licenses the failure the gate exists to catch — name the
+  reviewer, and say what to do when none is available.
+- **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
+  nothing until one file lists the report's required sections. Define them, name which rule each
+  discharges, and require that a section with nothing to report says so — an omitted section and a
+  forgotten one are indistinguishable.
 - **Adopting a better output does not teach the asset.** When a run produces something better than the
   reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
   reproduce a rule nobody wrote down, and the next run reverts.
+- **A skill gap is a gap to file, not a licence to hand-code.** When an asset cannot express something,
+  file a note against the asset. Hand-writing the output instead leaves the asset unable to produce it
+  next time, and hides that it ever couldn't.
+- **Fix a package skill with a rule, never by editing it.** A marketplace, third-party or harness-bundled
+  skill sits at a versioned install path, so the edit dies at the next upgrade. Only a kit-owned skill
+  takes a skill edit.
 
 ### Hook conventions
 Hooks live in two tiers:

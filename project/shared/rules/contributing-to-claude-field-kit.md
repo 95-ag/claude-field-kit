@@ -63,9 +63,25 @@ with little change.
   pre-seeded answers first, and check what the target project auto-loads — its agent-instruction files may
   import session notes, task lists, or lessons that restate the very decisions under test, so a genuinely
   cold trial needs a project that never made them. Otherwise the test measures the hint, not the skill.
+  An `Example:` stating what one project *chose* is itself a pre-seeded answer — give the shape of the
+  decision and let the run reach the value.
+- **Name who runs a gate, and dispatch it.** A reviewer with no conversation context compares two
+  artifacts; an author greps for what they remember changing, which is a different act and finds less. An
+  asset that calls its own gate a "self-review" licenses the failure the gate exists to catch — name the
+  reviewer, and say what to do when none is available.
+- **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
+  nothing until one file lists the report's required sections. Define them, name which rule each
+  discharges, and require that a section with nothing to report says so — an omitted section and a
+  forgotten one are indistinguishable.
 - **Adopting a better output does not teach the asset.** When a run produces something better than the
   reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
   reproduce a rule nobody wrote down, and the next run reverts.
+- **A skill gap is a gap to file, not a licence to hand-code.** When an asset cannot express something,
+  file a note against the asset. Hand-writing the output instead leaves the asset unable to produce it
+  next time, and hides that it ever couldn't.
+- **Fix a package skill with a rule, never by editing it.** A marketplace, third-party or harness-bundled
+  skill sits at a versioned install path, so the edit dies at the next upgrade. Only a kit-owned skill
+  takes a skill edit.
 
 ## Keep project-specifics minimal
 
@@ -79,6 +95,27 @@ components).
 - **Show a reference project only as a neutral `Example:`, never as law** — no project name and no date,
   since the kit is public. Under-generalizing (leaving a specific as prose) and over-pinning (baking one
   project's constants in as the rule) are the same failure from opposite sides.
+
+### Scan for over-pinning before contributing — for the shape, not for names
+
+An asset is as easily overfitted to another project the kit serves as to the one you work in, so a
+name-and-date grep proves nothing. Scan worst-hiding first:
+
+1. **A value or component stated as a requirement rather than an example** — "the file contains exactly
+   these blocks" followed by one project's values; a `MUST` naming a specific component.
+2. **Literal values presented as a file's contents** — a palette, a set of sizes, a config block.
+3. **Project paths**, and token or component names carried with no caveat that names adapt while the
+   structure is fixed.
+4. **Names and dates** — last: easiest to find, least often the problem.
+
+- **Check each hit in context.** A specific inside a marked `Example:` is compliant; "fixing" it strips a
+  correct worked example.
+- **Where pseudocode needs concrete names, state once that names adapt while the structure is fixed**, and
+  cross-reference that caveat from every file that shares them.
+- **Re-run the scan over your own additions** — prose written while fixing over-pinning is where fresh
+  constants appear.
+- **Sweep lines, not sections, after moving content between files.** A caveat that lives in a file's
+  preamble is what a split loses, and a per-section conservation check cannot see it.
 
 ## Contribute a reusable asset
 
