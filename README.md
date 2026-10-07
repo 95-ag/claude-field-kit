@@ -46,7 +46,7 @@ global/              # applies to every Claude environment
 ├── shared/          #   all environments (rules, hooks, skills, agents, CLAUDE.md)
 ├── windows/         #   Windows-desktop specifics (e.g. MSYS/WSL path rules)
 ├── wsl/             #   WSL specifics
-└── tools/           #   delivery engine — global-sync.mjs composes global/ → ~/.claude per env
+└── tools/           #   delivery + check engines — global-sync.mjs, skill-reference-check.mjs
 
 project/             # copied into a new project's .claude/, composed per project:
 ├── shared/          #   universal — every project
@@ -197,6 +197,10 @@ Promoted assets run **handsfree** across every session, so nothing lands without
 - **Heavily-rewritten item** — build the merged candidate in a scratch file and review it in a diff tool
   (incoming-vs-merged for what's dropped, current-vs-merged for what changes); iterate, then apply.
 - **Repo-tier item** — same diff review, then apply verbatim.
+- **Multi-file skill** — run `node global/tools/skill-reference-check.mjs incoming/skills` first and treat a
+  non-zero exit as a hold; a split or rename breaks a `file.md` → Section pointer silently and the breakage
+  reads as correct prose. A bold label cited as a heading is the tool's known limit, not a break — read the
+  report before acting.
 
 ### Project bootstrap
 A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks). The actionable,
