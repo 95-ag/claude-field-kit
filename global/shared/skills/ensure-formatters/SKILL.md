@@ -1,3 +1,8 @@
+---
+name: ensure-formatters
+description: ensure-formatters — formatter doctor for the current project
+---
+
 # ensure-formatters — formatter doctor for the current project
 
 Scan a project's tracked file types and report whether the formatters they need are configured. Reports

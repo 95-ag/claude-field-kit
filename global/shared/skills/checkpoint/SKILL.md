@@ -1,3 +1,8 @@
+---
+name: checkpoint
+description: checkpoint — checkpoint the project's work docs for clean handoff
+---
+
 # checkpoint — checkpoint the project's work docs for clean handoff
 
 Bring all `.claude/work/` docs to a current, resumable state — before leaving, clearing context, or

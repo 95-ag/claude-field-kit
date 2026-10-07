@@ -1,3 +1,8 @@
+---
+name: global-sync
+description: global-sync — Claude Field Kit global tier sync
+---
+
 # global-sync — Claude Field Kit global tier sync
 
 Delivers the Claude Field Kit global tier (`global/shared` + env overlay) to `~/.claude/` on the
