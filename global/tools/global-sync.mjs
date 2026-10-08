@@ -238,7 +238,9 @@ function routeDriftedFile(absPath) {
   const assetType = parts.length > 1 ? parts[0] : "misc";
 
   const incomingDir = join(INCOMING_ROOT, assetType);
-  const dest = join(incomingDir, basename(absPath));
+  // Flatten the path under the asset type and prefix the env — a basename alone collapses every drifted
+  // skills/<skill>/SKILL.md onto one file, and the same file drifting in both envs collides even after that.
+  const dest = join(incomingDir, `${ENV}__${parts.slice(1).join("__") || basename(absPath)}`);
   mkdirSync(incomingDir, { recursive: true });
   copyFileSync(absPath, dest);
   return { assetType, dest };
@@ -247,9 +249,10 @@ function routeDriftedFile(absPath) {
 function appendHarvestTasks(entries) {
   if (!existsSync(TASKS_PATH)) return;
   const date = new Date().toISOString().split("T")[0];
+  // Name the staged file, not just its basename: two drifted SKILL.md entries are otherwise indistinguishable.
   const lines = entries.map(({ absPath, assetType, dest }) =>
-    `- [ ] **Review incoming drift (${date})**: \`${basename(absPath)}\` — routed from \`${ENV}\` ` +
-    `\`${absPath}\` → \`incoming/${assetType}/\``
+    `- [ ] **Review incoming drift (${date})**: \`${claudeRel(absPath) ?? basename(absPath)}\` — routed from ` +
+    `\`${ENV}\` \`${absPath}\` → \`incoming/${assetType}/${basename(dest)}\``
   ).join("\n");
 
   const content = readFileSync(TASKS_PATH, "utf8");
