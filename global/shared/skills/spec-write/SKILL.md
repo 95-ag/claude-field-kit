@@ -45,7 +45,7 @@ docs, comments, commit messages, or any non-archetype writing.
 
 Before writing anything, read both references:
 
-1. `references/writing-contract.md` — the house style: the two-tier voice, formatting rules, and
+1. `references/spec-writing-contract.md` — the house style: the two-tier voice, formatting rules, and
    anti-patterns. Everything you write or edit must comply with it.
 2. `references/doc-archetypes.md` — the doc taxonomy: each archetype's required structure, writing
    mode, ownership boundary, and whether it's mandatory or optional for a project.
@@ -57,6 +57,12 @@ the substance is decided, and it frequently is not. Walk the sections you are ab
 the user and confirm each one's content first. A review that lands after the write becomes a rewrite. This
 is the operational form of the Scope Guardrail — render decided intent, never originate it.
 
+**Pre-approved batch.** A user who has settled every value already, with one review scheduled at the end,
+can instruct you to skip the section-by-section confirmation; that instruction overrides the rule above.
+Proceed, then report what was written for that review. It changes *when* the content is confirmed, never
+*whether* — the Scope Guardrail still holds, and anything the brief does not decide is still flagged
+rather than originated.
+
 ## Two Modes
 
 The same skill handles both first-time authoring and ongoing maintenance. Pick the mode from the doc's
@@ -66,7 +72,7 @@ state and the request — not from a separate sub-skill.
 - Start from the archetype's required structure in `references/doc-archetypes.md`. Each archetype
   assigns a voice: Tier 1 (product docs — design-agnostic, reasoning-rich), Tier 2 (companion docs —
   terse, specific), or procedural (the implementation-plan doc). Read that tier's definition in
-  `references/writing-contract.md` before the first draft.
+  `references/spec-writing-contract.md` before the first draft.
 - Write in that archetype's tier/mode from the first draft. A good first write needs no later rewrite,
   so get the structure and voice right now rather than dumping prose to clean up later.
 - Pull substance only from sources the user pointed you at (approved plan, code, their notes). If a
@@ -145,6 +151,9 @@ bidirectional drift pass instead of editing blind:
    code that branches on X.
 3. **Boundary + reference check** — grep the doc for `§` / `section N` (should be zero after a pass),
    and confirm every cross-doc named path resolves to a real heading in the target doc.
+   - **Then check the referenced content, not just the heading** — the target heading can still exist
+     while the bullet, row or rule the reference pointed at has been removed. The pointer resolves and
+     means nothing. Repoint it at whatever owns the fact now, or drop it if the fact is gone.
 4. **Fresh-eyes pass** — for a high-stakes alignment, have a separate subagent verify both directions
    and the boundaries, so the author isn't grading their own work.
 

@@ -2,7 +2,7 @@
 
 The non-design spec docs this skill owns, each with its required structure, writing mode, ownership
 boundary, and whether a project must have it. Use this to decide *what shape* a doc takes; use
-`writing-contract.md` to decide *how it reads*. This reference is **self-contained** — it does not depend
+`spec-writing-contract.md` to decide *how it reads*. This reference is **self-contained** — it does not depend
 on any repo-side doc.
 
 DESIGN.md is deliberately absent — it is owned by `design-update` / `design-rewrite`, never by this skill.

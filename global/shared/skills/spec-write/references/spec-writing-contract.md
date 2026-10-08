@@ -5,7 +5,7 @@ goal: **a person scanning cold and an agent retrieving a single section both und
 unambiguously.** That goal drives every rule below.
 
 This is the prose-doc writing contract — parallel to, but separate from, the DESIGN.md writing
-contract (`design-writing-contract.md`, owned by the design skills). It governs PRODUCT/PROJECT, the
+contract (`design-writing-contract.md`, owned by `design-write`). It governs PRODUCT/PROJECT, the
 implementation-plan doc, ARCHITECTURE, SCHEMA, and similar prose docs — never DESIGN.md.
 
 ---
@@ -114,6 +114,17 @@ Reject these on sight — they're the failure modes this contract exists to prev
   pointer is only as durable as its target's next prune.
 - **Future-tense product description.** "We will build…" in a doc that should declare what the
   product *is*. (The implementation-plan doc is the exception — it is legitimately forward-looking.)
+
+---
+
+## Correct a past-tense record by addition
+
+**Where text whose job is to describe the past states a rule that no longer holds, append a
+`*Historical:*` clause — never rewrite it.** Applies to a completed phase, a changelog, a migration list,
+a decision log: the record keeps its sequence, and the clause stops a stale rule reading as live.
+
+*Example:* `… — *Historical: the two-step ladder this describes was replaced; the current rule is in
+<owning section>.*`
 
 ---
 
