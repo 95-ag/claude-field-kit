@@ -10,6 +10,15 @@
  * items: candidate lessons, deferred global edits, new-asset ideas, hook bugs — triaged at harvest, not captured).
  * Skips claude-field-kit's own .claude/ (kit-internal source/config, never promoted). No-ops if the kit
  * isn't present on this machine. Never promotes to a tier directly. Fail-open (always exit 0).
+ *
+ * Staged name = <project>__<path-under-asset-dir with / → __>, so a universal rule and a same-named tiered
+ * one (rules/git.md vs rules/node/git.md) stay distinct files with distinct Harvest entries. The task's
+ * marker and label keep the real slashed path; only the filename flattens.
+ *
+ * KNOWN GAP — a retired file stays staged. Staging a skill copies its tree without removing anything, so
+ * splitting or renaming a reference file leaves the old copy in incoming/ beside its replacements and
+ * nothing reports it. Deliberate: auto-deleting would fight the no-loss guarantee staging exists for.
+ * Remove the stale copy by hand when harvesting a skill whose file set changed.
  */
 import { createInterface } from "readline";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, cpSync } from "fs";
@@ -54,7 +63,9 @@ function stageToIncoming(c) {
       mkdirSync(dirname(dest), { recursive: true });
       cpSync(srcDir, dest, { recursive: true });
     } else {
-      const dest = join(INCOMING, c.assetDir, `${c.project}__${basename(c.rest)}`);
+      // Flatten the path, don't drop it: a basename would collide a universal rule with a same-named
+      // tiered one (rules/git.md vs rules/node/git.md), and capture is fail-open so the loss is silent.
+      const dest = join(INCOMING, c.assetDir, `${c.project}__${c.rest.replace(/\//g, "__")}`);
       mkdirSync(dirname(dest), { recursive: true });
       copyFileSync(c.absFile, dest);
     }
@@ -86,10 +97,12 @@ function queueTask(c) {
   if (!existsSync(KIT_TASKS)) return; // kit tasks.md absent → skip task; staging already done
   let content;
   try { content = readFileSync(KIT_TASKS, "utf8"); } catch { return; }
-  const asset = c.assetDir === "skills" ? c.rest.split("/")[0] : basename(c.rest);
+  // The marker and label keep the real path (rules/node/git.md) so the entry reads as the file it is and
+  // dedups per tier; only the staged FILENAME flattens the separator.
+  const asset = c.assetDir === "skills" ? c.rest.split("/")[0] : c.rest;
   const marker = `<!-- t3:${c.project}:${c.assetDir}/${asset} -->`; // asset-level dedup
   if (content.includes(marker)) return;
-  const staged = `incoming/${c.assetDir}/${c.project}__${asset}`;
+  const staged = `incoming/${c.assetDir}/${c.project}__${asset.replace(/\//g, "__")}`;
   const line = `- [ ] **${c.project} · ${c.assetDir}/${asset}** — staged \`${staged}\` ${marker}`;
   try { writeFileSync(KIT_TASKS, insertUnderCluster(content, "### Harvest", line), "utf8"); } catch {}
 }
