@@ -48,7 +48,8 @@ node /home/ag-95/projects/claude-field-kit/global/tools/global-sync.mjs --env ws
 4. Writes all composed files to `~/.claude/` (hooks scripts to `~/.claude/hooks/`)
 5. Updates `~/.claude/.claude-sync-manifest.json`
 6. If `~/.claude/.claude-sync-dirty` exists: detects drifted files, routes to `incoming/`, appends harvest tasks to `tasks.md`, clears the flag
-7. If a Claude Field Kit source was deleted: warns via `additionalContext`; does NOT prune
+7. If a delivered file's Claude Field Kit source was deleted: warns via `additionalContext`; never deletes.
+   The entry stays tracked while the file exists on disk, so the warning repeats until it is removed by hand
 
 ## After running
 

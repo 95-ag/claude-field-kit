@@ -288,7 +288,8 @@ function checkDeletions(manifest) {
       hookEventName: "PostToolUse",
       additionalContext:
         `[global-sync] ${missing.length} delivered file(s) no longer have a Claude Field Kit source.\n` +
-        `Review before removing — run with --prune to confirm deletion:\n` +
+        `global-sync never deletes. Each stays tracked while it exists on disk, so this repeats every run ` +
+        `until you remove it by hand:\n` +
         missing.map(p => `  - ${p}`).join("\n"),
     },
   }) + "\n");
@@ -298,7 +299,7 @@ function checkDeletions(manifest) {
 // Delivery
 // ---------------------------------------------------------------------------
 
-function deliver() {
+function deliver(previousManifest) {
   const newManifest = {};
 
   const sharedFiles  = walkDir(GLOBAL_SHARED);
@@ -338,8 +339,23 @@ function deliver() {
     newManifest[SETTINGS_PATH] = sha256(JSON.stringify(merged, null, 2) + "\n");
   }
 
+  const deliveredCount = Object.keys(newManifest).length;
+
+  // A delivered file whose kit source is gone has nothing to rebuild its entry from, so dropping it here is
+  // what made checkDeletions' warning fire once and never again. Keep tracking it while it exists on disk;
+  // the entry falls away on the first run after it is actually removed.
+  for (const [absPath, hash] of Object.entries(previousManifest.files ?? {})) {
+    if (absPath in newManifest) continue;
+    if (!existsSync(absPath)) continue;
+    newManifest[absPath] = hash;
+  }
+  const orphanCount = Object.keys(newManifest).length - deliveredCount;
+
   saveManifest(newManifest);
-  console.log(`[global-sync] env=${ENV}  delivered ${Object.keys(newManifest).length} files → ${TARGET_DIR}`);
+  console.log(
+    `[global-sync] env=${ENV}  delivered ${deliveredCount} files → ${TARGET_DIR}` +
+    (orphanCount ? `  (+${orphanCount} still tracked without a kit source)` : ""),
+  );
   return newManifest;
 }
 
@@ -368,4 +384,4 @@ if (existsSync(DIRTY_FLAG_PATH)) {
 checkDeletions(oldManifest);
 
 // Deliver
-deliver();
+deliver(oldManifest);
