@@ -372,7 +372,7 @@ if (existsSync(DIRTY_FLAG_PATH)) {
     console.log(`[global-sync] Drift in ${drifted.length} file(s) — routing to incoming/`);
     const routed = drifted.map(absPath => {
       const { assetType, dest } = routeDriftedFile(absPath);
-      console.log(`  ${absPath} → incoming/${assetType}/${basename(absPath)}`);
+      console.log(`  ${absPath} → incoming/${assetType}/${basename(dest)}`);
       return { absPath, assetType, dest };
     });
     appendHarvestTasks(routed);
