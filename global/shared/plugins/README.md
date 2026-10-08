@@ -14,7 +14,7 @@
 |--------|-------|--------|--------|
 | superpowers | global | installed | claude-plugins-official |
 | skill-creator | global | installed | claude-plugins-official |
-| plannotator | global (WSL only) | installed | direct install — source not established |
+| plannotator | global (WSL only) | installed | direct install — `docs.plannotator.ai` |
 
 ## Marketplace
 
@@ -68,9 +68,10 @@ prerequisite rather than discovering it from a skill that cannot run.
 
 - **WSL-only.** The binary is a Linux ELF at `~/.local/bin/plannotator`; a Windows session has no copy, so
   anything depending on it must degrade where it is absent.
-- **Source: not established.** The installed artefacts carry no repository URL and the binary is stripped
-  and not pipx- or npm-installed. The only lead is that the explainer bundles `@pierre/diffs` from a CDN.
-  Fill this in before relying on the catalog to reinstall it.
+- **Install:** per the vendor's open-source install guide at `docs.plannotator.ai/open-source/start/installation`
+  — fetch the binary directly, then run its own skill installer and select the skills to place. Two steps, so a
+  machine with the binary can still be missing the skills. Neither step is a marketplace plugin, which is why
+  the artefacts carry no repo URL and nothing here is manifest-tracked.
 - **A kit asset depends on it** — `plan-visualize` delegates to `plannotator-visual-explainer` and exits
   cleanly where it is missing, and the shared `CLAUDE.md` asks every finalized plan to run that pass. The
   pass is worded as advisory precisely so the Windows case is a no-op rather than a failure.
