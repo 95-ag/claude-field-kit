@@ -14,6 +14,7 @@
 |--------|-------|--------|--------|
 | superpowers | global | installed | claude-plugins-official |
 | skill-creator | global | installed | claude-plugins-official |
+| plannotator | global (WSL only) | installed | direct install — source not established |
 
 ## Marketplace
 
@@ -55,6 +56,30 @@
 | type  | name | what it does | remarks |
 |-------|------|--------------|---------|
 | skill | skill-creator | create new skills, improve existing ones, run evals + benchmark performance | best for output-producing skills + fixing bad triggering — eval / benchmark-driven, ships a description optimizer (vs superpowers `writing-skills` for behavioral skills) |
+
+## Direct installs
+
+Not marketplace-delivered and not harness-bundled: a binary plus standalone skills, dropped into
+`~/.claude/skills/` and `~/.local/bin/` by their own installer. They are **not manifest-tracked**, so
+`global-sync` neither delivers nor touches them — catalogued here so a bootstrap knows they are a
+prerequisite rather than discovering it from a skill that cannot run.
+
+### `plannotator`
+
+- **WSL-only.** The binary is a Linux ELF at `~/.local/bin/plannotator`; a Windows session has no copy, so
+  anything depending on it must degrade where it is absent.
+- **Source: not established.** The installed artefacts carry no repository URL and the binary is stripped
+  and not pipx- or npm-installed. The only lead is that the explainer bundles `@pierre/diffs` from a CDN.
+  Fill this in before relying on the catalog to reinstall it.
+- **A kit asset depends on it** — `plan-visualize` delegates to `plannotator-visual-explainer` and exits
+  cleanly where it is missing, and the shared `CLAUDE.md` asks every finalized plan to run that pass. The
+  pass is worded as advisory precisely so the Windows case is a no-op rather than a failure.
+
+| type  | name | what it does | remarks |
+|-------|------|--------------|---------|
+| binary | plannotator | serves an annotated plan/HTML view and collects feedback | `~/.local/bin/`, Linux ELF |
+| skill | plannotator-visual-explainer | generate a self-contained themed HTML visualization | carries `references/` incl. a host-theme override |
+| skill | plannotator-annotate | annotate a plan and collect review comments | ships its own `agents/` |
 
 ## Harness-bundled
 
