@@ -1,8 +1,9 @@
 # Verification
 
 What counts as proof that a run's output is correct, and the order the checks run in. The operation
-framing is in `operations.md`; the token layer and the component layer state their own rules in
-`foundations-mapping.md` and `components.md`.
+framing is in `operations.md`. The token layer states its own rules in `foundations-mapping.md`,
+`foundations-framework.md` and `foundations-boundaries.md`; the component layer in
+`component-set.md`, `component-shape.md` and `component-behavior.md`.
 
 Framework behavior below was observed on **Next.js 16.3.4 (App Router, static export) with Tailwind
 CSS v4.3.3**, by running the gates. On another framework the questions are portable and the answers
@@ -70,6 +71,13 @@ compiler and read the result.
   you had removed. Write a fresh fixture per run, or misread the result.
 - **The probe lives in the repo and therefore fails the repo's linter.** Move it out before gate 2 —
   see the command order below.
+- **Read the probe's output as nested CSS, not as lines.** Compiled utilities sit **inside** an
+  `@layer`, so they are emitted indented; a line-anchored match (`^\.utility`) finds none of them and
+  reports every utility as missing — a total failure that is entirely the reader's. The direction of
+  the error is what makes it dangerous: it fails toward "nothing compiled", which looks like exactly
+  the defect the probe exists to find, so it gets believed and acted on. **Validate the reader against
+  a utility that cannot be missing** (a stock one the project does not touch) before trusting any
+  negative result from it — the same rule the method section below states for findings generally.
 
 ---
 
@@ -84,10 +92,10 @@ things settle, and both shipped through a fully green gate:
 
 - **Effect lifecycle** — an effect keyed on an unstable dependency misbehaves only when the parent
   re-renders, which a mounted-and-photographed component never does
-  (`components.md` → Effects).
+  (`component-behavior.md` → Effects).
 - **Hydration transition** — a wrong default paints, then the client binding overwrites it on the
   first frame. Every screenshot taken after that moment looks correct
-  (`components.md` → A default value is a claim about the first paint).
+  (`component-behavior.md` → A default value is a claim about the first paint).
 
 So the method is **mount → render → *drive* (open, close, tab, swipe, re-render the parent) → watch
 the first client frame**. A settled frame proves layout, and nothing more.
@@ -127,7 +135,7 @@ The boundary sits here because forbidding the edit would make the gate lie — a
 broken output is the exact failure the rules in this file exist to catch, and a run that only
 *reported* the setting would hand over a green gate and a broken page. Where the missing piece is
 outside this skill's own output — a starter file, a page, a mount point — it stays reported and
-unedited (`foundations-mapping.md` → A published contract names its mount point).
+unedited (`foundations-boundaries.md` → A published contract names its mount point).
 
 ---
 
@@ -179,25 +187,3 @@ Confirming the symptom is not confirming the mechanism.
   mundane fact goes unexamined.
 - A wrong cause produces a correspondingly wrong remedy, which fixes nothing and reads as sanctioned.
 
----
-
-## Operation status
-
-| Path | Status |
-|---|---|
-| Foundations / Fresh | EXERCISED — one hand pass plus three cold regenerations, none of them independent (below) |
-| Components / Fresh | EXERCISED — one hand pass plus three cold regenerations, none of them independent (below) |
-| Align (either) | SPECIFIED — no drift case has existed to exercise it |
-
-**No cold run has been independent.** All three regenerations ran in the target repo, whose
-agent-instruction file auto-imports the project's own working notes — session state, task list,
-lessons — and those state the prior runs' conclusions verbatim. Stripping worked examples out of these
-files was necessary and not sufficient: the answers were still available as ambient project context
-before the procedure was read. **A genuinely independent trial requires a different repository.** A
-project validating a skill this way checks what its own agent-instruction files auto-load before
-treating a run as cold.
-
-**The whole evidence base is a single Next.js / Tailwind v4 pass.** Every framework-specific finding
-in these references was measured once, on one stack, on the versions named at the top of each file.
-Treat a surprise on another stack — or another major version — as a finding about these files, and
-record it rather than working around it.

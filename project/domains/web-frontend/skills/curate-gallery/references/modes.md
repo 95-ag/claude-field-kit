@@ -81,7 +81,7 @@ If DESIGN.md changes (a new token group, a new component), the gallery sections 
 Each DESIGN.md sub-section becomes exactly one `GallerySection` `<h2>`. Combining two sub-sections
 into one `<h2>`, or splitting one sub-section into multiple `<h2>` entries, is a mapping violation.
 
-The complete ordered section template for this project — all 21 `<h2>` sections with their exact `id`,
+The complete ordered section template for this project — every `<h2>` section with its exact `id`,
 `title`, `mapsTo`, `source`, visualizer assignment, and prose-vs-boxed treatment — is in
 `section-spine.md`. Use it verbatim. Verify the mapping before building; do not reconstruct it from
 memory.
@@ -99,7 +99,7 @@ path for that sub-section. This is the bridge between the gallery and the doc �
 When a Components bucket entry has documented sub-groups (e.g. UI → Controls/Actions · Links · Display;
 Document → Annotations · Figures & Media · Code), those sub-groups become `SpecimenGroup` h3 eyebrows
 within the section, and their specimens render at h4. The sub-group vocabulary — and which component
-belongs in which group — are pinned in `section-spine.md` → Bucket 3 (Components).
+belongs in which group — are pinned in `spine-background-components.md` → Bucket 3: Components.
 
 Flat sections (Shell, Layout, most Foundations entries) render specimens at h3 with no sub-group layer.
 
@@ -121,7 +121,7 @@ Domain components listed as `[inline]` (page-section content embedded in a page,
 component file) are **listed, not rendered** — render as a `<div class="prose-content"><ul>…</ul></div>`
 (a local `InlineList` helper), noting their page location. Domain components listed as `[standalone]`
 (have their own component file) are **rendered live** via `Specimen` blocks. Entries the doc marks as
-pending design get a placeholder card, last in their area, never a demo — see `section-spine.md` →
+pending design get a placeholder card, last in their area, never a demo — see `spine-domain-technical.md` →
 Bucket 4: Domain.
 
 When `[inline]` / `[standalone]` tags are absent from DESIGN.md, infer from code: a component with its
@@ -149,7 +149,7 @@ hand-faked markup.** This is non-negotiable in Build mode:
 - The `slug` in any demo `Project` object MUST be a real registered slug — components like `HeroMedia`
   dispatch by slug to load registered covers; a fake slug produces no output.
 - Components that render through a build pipeline (e.g. `CodeBlock` via Shiki + MDX) MUST use that
-  pipeline — see `hard-to-demo.md` → Demo-through-real-pipeline. A bare code component bypassing Shiki
+  pipeline — see `hard-to-demo.md` → Build-time-transform-dependent components. A bare code component bypassing Shiki
   renders unhighlighted; that is a fidelity failure, not a compile failure.
 
 ---
@@ -217,7 +217,7 @@ clean. Check all three pairs, not just doc-to-code.
 4. Update the gallery sections to reflect the doc and the current code (within the gallery's own area).
 5. **Re-run Gate 0 for every section whose mapped sub-section changed** — `verification.md` → Gate 0.
    This is the step that catches the prose axis; without it a doc edit lands with nothing comparing the
-   two. Walk the sub-section rule for rule rather than searching the gallery for remembered phrases.
+   two. Walk the sub-section item by item rather than searching the gallery for remembered phrases.
 6. Report all mismatches via the inform-only handoff protocol — see `boundaries-and-handoff.md`.
 
 The gallery **never edits DESIGN.md or production code** during Sync. It detects and reports.
@@ -280,7 +280,7 @@ Cross-reference: the fixer triad for mismatches is in `boundaries-and-handoff.md
 
 ## Cross-references
 
-- Fixed 21-section template (ordered sub-sections, visualizer assignment, prose-vs-boxed, component
+- Ordered section template (ordered sub-sections, visualizer assignment, prose-vs-boxed, component
   sub-grouping, domain `[inline]`/`[standalone]` treatment) → `section-spine.md`
 - Adapter-specific discovery (how to find components and tokens in code per stack) → `stack-adapters.md`
 - How `GallerySection` and `SpecimenGroup` work → `scaffold-kit.md`

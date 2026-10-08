@@ -82,7 +82,8 @@ public/<gallery-route>/        ← dev-only static assets (not shipped to produc
 ```
 
 **Count summary:** scaffold-kit = 4 files (no index.ts); visualizer-kit = 9 component files + 1 index.ts;
-sections/ = 5 files; gallery h2 sections = 21 total.
+sections/ = 5 files; gallery h2 sections = one per DESIGN.md sub-section, however many that is
+(`modes.md` → Coverage derivation).
 
 Avoid framework-reserved filenames for section/kit modules — see `stack-adapters.md`.
 
@@ -305,27 +306,17 @@ exactly three rule blocks — no more:
 [data-theme="dark"]  .ds-shot-light { display: none }
 [data-theme="light"] .ds-shot-dark  { display: none }
 
-/* Element-scoped mirror of the reading-mode surface overrides (the :root[data-read="long"] blocks
-   in globals.css) so the color cards can preview reading mode live and theme-adaptive.
-   Keep in sync with the globals.css data-read="long" blocks. */
-.ds-reading {
-  --surface: #f8f8f9;
-  --surface-floating: #f8f8f9d9;
-}
-[data-theme="dark"] .ds-reading {
-  --surface: #1a1a1a;
-  --surface-elevated: #292929;
-  --surface-deep: #141414;
-  --surface-floating: #1f1f1fd9;
-}
-
-/* Reading cards that only differ from showcase in dark — hide them in light, where they hold. */
-[data-theme="light"] .ds-reading-darkonly { display: none }
+/* Reading-mode surface mirror, and the reading-mode-only cards.
+   STATED ONCE in `page-and-css.md` -> `gallery.css` requirements, with the rule that the
+   values are the project's own, copied from its global rules. Not repeated here: two copies
+   of a palette drift, and this file is not the one that owns the stylesheet. */
 ```
 
-**Maintenance rule:** the hardcoded values in `.ds-reading` mirror the `[data-read="long"]` blocks in
-`globals.css`. When the reading-mode surface tokens change in `globals.css`, update `gallery.css` to
-match. Light leaves raised/sunken surfaces at their showcase values (unchanged in reading mode).
+**Maintenance rule:** that mirror block is the only place the gallery holds copied values, so it is the
+only place that can drift. When the project's reading-mode surface tokens change, `gallery.css` is
+updated to match — the block states values the project owns, not values the gallery chose
+(`page-and-css.md` → `gallery.css` requirements). A theme in which a surface is unchanged in reading
+mode needs no override for it.
 
 ---
 
@@ -351,7 +342,7 @@ updates everything together.
 - `GallerySection` / `SpecimenGroup` / `Specimen` / `Card` / `ChromeFrame` / click-guards /
   theme-media pseudocode → `scaffold-kit.md`
 - All 9 visualizer pseudocodes + dogfooding gate → `visualizer-kit.md`
-- 21-section ordered template (which visualizer per sub-section, prose vs box) → `section-spine.md`
+- Ordered section template (which visualizer per sub-section, prose vs box) → `section-spine.md`
 - Mode derivation (Build/Inventory/Sync/Bootstrap) and item-list source per mode → `modes.md`
 - Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlay-on-hero, TOC rail) → `hard-to-demo.md`
 - Render-backed verification + gates → `verification.md`

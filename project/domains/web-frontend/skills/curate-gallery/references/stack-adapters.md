@@ -79,7 +79,7 @@ same transform — not hand-mocked. The pattern for Shiki syntax highlighting:
 The same pattern applies to any other build-time processor (remark plugins, image optimization, etc.) —
 identify what the production pipeline applies and route the specimen through the same path.
 
-See `hard-to-demo.md` → Demo through the real build pipeline for detail.
+See `hard-to-demo.md` → Build-time-transform-dependent components, for detail.
 
 ### (d) Theme flip
 
@@ -181,26 +181,26 @@ Classification is provisional and user-confirmed — see `modes.md` for the full
 
 ---
 
-## Static-HTML adapter contract (SPECIFIED — UNVERIFIED)
+## Static-HTML adapter contract (EXERCISED)
 
-> **Status: SPECIFIED.** The adapter shape below was built and render-checked in one Inventory shakedown
-> — treat the file tree and substrate mapping as concrete. It stays SPECIFIED
+> **Status: EXERCISED.** The adapter shape below was built and render-checked in one Inventory shakedown
+> — treat the file tree and substrate mapping as concrete. It stays EXERCISED
 > (not VERIFIED) until **a static-HTML project with a forward-written DESIGN.md** adopts the skill: a
 > reverse-engineered doc full of documented debt (dead CSS, no spacing scale, off-token colors) is too
 > vague a target to verify the fidelity gates against. The per-primitive and visualizer HTML expressions
 > are built out on that project.
 
-### Static-HTML pinned structure (SPECIFIED)
+### Static-HTML pinned structure (EXERCISED)
 
 The static-HTML gallery is the **layout pin** for this stack — the equal-authority sibling of the
 React/Next tree in `architecture.md`, selected by the same stack detection. Same concept pins (catalog
-primitives, 9 visualizer roles, 21-section spine, build order); different substrate. The "kits" do not
+primitives, 9 visualizer roles, the section spine, build order); different substrate. The "kits" do not
 disappear — they change from component files to **CSS classes + a small JS shim**. Reproduce these files
 with these names:
 
 ```
 design-system/
-├── index.html            ← page shell + all 21 section blocks   (≈ page.tsx + sections/*.tsx)
+├── index.html            ← page shell + every section block   (≈ page.tsx + sections/*.tsx)
 ├── gallery.css           ← gallery chrome: .ds-* catalog + visualizer classes
 │                            (≈ gallery.css + scaffold-kit + visualizer-kit)
 ├── gallery.js            ← click-guard + copied-handler stubs    (≈ click-guards capture-phase logic)
@@ -210,7 +210,7 @@ design-system/
 ```
 
 **Output-parity map** — every React pinned piece has a static-HTML equivalent, so both adapters emit the
-same gallery (21 sections, specimen frames, visualizers, noindex, dev-only banner) in different clothes:
+same gallery (the same sections, specimen frames, visualizers, noindex, dev-only banner) in different clothes:
 
 | React/Next pinned piece | Static-HTML equivalent |
 |---|---|
@@ -222,7 +222,7 @@ same gallery (21 sections, specimen frames, visualizers, noindex, dev-only banne
 | imported real components | copied markup (monolith) OR included partials (multi-file) |
 | `public/<route>/samples/` | copied assets + CSS-shape stand-ins |
 
-**Specimen marker (SPECIFIED).** Give each specimen a
+**Specimen marker (EXERCISED).** Give each specimen a
 machine-readable descriptor comment so the gallery is scannable and (optionally) publishable to a
 claude.ai/design project:
 `<!-- @specimen group="Components·UI" name="card" variants=".tc/.fam-card/.ev-card/.cc" status="live|posed|dead" -->`.
@@ -230,8 +230,9 @@ claude.ai/design project:
 
 **Split trigger.** Keep the React and static-HTML trees co-located in `architecture.md` while one stays a
 single table. When BOTH need full treatment (tree + page template + gallery.css + primitive expressions),
-split by stack into symmetric siblings — `architecture.md` (neutral spine + router), `architecture-react.md`,
-`architecture-static-html.md` — so a builder loads only its stack's layout pin. Not asymmetric (React-in-main,
+split by stack into symmetric siblings — `architecture.md` (neutral spine + router) plus one file per
+stack, named for it — so a builder loads only its stack's layout pin. **Those per-stack files do not
+exist yet**; this names the shape the split should take, not a path to follow today. Not asymmetric (React-in-main,
 HTML-in-adapter) — that scatters one concept across two docs.
 
 ### (a) Dev-only route

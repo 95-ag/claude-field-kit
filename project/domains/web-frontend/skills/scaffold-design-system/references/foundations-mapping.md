@@ -1,8 +1,10 @@
 # Foundations mapping
 
-How the design doc's documented values become the project's token/theme layer — what happens between
-reading the doc and writing the stylesheets. The operation framing a run is in `operations.md`; what
-counts as proof is in `verification.md`.
+Which documented values become tokens, and what each one is called — the decisions between
+reading the doc and writing a declaration. The framework mechanics that constrain those
+decisions are in `foundations-framework.md`; what the layer cannot satisfy on its own is in
+`foundations-boundaries.md`. The operation framing is in `operations.md`; proof is in
+`verification.md`.
 
 Framework behavior below was observed on **Tailwind CSS v4, version 4.3.3**, by compiling — not read
 from documentation. Re-measure on another major version; on another framework the questions are
@@ -37,13 +39,19 @@ Not every documented key becomes a variable. Decide per block, on two properties
 
 **A block that emits nothing is stated in the report.** Silence here reads as a dropped block.
 
-Two transcription rules hold throughout (`operations.md` → Fresh, step 4):
+Three transcription rules hold throughout (`operations.md` → Fresh, step 4):
 
 - **A token reference stays a reference.** A `{token.path}` value resolves to `var(--…)`, never to a
   copied literal — verified in the *built* CSS, where the `var()` must still be unresolved. A
   reference cannot desynchronize from the value it points at; a copy can.
 - **Missing stays missing.** A property the doc leaves unstated is left unset, never filled with a
   plausible default.
+- **Units are transcribed, never converted.** A value the doc states in one unit is emitted in that
+  unit. A conversion is a reinterpretation wearing the look of a transcription: it assumes a root size
+  the doc never fixed, so the emitted value tracks the user's text-size setting where the doc said it
+  should not, or stops tracking it where the doc said it should — and the two agree at the default, so
+  every check passes. Where the doc's unit is wrong for what it governs, that is drift to report, not
+  a conversion to perform.
 
 *Example:* the `elevated-paper` block emits two shadow tokens (its shadows have no
 expression but a variable); the `modal-scrim` block — a color that is already a palette token plus an
@@ -60,97 +68,39 @@ left unset on every role but the one the doc gives a value for.
   `utility-(--token)`.
 - **A token is never rehomed into a namespace whose utilities would then lie about it.** The utility
   family a namespace mints is part of what the token publishes.
+- **Name a namespace-less token for the role it serves, in the doc's own vocabulary** — the framework
+  mints no utility family to borrow a convention from, so nothing else supplies the name. Take the
+  doc's term for the thing (`--touch-target`, not `--min-size-44`), and keep the name free of any
+  known namespace's prefix, since a `--text-`/`--shadow-`/`--spacing-` lead-in silently files the
+  token into that namespace and mints utilities for it. **Where the doc names the value, that name is
+  the token name**; where it does not, the name is an inferred value like any other and is reported as
+  one (`operations.md` → The run report). Unstated, fonts, strokes, durations, the z-scale, the focus
+  ring and shadows get freshly invented names on every run, and no gate compares two runs' names.
 
-Observed on Tailwind 4.3.3 — namespaces that generate utilities: `--color-*`, `--font-*`, `--text-*`,
+**The namespace list below is the framework's documented set, with only part of it probed here — treat
+it as the candidate list, not as measured.** Separating the two matters because this file's header
+claims compiled provenance for what follows, and a documented claim inheriting that sentence reads as
+measured when it is not. So: **the run probes the namespaces it actually relies on** and reports the
+result (`verification.md` → A green build never proves a utility exists); a namespace taken from this
+list without a probe is an assumption the run is carrying.
+
+Documented on Tailwind 4.3.3 as generating utilities: `--color-*`, `--font-*`, `--text-*`,
 `--spacing-*`, `--radius-*`, `--ease-*`, `--breakpoint-*`, `--leading-*`, `--tracking-*`,
-`--shadow-*`, `--container-*`, `--border-width-*`. There is **no `--z-*` namespace** and no
-`--duration-*` (only the single `--default-transition-duration`). **`--spacing` is a multiplier, not
-a named scale** — stock utilities resolve as `calc(var(--spacing) * n)`.
+`--shadow-*`, `--container-*`, `--border-width-*`. **Compiled here:** there is **no `--z-*` namespace**
+and no `--duration-*` (only the single `--default-transition-duration`), and **`--spacing` is a
+multiplier, not a named scale** — stock utilities resolve as `calc(var(--spacing) * n)`.
 
 So z-index values, durations, stroke widths and accessibility floors are plain variables there:
 `duration-(--duration-base)` compiles, `duration-base` does not.
 
-**Z-index is the one scale that cannot be toolchain-enforced.** Every other scale can be closed (see
-below), but `z-*` takes bare numerics against no namespace — an off-scale `z-999` compiles freely
+**Z-index is the one scale that cannot be toolchain-enforced.** Every other scale can be closed
+(`foundations-framework.md` → Namespace closures), but `z-*` takes bare numerics against no namespace — an off-scale `z-999` compiles freely
 while a token name does not compile at all. Z-index discipline stays a review concern; say so in the
 report rather than implying the layer enforces it.
 
 *Example:* the 44px touch-target floor is a plain `:root` variable read as
 `min-h-(--touch-target)`. Filing it under the spacing namespace would publish `p-touch-target` and
 `gap-touch-target` — an off-scale spacing utility minted to enforce an accessibility rule.
-
----
-
-## `@theme static` — the layer is a published contract
-
-**Plain `@theme` tree-shakes every token no utility references out of `:root` — regardless of
-namespace.** A token published as a contract for hand-written CSS would then silently not exist, and
-the failure surfaces late, at a `var()` that resolves to nothing.
-
-- **Use the static form for a design system published as a contract.** On Tailwind 4.3.3 that is
-  `@theme static`.
-- **One mechanism, not two.** A token in a namespace the framework does not know behaves identically
-  to an unreferenced token in a known one: both are dropped by plain `@theme`, both survive under
-  `static`. Unknown namespaces are *utility-less*, never separately *discarded* — an earlier reading
-  named namespace-discarding as a second mechanism and was wrong: it was measured while plain
-  `@theme` was still the baseline and never re-run once `static` was adopted (`verification.md` →
-  re-running every finding established before a foundational decision changed).
-- **Splitting theme tokens from plain `:root` variables is a readability choice, not a compiler
-  constraint.** Either block works for either group. Keep the split to show which tokens participate
-  in utility generation, and justify it as legibility — never as forced by the framework.
-
----
-
-## Scale keys that collide with the framework's own scales
-
-**Before emitting a named scale, diff its key list against the framework's own scale key names in
-every namespace those utilities can resolve against.** This is a naming problem caught at design time
-by comparing two lists, not a compiler problem to be discovered by probing.
-
-Observed on Tailwind 4.3.3: `max-w-<name>` and its siblings resolve against both the container and
-the spacing namespaces, and where both define a key, **spacing wins**. A spacing scale named with
-t-shirt keys therefore shadows the container scale across **five** utility families — `max-w-`,
-`min-w-`, `basis-`, `w-`, `h-`. The result compiles clean and passes every gate: a silent wrong
-value, not an error.
-
-**The fix is at the key names: prefix the named steps, leave the zero step bare.**
-
-- The zero step collides with nothing — the container scale has no `0` key.
-- Prefixing it is actively harmful: it removes `inset-0`, `p-0`, `m-0`, `gap-0` and `top-0`. The zero
-  step is the one scale value whose *name* is load-bearing to the framework.
-- **The rename belongs to the doc.** Renaming keys only in the emitted CSS desynchronizes the doc
-  from the layer it governs — report the collision as drift and hand off to `design-write`, which
-  also records the naming rule so nobody tidies the prefix back off.
-
-**The collision is independent of any namespace closure.** Reopening the shadowed scale leaves the
-wrong value in place, which falsifies the closure as its cause; the key names are the whole
-mechanism. This was named wrongly once here — the method rule that catches it is in
-`verification.md` → Name a cause only once it is isolated by falsification.
-
-*Example:* the nine named steps are emitted as `--spacing-space-3xs` … `--spacing-space-3xl`
-and read as `p-space-md`; `--spacing-0` stays unprefixed.
-
----
-
-## Namespace closures remove derived utilities
-
-Closing a namespace (assigning it `initial`) makes "values outside the scale are not used"
-toolchain-enforced rather than advisory. Emit a closure only where the doc's own enforcement
-philosophy calls for one, and state the cost:
-
-- **A closure removes every derived utility, including the zero step nobody thinks of as a scale
-  value.** Closing a multiplier-based spacing namespace removes `inset-0`, `p-0`, `gap-0` and
-  friends, because they are emitted from that multiplier. Sibling zero utilities in other namespaces
-  survive, which makes the loss look arbitrary rather than systematic.
-- **Publish the zero step as a scale value** where the doc defines one; that reopens exactly the zero
-  utilities and nothing else.
-- Static utilities are not theme tokens and survive a closure — on Tailwind 4.3.3, closing the color
-  namespace leaves `bg-transparent` and `text-current` working while dropping `--color-white`/`black`.
-- Closing the type-scale or breakpoint namespaces removes utilities most readers assume are always
-  present. That is the point; name the removal in the report so it is not later diagnosed as a bug.
-
-No claim in this section is one a green build can make — verify each closure by compiling
-(`verification.md`).
 
 ---
 
@@ -182,7 +132,7 @@ losing family and case on every role.
 attaches the animation and then hides it.
 
 - **This is a reassignment, not a waiver.** Each motion-attaching component owns its own gate and
-  honors it at the source — do not attach the animation (`components.md`).
+  honors it at the source — do not attach the animation (`component-behavior.md` → Motion).
 - Nothing downstream catches a component that skips it: no global switch exists to fall back on. Say
   so in the handoff, explicitly.
 - **A habitual best practice can be off-spec, and the doc wins.** The global kill-switch is the
@@ -191,53 +141,3 @@ attaches the animation and then hides it.
 
 ---
 
-## Exhaustive replacement
-
-**Scaffold boilerplate the doc does not sanction does not survive a foundations run.** A generated
-starter ships its own fonts, color variables, theme wiring and a dark-mode block; anything the doc
-does not state is removed, not left beside the real tokens where it reads as sanctioned.
-
-- Where the doc defines no dark mode, state the single scheme explicitly rather than leaving the
-  starter's media-query block in place.
-- Prefer overriding the framework's own default role tokens (the body font family, for instance) to
-  restating the value on `body` — the preflight then carries it.
-- Confirm removal by grepping the finished stylesheets for the starter's identifiers.
-- **Removal reaches outside this skill's scope, and that is not a reason to skip it.** A starter's
-  variables and utility classes are consumed by starter *pages*, which this skill never edits
-  (`SKILL.md` → Scope). After the replacement those consumers compile to nothing: green build, wrong
-  page, no error anywhere.
-- **Name the collateral breakage in the report** — the file, the identifiers it still consumes, what
-  it renders as now, and an owner. Silence here is worse than the breakage: the next reader meets a
-  broken page with no record and diagnoses it as a defect in the token layer.
-
----
-
-## A published contract names its mount point
-
-A token layer can publish a variable it cannot itself satisfy. **A font-family token names a family;
-it does not load one.** The loader the framework rule requires is mounted in a root file that is
-neither a stylesheet nor a component, so this skill's scope table never reaches it — and the tokens
-resolve to a fallback stack while every gate stays green.
-
-- **Emit the token anyway.** Publishing the contract is the token layer's job; satisfying it is not
-  always the token layer's to do.
-- **Name the mount point in the handoff** — the file, the mechanism the repo's framework rule
-  prescribes, and the exact variable names it must define — and state that the contract is
-  unsatisfied until it is wired.
-- **Never read the token back as proof.** Confirm the family against a rendered element's computed
-  style; until the mount point exists, that is what shows the fallback
-  (`verification.md` → Framework configuration the gate cannot report).
-- The same shape holds for any published value whose satisfaction lives outside the run: state the
-  contract, name the mount point, mark it unsatisfied.
-
----
-
-## The stylesheet file split
-
-**The split resolves from the target repo's design-system rule, never from a layout hardcoded here**
-(`SKILL.md` → Project-native contract). Read that rule and apply its own triggers.
-
-- Where the rule offers both an **identity** trigger (a concern is a distinct self-contained block)
-  and a **size** trigger, identity fires first — a full token set is its own file at any length.
-- **Emit no file for a concern the project does not have.** A rule naming typical concerns names them
-  as typical, not required; an empty prose or content layer is boilerplate by another name.

@@ -28,8 +28,15 @@ changed. The author greps for what they remember changing, which is structurally
 comparing two artifacts, and it misses whole classes of defect that survive repeated self-review. Where
 no separate reviewer is available, say so in the report rather than recording the gate as fully met.
 
-**Walk the sub-section rule for rule.** Do not search the gallery for phrases you remember editing —
+**Walk the sub-section item by item.** Do not search the gallery for phrases you remember editing —
 grepping proves what you changed, never that the two agree.
+
+**Coverage is item-level, not rule-level, and the difference decides what the gate asks for.** Every
+documented *item* — a token, a component, a variant, a state — is accounted for: present as a specimen,
+or deliberately absent with a reason. A documented *rule* is a different thing: it earns gallery text
+only where the render cannot show it (below). **A gate that asks for a gallery counterpart to every
+rule is asking the gallery to become the doc again**, which is the failure the brevity rule below
+exists to stop — and it passes while doing it, because a faithful copy agrees with its source.
 
 For each section confirm:
 
@@ -39,6 +46,15 @@ For each section confirm:
   doc does not make is drift even when it is true; a claim the doc contradicts is a defect. Named
   values (hex, ratios, sizes, counts) are checked against the doc, not against memory — a section that
   counts its own doc sub-section's entries recounts them.
+  - **Follow a cross-reference before calling a claim unsupported.** The check is scoped to one
+    sub-section, but a doc is not: where the mapped sub-section stops at "this would break the rule in
+    X", the claim's support is **in X**, and the claim is true and sourced. Flagging it teaches the next
+    pass to delete true content, and the deletion then passes every later review.
+  - **Ask whether what is missing is the framing, not the claim.** Three flags in one pass were all
+    this shape: the claim was supported and what the gallery had dropped was the doc's framing — that a
+    rule constrains *every* use rather than describing the current ones. That sentence is what stops a
+    later session reading the rule as a description and dropping it, so losing it is the real defect and
+    deleting the claim makes it permanent.
 
 - **Visualizer / structure choice** — renders via the visualizer or prose structure pinned in
   `section-spine.md` (Colors → SwatchGrid, Elevation → DepthGrid, Z-Index → LayerStack, …); no
@@ -71,12 +87,54 @@ For each section confirm:
   `name · token · usage` caption — usage info, the icon-sizes pattern).
 - **No construction leak** — no gallery kit/section file paths appear in any rendered `source`; only
   real component / CSS / token / DESIGN.md references.
+- **No pointer into an uncommitted or ignored path** — no committed gallery text, rendered **or** in a
+  comment, cites a path that is not in the repo: a working-notes file, a scratch harness, a plan, an
+  ignored directory. This is wider than the construction leak above, which only covers the gallery's own
+  kit paths. **Every such pointer is dead for anyone who clones**, and it reads as a real reference
+  until someone tries to follow it, so a build check will never surface it.
 - **Dogfood** — no typography overrides, no gratuitous boxes, all visual values from tokens.
 - **Page shell** — reading-page wrappers (standard content primitives), uniform inter-section spacing.
+
+- **Earns-its-place** — every line of text is there because something must be **seen**, not because the
+  doc says it (below). Claim fidelity asks whether a line is *true*; this asks whether it belongs.
 
 Self-correct each finding before the render and build gates. Cross-check any "this looks wrong" read against the
 actual tokens / reference code — a single visual read over-flags (legit token-baked accent can look like
 a violation). The reference code is the arbiter, not a screenshot impression.
+
+---
+
+### The gallery is a visual partner to the doc, not a second copy of it
+
+**A parity gate alone cannot find this, and that is why it needs its own check.** Restatement *agrees*
+with the doc — it is a faithful copy — so it passes claim fidelity every time while the defect grows.
+The gate therefore asks the inverse question as well.
+
+**The test, one line, applied per line of rendered text:** *if I delete this line, does the viewer lose
+something they cannot get by looking?* If no, delete it. The doc keeps every value; that is the whole
+point of the split.
+
+| | |
+|---|---|
+| **Remove** | a figure or rule the specimen already demonstrates. A per-tier size ladder written out beside a specimen that shows those sizes as the window resizes is the clearest case. |
+| **Keep** | a **token name** — it tells the viewer *which* token produced what they can see. |
+| **Keep** | a label naming the **tier or state** a specimen is showing, without which the viewer cannot tell what they are looking at. |
+| **Keep** | a rule the render **cannot** show — behaviour unobservable on the page (true only on a touchscreen, say), or a prohibition. |
+| **Judge** | a device ruler's or a type-scale specimen's numbers are often the visible content itself, not restatement. |
+
+**It is not a finding log or an exception log either.** "The gallery cannot demonstrate X" is not gallery
+content and not a task — a specimen exists to show a documented rule, so a limit of the gallery belongs
+in the report, never on the page.
+
+**Density follows from the test, as a ceiling with a reason rather than a limit.** `spec` entries are
+phrases, not sentences; at most ~5 per specimen; a `description` past ~25 words needs a reason to be
+that long. Measured against two real galleries, a hard one-or-two-sentence rule would be wrong — in
+practice 7 of 38 descriptions run past 25 words, the longest 57 — so the number is a prompt to justify,
+not a cap to enforce.
+
+**Two cross-checks when applying it.** A deletion pass must confirm no specimen lost its
+**identifiability** — a viewer who can no longer tell which tier or state they are seeing has lost more
+than the prose saved. And it must **re-render**, because removing text reflows the page.
 
 ---
 
@@ -155,24 +213,24 @@ Run the full toolchain before marking the gallery done:
 Static HTML: no build step — run a static linter or validator and a DOM duplicate-id check in the
 browser.
 
-*Static-HTML per-specimen render-check (SPECIFIED):*
+*Static-HTML per-specimen render-check (EXERCISED):*
 whole-page dup-id is not enough — check each `.ds-frame` actually paints content. Three signals per
 specimen: **bad** (empty / zero-height box), **thin** (rendered height below a min threshold),
 **variantsIdentical** (two variants with identical computed render — a dead-variant / dead-CSS tell). This
 is the automated form of the `.fam-member` catch (a specimen that rendered but painted nothing); a dup-id
 gate cannot see it.
 
-A green build is necessary — not sufficient; Gate 0's per-section self-review catches what compiles but diverges.
+A green build is necessary — not sufficient; Gate 0's per-section parity review catches what compiles but diverges.
 
 ---
 
 ## Skill self-test — parity dogfood (maintainer-only; requires a reference gallery)
 
 **NOT a per-build gate.** A normal gallery build has no prior gallery to compare against — the gates above
-(self-review + render + build + the dogfood gate) are the whole bar. This is a **maintainer** method for
+(parity review + render + build + the dogfood gate) are the whole bar. This is a **maintainer** method for
 testing the SKILL when a known-good **reference gallery already exists**: dispatch a fresh / zero-context
 subagent given only the skill (no prior conversation or session state), have it rebuild at a temp route,
-then diff its file tree, 21-section spine, and per-section visualizer usage against the reference. Any
+then diff its file tree, section spine, and per-section visualizer usage against the reference. Any
 divergence = a skill gap (fix the skill, re-run). Remove the temp gallery after. **Skips entirely when no
 reference exists.**
 
@@ -189,10 +247,10 @@ rebuild must not be able to read it.
 The skill claims to be stack-agnostic. Proof requires at least two adapters verified against real
 projects:
 
-| Stack | Modes verified | Status |
+| Stack | Modes run | Status |
 |---|---|---|
 | **React/Next** | Build, Sync | VERIFIED |
-| **Static-HTML** | Inventory (shakedown) | SPECIFIED — adapter shape built + render-checked; awaits a static-HTML project with a forward-written DESIGN.md (see `stack-adapters.md` → Static-HTML pinned structure) |
+| **Static-HTML** | Inventory (shakedown) | EXERCISED — adapter shape built + render-checked; awaits a static-HTML project with a forward-written DESIGN.md (see `stack-adapters.md` → Static-HTML pinned structure) |
 
 The React/Next adapter verification satisfies the first proof. The static-HTML
 Inventory shakedown built and render-checked the adapter shape and harvested
@@ -212,6 +270,6 @@ materials that imply both adapters are tested.
 - Visual-verification principles (render-backed vs inferred labeling) — stated inline above; see
   also the host project's visual-verification rule.
   *Example:* `rules/web-frontend/visual-verification.md`
-- Pinned file/folder structure and 21-section spine → `architecture.md`
+- Pinned file/folder structure and the section spine → `architecture.md`
 - Per-section template (which visualizer per section, prose-vs-box) → `section-spine.md`
 - Visualizer pseudocode and dogfood constraints → `visualizer-kit.md`

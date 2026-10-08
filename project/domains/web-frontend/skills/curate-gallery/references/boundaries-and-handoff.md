@@ -30,7 +30,8 @@ Certain components cannot be meaningfully demoed without a small hook in the pro
 - the mechanism is one of the two patterns below, **and**
 - the component matches one of the triggers this section names: fixed, page-coupled, breakpoint-gated, or hard side-effects.
 
-Both are required. The trigger is the occasion, the pattern is the mechanism; bounding by mechanism alone would licence any prop. A novel affordance, or one of these two patterns on a component matching no trigger, still needs per-case agreement. Procedure — which pattern applies, how each touch-point is named and recorded — is `scaffold-design-system/references/components.md`.
+Both are required. The trigger is the occasion, the pattern is the mechanism; bounding by mechanism alone would licence any prop. A novel affordance, or one of these two patterns on a component matching no trigger, still needs per-case agreement. Procedure — which pattern applies, how each touch-point is named and recorded — is
+`scaffold-design-system/references/component-set.md` → Demo affordances.
 
 **Constraint:** keep every touch-point minimal. Prefer a **prop** (the simplest possible hook) or a **presentational sub-component extraction** (splitting the presentational panel out of a side-effecting wrapper) over logic changes to the production component. The production callers always omit the demo prop; the sub-component is wrapped by the real component for production use.
 
