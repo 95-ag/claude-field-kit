@@ -25,7 +25,9 @@ The document MUST optimize for:
 
 **YAML Registry layer** — globally reusable canonical tokens at the top of the document. Single source of truth for token *values*: color tokens, typography tokens, spacing scale, radius scale, motion duration and easing tokens, breakpoints, z-index scale, focus-ring spec. Inline YAML may reference registry tokens by name but must not duplicate their values.
 
-**Markdown Body layer** — canonical for *meaning*: semantic intent, role, operational constraints, rationale. Markdown is where behavior is described, not where values are stored.
+**Markdown Body layer** — canonical for *meaning*: semantic intent, role, operational constraints, and **a bounded reason**. Markdown is where behavior is described, not where values are stored.
+
+**Bounded, and it is the word the body most often loses.** State the requirement; add a reason only where a future reader would otherwise undo the rule, and cap it at one clause. The alternatives considered, the measurements behind a choice, and the decision's history belong in `Iteration Notes`, not beside the rule — unbounded, this one word turns a contract into a decision log.
 
 Local-spec YAML is still permitted inline when locality aids comprehension — per-elevation-level surface specs, component spec blocks, semantic-systems mappings. The two-layer model separates *roles* (canonical tokens vs. semantic meaning), not file regions. There is no single monolithic YAML superblock.
 
@@ -127,6 +129,12 @@ Targets:
 * bullets ≤ 2 visual lines
 * components ≤ 6 bullets before YAML/spec
 * most sections SHOULD remain readable within one screen height
+* a reason attached to a requirement ≤ one clause (see Two-Layer Document Model)
+* no provenance shape anywhere in a canonical section (see Prose Anti-Patterns)
+* no bullet restating a table or YAML block adjacent to it
+* no rule stated in more than one section
+
+Every target above is mechanically checkable and is counted, not eyeballed (`validation-heuristics.md` → Compression).
 
 Avoid:
 
@@ -178,6 +186,7 @@ Token names are **semantic — by usage/role, not value or appearance** — acro
 - **One value → one token.** Don't mint two names for the same resolved value, or overload one name across distinct roles. Names must be distinct enough not to collide.
 - **Foreground pairs name their ground.** A text/icon token names the surface it sits on — e.g. an `ink` / `ink-on-accent` pairing.
 - **Responsive tiers use device + breakpoint-token names.** Name them by device (mobile, tablet, laptop, desktop, wide, ultrawide) and the framework's breakpoint tokens (e.g. sm, md, lg, xl, 2xl) — never ad-hoc scale words ("mid").
+- **A table of tier-suffixed tokens states the naming pattern once above it; the cells carry values only.** Repeating the full token name in every cell invites a cell to invent one that resolves to nothing, in a table that still reads as authoritative. State any exception beside the pattern, not in the cell that takes it.
 
 ---
 
@@ -325,6 +334,21 @@ Avoid (over-decomposed):
 
 Avoid (over-loaded — split a high-information concept into a parent + sub-bullets):
 - One bullet that bundles a component's container styling, its responsive column behavior, its hover/active states, and its loading/empty states → instead lead with the component, then sub-bullet styling, responsive behavior, and states.
+
+### A requirement, never a derived fact
+
+**The document states requirements. A figure that follows from values already in the document is not one,
+and is not stated.** A contrast ratio follows from two hexes; a measured spread follows from a scale; a
+pixel count follows from a layout. Each goes stale the moment its inputs move and nothing recomputes it,
+so it survives as a confident sentence that is quietly false.
+
+- **Keep a figure only where it bounds a deliberate exception** — a value the system knowingly violates,
+  where the number IS the limit of the exception — or where it is an `Iteration Notes → Known Gaps`
+  measurement, which is a dated observation rather than a rule.
+- **Prefer the constraint to the figure.** "Meets AA against every surface it is used on" survives a
+  palette change; a stated ratio does not.
+- **"This value is not in the doc" is not yet a finding.** Ask whether it is a requirement a redesigner
+  would need, or tuning that serves a requirement already written. Only the first belongs here.
 
 ### Cross-Cutting Rules Before Tables
 
@@ -550,6 +574,8 @@ Avoid:
 * repeating identical information across prose and YAML
 * process/source metadata in canonical sections — cross-doc citations ("see PRODUCT.md §7.4"), open-question markers, and self-containment notes ("Restated from X for self-containment") are transient authoring artifacts, not design-system content. Open decisions belong in `Iteration Notes → Open Decisions`; gaps belong in `Iteration Notes → Known Gaps`.
 * decision-history / iteration narration in canonical sections — "we renamed X→Y", "chose A over B", "previously…", migration residue, and self-justifying placement ("isn't a component, so no file"). Canonical content states the current decision, not the path to it; decision history → `Iteration Notes`, never inline.
+* **provenance of any shape, in any canonical section — including `Rejected` and `Known Gaps`.** The narration ban above reads as covering only sentences that tell a story, so provenance survives it in compact forms. The shapes, each a decision's *origin* rather than its content: **a date** in any format; **an attribution** ("an owner decision", "per the review", "as agreed"); **a before/after pair** ("was X, now Y"); **a supersession clause** naming what a rule replaced. The one exception is a `Known Gaps` measurement, where the date IS part of the observation — the only place a date belongs.
+* **a pointer into a path that is not in the repository** — a working-notes file, a plan, a scratch harness, an ignored directory. It is dead for anyone who clones and reads as a real source until someone follows it, so nothing surfaces it. State the fact inline instead.
 * unlocated evidence claims — a sentence asserting that a measurement, a rationale, an option set, or a prior decision *exists* without naming where it lives (a file path, a named heading, a commit) and without stating the fact inline. DESIGN.md is the design contract, so an unverifiable claim in it propagates into code. Prefer stating the fact inline; a pointer is only as durable as its target's next prune.
 
 ---

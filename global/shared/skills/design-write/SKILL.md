@@ -31,7 +31,7 @@ stop; do not fill the gap with invention.
 
 Always read first:
 
-1. `references/writing-contract.md` — the universal DESIGN.md contract: two-layer model, canonical
+1. `references/design-writing-contract.md` — the universal DESIGN.md contract: two-layer model, canonical
    spine, formatting rules, anti-patterns, section writing modes. Everything you write or edit complies.
 
 Then read what the mode needs:
@@ -46,6 +46,16 @@ If the DESIGN.md already exists, read it in full first — you cannot maintain a
 code" assumes the substance is decided, and it frequently is not. Walk the sections you are about to write or
 change with the user and confirm each one's content first. A review that lands after the write becomes a
 rewrite. Realign is exempt: it restructures what exists and originates nothing.
+
+**Pre-approved batch.** A user who has settled every value already, with one review scheduled at the end,
+can instruct you to skip the section-by-section confirmation; that instruction overrides the rule above.
+Proceed, then report what was written for that review. It changes *when* the content is confirmed, never
+*whether* — anything the brief does not decide is still flagged, never originated (`safety-rules.md` →
+Never originate).
+
+**A user's decision record is a brief, not a draft.** Dates, measurements and rejected options are
+context, not content. Write the requirement; list what you deliberately left out under `NOTED:` so the
+user can see the judgment and object to it.
 
 ## Modes
 
@@ -127,10 +137,19 @@ MIRRORS: "surface / section / ground" vocabulary — restated in the design-syst
 The manifest is the audit trail: if something changed and isn't in it, that's a defect. (Full entry-type
 table for Realign passes: `rewrite-passes.md`.)
 
+**A change to a boundary gets its own two sweeps** — the retired term *and* every figure measured under
+the old boundary (`edit-patterns.md` → Change a boundary).
+
 **Name the mirrors.** A doc's rules are frequently restated in prose elsewhere — a gallery, a README, an
 onboarding page. Those copies typecheck, lint and render while asserting the opposite of the doc, so
 nothing detects the mismatch afterwards. At the end of a run, add a `MIRRORS:` entry for each changed rule
 that has a restatement elsewhere. Naming it is the whole job — the mirror is outside this skill's scope.
+
+**Code comments are mirrors too, and a prose sweep misses them.** A comment may quote a doc sentence
+verbatim, or cite a section as the source of a figure: rewording falsifies the first, removing the figure
+breaks the second. Before rewording, grep the code for quoted doc phrases and for section names cited as a
+source — keep the quoted text verbatim, or list each as `MIRRORS:` with file and line. A table conversion
+has the same trap: a state label a comment cites must survive as the row key.
 
 ## Behavioral Defaults
 
@@ -148,7 +167,7 @@ that has a restatement elsewhere. Naming it is the whole job — the mirror is o
   Guardrail owns the boundary; this is the prompt that makes you notice it was crossed.
 - **Doc-first, templated, referenceable** — DESIGN.md describes what/why, never how the code wires it;
   names tokens by role; and emits the project schema's full structure so sibling docs can bind to its
-  heading anchors (`writing-contract.md` → Doc-First, Token Naming Conventions, Referenceable Contract
+  heading anchors (`design-writing-contract.md` → Doc-First, Token Naming Conventions, Referenceable Contract
   Surface). Heading anchors are load-bearing.
 
 ## Validation

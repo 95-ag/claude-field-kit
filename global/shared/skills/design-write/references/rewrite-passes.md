@@ -20,39 +20,40 @@ What does NOT change:
 
 **Empty placeholder headings** — headings with no content are a distinct category. Do not classify them as structural violations requiring moves or merges. Flag them using `PLACEHOLDER` (see Manifest Entry Types below) and leave them in place.
 
-Manifest entries: MOVED, REORDERED, RENAMED (heading only), PLACEHOLDER.
+Manifest entries: MOVED (source → destination), RENAMED (heading only), PLACEHOLDER.
 
 ---
 
 ## Manifest Entry Types
 
-Use these exact entry types across all passes. Keep each entry to one line.
+Keep each entry to one line.
 
 | Entry | When to use |
 |---|---|
-| `MOVED` | Content relocated from one section to another |
-| `REORDERED` | Section moved within its parent without content change |
-| `RENAMED` | Heading text changed — cross-references need updating |
-| `MERGED` | Two sections consolidated (requires user confirmation) |
+| `ADDED` | New content written into a section |
+| `UPDATED` | Existing content changed in place — a value, wording, a cross-reference, or formatting |
+| `REMOVED` | Content deleted, with user confirmation; never on the model's own judgment |
+| `MOVED` | Content relocated — the entry names source → destination, including out of the canonical sections |
+| `RENAMED` | Heading or identifier text changed — cross-references need updating |
+| `MERGED` | Sections or bullet clusters consolidated — consolidating *sections* requires user confirmation |
 | `SPLIT` | One section divided into two |
 | `UNIFIED` | Terminology replaced doc-wide (old → new, count) |
-| `COMPRESSED` | Prose or bullets reformatted for compression |
-| `REFORMATTED` | Token format, YAML, or component structure normalized |
-| `MERGED-BULLETS` | Fragmented bullets combined into semantic clusters |
-| `REMOVED-DUPLICATE-YAML` | YAML block removed because prose covers same content |
+| `REWORDED` | A sentence rewritten forward — narration dropped, prohibition kept |
 | `PLACEHOLDER` | Empty heading with no content — flagged, not moved, not deleted |
-| `FLAGGED` | Potentially duplicative content — user confirmation required before action |
-| `NOTED` | Observation outside the pass scope — no action taken |
-| `MIGRATED-LAYER` | YAML block extracted from markdown body into the top-level registry |
-| `RECLASSIFIED` | Content moved between canonical buckets (e.g., Foundations → Semantic Systems) |
-| `RELOCATED-TO-DOMAIN-COMPONENT` | Section relocated to `## Domain Components` (page/domain-bound, not globally reusable) |
-| `KEPT-LOCAL` | Content evaluated for hoisting but retained colocated (locality principle applied) |
-| `REWRITTEN` | Section content rewritten to its contract writing mode |
-| `COMPONENT-REFORMATTED` | Component brought to identity → bullets → optional YAML order |
-| `ANTI-PATTERN-REMOVED` | A contract anti-pattern eliminated in place |
-| `DEMOTED-TO-EXTENSION` | Content moved into a product-type extension / project-schema layer |
+| `FLAGGED` | Content needing user confirmation before action — duplicative, misplaced, or class unclear |
+| `NOTED` | Observation outside the pass's action scope — no action taken |
+| `KEPT-LOCAL` | Content evaluated for hoisting and deliberately left colocated |
+| `MIRRORS` | A restatement outside this doc that this change invalidates — file and line |
+| `SIZE` | The pass's net effect on document size, in lines AND bytes |
 
-**`PLACEHOLDER` vs `FLAGGED`:** Use `PLACEHOLDER` exclusively for empty headings. Use `FLAGGED` for headings or sections that have content but may be duplicative or misplaced. Never conflate the two.
+**This table is the only registry of entry types.** A pass uses no label the table does not list; one
+needing a type it lacks reports that as a finding instead of coining a label. An invented label is
+invisible to any check that reads the manifest by type, so the change it records cannot be verified.
+
+**`SIZE` reports lines and bytes** — they move in opposite directions. Replacing prose with a table adds
+rows while removing words, so a line count alone reports compression as growth.
+
+**`PLACEHOLDER` is for empty headings only** — a heading that has content but may be duplicative or misplaced is `FLAGGED`, never `PLACEHOLDER`.
 
 ---
 
@@ -72,7 +73,7 @@ What does NOT change:
 - Section structure, heading text, ordering — use Structure pass first.
 - Terminology — use Terminology pass.
 
-Manifest entries: COMPRESSED, REFORMATTED, MERGED-BULLETS, REMOVED-DUPLICATE-YAML.
+Manifest entries: UPDATED (naming what was reformatted), MERGED (bullet clusters), REMOVED (duplicate YAML).
 
 ---
 
@@ -94,7 +95,7 @@ What changes:
 What does NOT change:
 - Canonical ordering, heading text, tokens — structural changes go in Structure pass.
 
-Manifest entries: REWRITTEN (section name), COMPONENT-REFORMATTED, ANTI-PATTERN-REMOVED.
+Manifest entries: UPDATED (section or component name), REMOVED (anti-pattern).
 
 ---
 
@@ -149,7 +150,7 @@ What does NOT change:
 
 Carve-out: the Section-Preserving Migrations default is suspended for this pass. Cross-section restructuring is the entire point. This suspension applies to this pass only.
 
-Every structural move is logged with a `MIGRATED-LAYER`, `RECLASSIFIED`, `DEMOTED-TO-EXTENSION`, or `KEPT-LOCAL` manifest entry.
+Every structural move is logged `MOVED: source → destination`; content deliberately left colocated is logged `KEPT-LOCAL`.
 
 **Default disposition for ambiguous placement decisions:** flag in the manifest and keep in place. Migration's job is to adopt the new spine — not to maximize architectural extraction.
 
@@ -162,7 +163,7 @@ This pass runs alone. It MUST NOT be combined with other passes.
 **Purpose:** Clear accumulated decision-history out of canonical sections without destroying the
 constraints buried inside it.
 
-The contract bans residue (`writing-contract.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
+The contract bans residue (`design-writing-contract.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
 only ever accumulates. In one recorded sweep, ten of seventeen hits were load-bearing — which is why this
 pass sorts before it deletes.
 

@@ -43,21 +43,23 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Compression
 
-- Compression targets satisfied (per `writing-contract.md` → Compression Targets); the contract is the source of truth for the specific limits.
+- Compression targets satisfied (per `design-writing-contract.md` → Compression Targets); the contract is the source of truth for the specific limits.
 - A dense bullet is not automatically a violation — apply the contract's cluster-low-info / split-high-info rule: flag a bullet only when it bundles several independently-explained facts, not merely for length.
+- **Count, and report the counts** — one per target in `design-writing-contract.md` → Compression Targets, plus the provenance sweep below. Every target is mechanically checkable; a pass reporting "satisfied" with no numbers has asserted nothing.
+- **A zero is a result and is reported as one** — "0 provenance shapes" and a silently skipped sweep look identical otherwise.
 
 ## Tokens & Terminology
 
 - Token references use `{token.name}` (resolved-value) format wherever the contract requires it.
-- No new tokens introduced that aren't declared in the Foundations section.
+- No new tokens introduced that aren't declared in **the YAML Registry, or a colocated Foundations table**. The registry is the canonical token store; a check that reads only the Foundations section passes a token that exists nowhere.
 - Stable vocabulary is consistent across the doc — no synonym drift introduced.
 
 ## Doc-First, Anti-Patterns & Template
 
-- **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
-- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `writing-contract.md` → Prose Anti-Patterns); history lives in Iteration Notes.
-- **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `writing-contract.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
-- **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
+- **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `design-writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
+- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `design-writing-contract.md` → Prose Anti-Patterns); history lives in Iteration Notes.
+- **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `design-writing-contract.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
+- **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `design-writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
 - **Template completeness** — every subsection the Project-Specific Schema requires is present.
 - **Anchor resolution** — every heading anchor sibling rules/docs reference resolves to a real heading.
 
@@ -67,12 +69,13 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 The ban on decision-history in canonical sections is a rule about what may be written; this is the check that it has not accumulated anyway. Residue only ever grows, so sweep rather than assume.
 
-- Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `writing-contract.md` → Prose Anti-Patterns.
+- Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `design-writing-contract.md` → Prose Anti-Patterns.
+- **Sweep the compact provenance shapes too** — a date, an attribution, a before/after pair, a supersession clause. The narration shapes above all miss them, because they tell no story. Sweep `Rejected` and `Known Gaps` as well; the shapes and the one exception are defined in `design-writing-contract.md` → Prose Anti-Patterns.
 - **Sort every hit before touching it** — a keyword match is not a verdict:
 
 | Class | Test | Action |
 |---|---|---|
-| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Delete, or move to `Iteration Notes`. |
+| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Move to `Iteration Notes`, or flag for deletion with its destination named. Never delete on the model's own judgment (`safety-rules.md` governs, in every mode). |
 | Constraint stated as history | The sentence exists to prevent a recurrence. Removing it makes a specific mistake available again. | Reword forward into a present-tense rule. **Never delete.** |
 
 - Rewording forward drops the narration and keeps the prohibition: "we removed the gold-on-gold pairing because it erased the scale" becomes "do not pair gold on gold — it erases the scale".
@@ -87,12 +90,43 @@ The ban on decision-history in canonical sections is a rule about what may be wr
 - Table row counts: preserved unless the manifest documents a merge.
 - Every input section's semantic content is traceable to an output location or a manifest entry.
 
+**Those three are the floor, not the method.** On a whole-document restructure, traceability has to be
+produced rather than asserted. In order:
+
+1. **Inventory the input's facts before the first edit** — tokens, values, table rows, named rules. An
+   inventory derived afterwards reconciles with whatever shipped.
+2. **Normalise before matching, and choose the normalisation deliberately** — whitespace, backticks,
+   `×`/`x`, dash forms. Numbers normalise with their unit and a digit boundary; a bare number
+   false-matches dates and list numbering, burying real losses in noise.
+3. **Hand-review every partial match** — this is where the losses are. A structure-only change breaks
+   literal matching without losing anything, and a genuine loss can match partially.
+4. **Sample the false positives before trusting a clean result** — a normalisation that is too generous
+   reports 0 unaccounted because it matches everything.
+5. **Re-verify landings after the last pass, not as each one runs** — a `MOVED` pointer goes false
+   when a later pass removes its target, and a deferred entry can stay unwritten. Both read as complete.
+6. **Read the diff.** A mechanical pass cannot see meaning lost inside a matched line — a value that kept
+   its number and lost its unit, a requirement that kept its rule and lost its reason.
+
 ## Manifest Completeness
 
 *(Update + Realign — every change has a manifest entry.)*
 
 - Every structural change in the output has a corresponding manifest entry.
 - No manifest entry references a location that doesn't exist in the output.
+
+## YAML blocks parse, and carry no comments
+
+*(All modes — every block the pass wrote or touched.)*
+
+**Parse every YAML block after writing it.** Nothing else in the pipeline does, so an invalid block ships
+looking authoritative. The shape that breaks most often is a value opening on a quoted token, where the
+quote makes the mapping ambiguous.
+
+- **No inline `#` comments, in any block** (`design-writing-contract.md` → YAML Rules). This needs its own check
+  because the ban is easy to break while converting prose to YAML, where the comment feels like the
+  explanation being preserved.
+- Report the number of blocks parsed, not just the failures — an unparsed block and a passing one are
+  indistinguishable in a report that lists only errors.
 
 ## Conflict Detection
 
@@ -109,6 +143,16 @@ These are preferences and guidelines, not hard rules. Apply them with judgment �
 **Subsection density.** If a subsection's content has been reduced to ≤3 bullets and carries no independent spec or structure warranting future expansion, consider collapsing it into the parent section. Flag rather than act unilaterally.
 
 **Labelled groups vs headings.** Small parallel rule clusters (≤3 bullets each, similar weight) often read better as bold-label bullet groups (`**Photography**` / `**Diagrams**`) than as H3/H4 headings. Prefer the group form when the clusters are genuinely parallel and brief.
+
+**Where the heading set is frozen, a bold label is the sub-group form at any size.** The ≤3-bullet
+guidance above assumes a heading is available; where a pass may not add one — a frozen anchor set, a depth
+cap — a labelled group is the only sub-structure left, and capping it at three bullets removes the
+structure instead. Size stops being the test.
+
+**A label that code or a sibling doc cites is load-bearing like a heading.** Rewording it breaks the
+citation and no anchor check sees it, because it is not an anchor. Treat a cited label as a rename
+(`cross-reference-rules.md`), and expect an anchor-resolution pass to report it unresolved — that is the
+checker's limit, not a defect in the label.
 
 **Prose removal threshold.** Remove interpretive prose when the nearby table or spec already expresses the behavior clearly. Do not remove prose that adds framing, interpretive context, or cross-cutting rules not visible in the table itself.
 

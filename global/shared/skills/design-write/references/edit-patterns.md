@@ -39,7 +39,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 ## Add a new component section
 
 1. Identify the correct location within the `# Components` section (alphabetical, or by category if the section is grouped).
-2. Create the component using the contract-defined format (`writing-contract.md` → Component Writing Contract).
+2. Create the component using the contract-defined format (`design-writing-contract.md` → Component Writing Contract).
 3. Confirm contextual usage examples are included.
 4. Shared interaction-state baselines (hover/focus/disabled/loading/responsive defaults) belong in `# Interaction Rules`. Component sections may include local interaction behavior, sequencing, or affordance details when they are structurally tied to the component itself.
 5. Diff summary: `ADDED: component \`component-name\` to Components`
@@ -62,7 +62,12 @@ For adding a row to a surface hierarchy, typography roles, interaction semantics
 1. Confirm with the user — never remove without explicit instruction.
 2. Check for cross-references to the removed section and update or remove them.
 3. **Grep for the identifier, then read the prose around every hit** — and sweep for passages that describe the thing without naming it. The identifier sweep finds symbols, not the sentences around them, and not a description that never uses the name. A deletion is done when nothing in the doc still describes the thing, not when the definition is gone.
-4. Diff summary: `REMOVED: section/component name — N cross-references updated`
+4. **Check what consumed the tokens the removal retires, including consumers the brief did not name** —
+   an unbuilt or future component is the one most often missed. Where a consumer is left pointing at a
+   retired token, either apply the nearest already-approved analogous fix and flag it, or — where no
+   analogous fix is approved — flag it and stop. Inventing a replacement is origination
+   (`safety-rules.md` → Shared rules, Never originate). Report the choice either way.
+5. Diff summary: `REMOVED: section/component name — N cross-references updated`
 
 ---
 
@@ -131,3 +136,20 @@ When two locations define different values or behaviors:
 2. Identify the competing sources.
 3. Do not choose automatically.
 4. Request resolution.
+
+---
+
+## Change a boundary — sweep labels AND figures
+
+An Update that changes a boundary — a breakpoint, a tier, a category's membership — runs two sweeps
+before the pass finishes, and reports both.
+
+1. **The retired term, across the whole document** — including `Iteration Notes` and `Rejected`. A
+   rejected option still has to name the right window.
+2. **Every figure whose measurement conditions the change alters.** A number measured under the old
+   boundary is not a fact about the new one. Re-measure it, strip it, or mark it pending re-measurement —
+   never restate it as current fact.
+
+**Sequencing.** The doc is written before the code, so a figure the new boundary needs cannot exist yet:
+strip the figure, log it, and restore it once the code lands. Any other order states something false in
+the interim.
