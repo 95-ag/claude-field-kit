@@ -57,7 +57,7 @@ For each section confirm:
     deleting the claim makes it permanent.
 
 - **Visualizer / structure choice** — renders via the visualizer or prose structure pinned in
-  `section-spine.md` (Colors → SwatchGrid, Elevation → DepthGrid, Z-Index → LayerStack, …); no
+  its `spine-*.md` entry (Colors → SwatchGrid, Elevation → DepthGrid, Z-Index → LayerStack, …); no
   reinvented card or layout.
 - **Per-item data fidelity** — token data matches the project's REAL tokens (DepthGrid: L2 blur vs L3
   raised, L4 bordered; all meteor color tokens enumerated; DeviceRuler uses the standard silhouette
@@ -270,6 +270,8 @@ materials that imply both adapters are tested.
 - Visual-verification principles (render-backed vs inferred labeling) — stated inline above; see
   also the host project's visual-verification rule.
   *Example:* `rules/web-frontend/visual-verification.md`
-- Pinned file/folder structure and the section spine → `architecture.md`
-- Per-section template (which visualizer per section, prose-vs-box) → `section-spine.md`
-- Visualizer pseudocode and dogfood constraints → `visualizer-kit.md`
+- Pinned file/folder structure → `architecture.md`; the section spine's shared contract, pins and full
+  order → `section-spine.md`
+- Per-section template (which visualizer per section, prose-vs-box) → the four `spine-*.md` files
+- Visualizer pseudocode → the per-visualizer `visualizer-*.md` files; dogfood constraints →
+  `visualizer-dogfood.md`

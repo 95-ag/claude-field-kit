@@ -28,7 +28,8 @@ template cleanly separated from any one project's instance values.
   the prose-vs-box decision, specimen grouping, and ordering. The same shape for every project.
 - **P2 — Visual alignment (dogfood, from DESIGN.md).** The section honors THIS project's spacing/rhythm,
   and the visualizer adopts the project's own treatments (radius, depth, semantic type) — all resolved
-  from DESIGN.md, never hardcoded. Visualizer-level P2 detail lives in `visualizer-kit.md`.
+  from DESIGN.md, never hardcoded. Per-visualizer P2 detail lives in that visualizer's `visualizer-*.md`
+  file; the P2 principles common to all of them are in `visualizer-kit.md`.
 - **P3 — Actual inputs (instance).** The real data fed to the section (the actual token list, the real
   component set). Whether the concrete values are written here as a worked example or stated
   generically is decided per section. **Completeness:** P3 captures everything DESIGN.md defines for that
@@ -64,9 +65,10 @@ Each entry specifies a small identity block + the three layers:
   structure" form instead.
 
 Visualizer components are from `visualizer-kit/` (re-exported via `visualizer-kit/index.ts`). Scaffold
-primitives (`GallerySection`, `SpecimenGroup`, `Specimen`, `Card`, `ChromeFrame`, `DemoViewOnly`,
-`InertDemo`, `ThemeShot`, `ThemeVideo`) are from `scaffold-kit/` — see `scaffold-kit.md` for their
-exact pseudocode.
+primitives are from `scaffold-kit/`; for their exact pseudocode see `scaffold-kit.md`
+(`GallerySection`, `SpecimenGroup`), `scaffold-specimen.md` (`Specimen`, `Card`),
+`scaffold-chrome-theme.md` (`ChromeFrame`, `ThemeShot`, `ThemeVideo`) and `scaffold-guards.md`
+(`DemoViewOnly`, `InertDemo`).
 
 ---
 
@@ -173,10 +175,13 @@ Philosophy / Core Principles / Things to Avoid · Accessibility Rules · Cross-C
 
 ## Cross-references
 
-- Visualizer pseudocode (exact data contracts + layouts) → `visualizer-kit.md`
-- Scaffold primitive pseudocode (`GallerySection`, `SpecimenGroup`, `Specimen`, `Card`, `ChromeFrame`,
-  click-guards, `ThemeShot`, `ThemeVideo`) → `scaffold-kit.md`
+- Visualizer pseudocode (exact data contracts + layouts) → the per-visualizer `visualizer-*.md` files;
+  shared contract and generic fallbacks → `visualizer-kit.md`
+- Scaffold primitive pseudocode — `GallerySection`, `SpecimenGroup` → `scaffold-kit.md`; `Specimen`,
+  `Card` → `scaffold-specimen.md`; `ChromeFrame`, `ThemeShot`, `ThemeVideo` →
+  `scaffold-chrome-theme.md`; `DemoViewOnly`, `InertDemo` → `scaffold-guards.md`
 - Hard-to-demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlay-on-hero, sample assets,
   `InlineThemeSelector` placement) → `hard-to-demo.md`
-- Pinned file/folder structure and `page.tsx` template → `architecture.md`
+- Pinned file/folder structure → `architecture.md`; `page.tsx` and `gallery.css` contents →
+  `page-and-css.md`
 - Mode-decision flow and strict DESIGN.md → spine mapping → `modes.md`

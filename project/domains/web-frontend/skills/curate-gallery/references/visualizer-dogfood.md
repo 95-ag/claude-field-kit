@@ -20,7 +20,7 @@ exceptions (see below).
 ### Structure is fixed; visual details dogfooded
 
 The visualizer's information layout (DOM structure, element order, column layout, grid
-columns, flex direction) is fixed per the pseudocode above. Visual details — surface fills,
+columns, flex direction) is fixed per that visualizer's `visualizer-*.md` pseudocode. Visual details — surface fills,
 border colors, spacing between elements, radius, type treatment — resolve from the project's
 tokens. The gallery renders the design system **with** the design system.
 

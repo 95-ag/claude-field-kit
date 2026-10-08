@@ -64,7 +64,8 @@ server; client components hydrate normally. `ChromeFrame` (scaffold-kit) establi
 block (`transform: translateZ(0)`) so `position:fixed` descendants resolve to the frame rather than the
 viewport — required for any fixed-position chrome demo.
 
-See `scaffold-kit.md` for the full `ChromeFrame`, `DemoViewOnly`, and `InertDemo` contracts.
+See `scaffold-chrome-theme.md` for the full `ChromeFrame` contract and `scaffold-guards.md` for
+`DemoViewOnly` and `InertDemo`.
 
 ### (c) Build-time transforms
 
@@ -228,8 +229,9 @@ claude.ai/design project:
 `<!-- @specimen group="Components·UI" name="card" variants=".tc/.fam-card/.ev-card/.cc" status="live|posed|dead" -->`.
 `group` reuses the bucket-prefixed section vocabulary.
 
-**Split trigger.** Keep the React and static-HTML trees co-located in `architecture.md` while one stays a
-single table. When BOTH need full treatment (tree + page template + gallery.css + primitive expressions),
+**Split trigger.** The React tree is in `architecture.md` and the static-HTML tree is in this file's
+Pinned structure section; keep it that way while one of them stays a single table. When BOTH need full
+treatment (tree + route-file and stylesheet contents from `page-and-css.md` + primitive expressions),
 split by stack into symmetric siblings — `architecture.md` (neutral spine + router) plus one file per
 stack, named for it — so a builder loads only its stack's layout pin. **Those per-stack files do not
 exist yet**; this names the shape the split should take, not a path to follow today. Not asymmetric (React-in-main,
@@ -319,7 +321,8 @@ Classification is provisional and user-confirmed — see `modes.md` for the Inve
 
 ## Cross-links
 
-- Scaffold-kit mechanics (ChromeFrame, click-guards, ThemeShot/ThemeVideo) → `scaffold-kit.md`
+- Scaffold-kit mechanics — ChromeFrame + ThemeShot/ThemeVideo → `scaffold-chrome-theme.md`; click-guards
+  → `scaffold-guards.md`
 - Demo patterns that interact with seam (b) and (c) → `hard-to-demo.md`
 - Mode procedures including Inventory discovery → `modes.md`
 - Render-backed verification of the completed adapter → `verification.md`

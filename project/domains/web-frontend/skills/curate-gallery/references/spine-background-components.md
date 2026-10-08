@@ -25,7 +25,7 @@ fixed, already active around the page), so each layer is demoed **by its nature*
 - the subsystem's **own color tokens** (if it defines any) → the color-swatch visualizer inline in this
   section — tokens live with the section that owns them, not split into Colors.
 
-Technique detail (`ThemeShot` / `ThemeVideo`, static-capture-for-un-renderable) → `scaffold-kit.md` +
+Technique detail (`ThemeShot` / `ThemeVideo`, static-capture-for-un-renderable) → `scaffold-chrome-theme.md` +
 `hard-to-demo.md`.
 
 **Capture framing:** frame each capture to show that layer's design best — full-viewport where the
@@ -79,7 +79,7 @@ site-wide chrome (fixed / page-coupled), already live around the page — so eac
   be a *domain* component** (its home is per DESIGN.md → it may render in a Domain section, not Shell) — the
   demo technique is the same.
 
-ChromeFrame + click-guard pseudocode → `scaffold-kit.md`; the demo-affordance / presentational-extraction
+ChromeFrame pseudocode → `scaffold-chrome-theme.md`; click-guard pseudocode → `scaffold-guards.md`; the demo-affordance / presentational-extraction
 carve-out → `boundaries-and-handoff.md` + `hard-to-demo.md`.
 
 **P2 — Visual alignment:** shell components are real and bring their own styling; `ChromeFrame` is a

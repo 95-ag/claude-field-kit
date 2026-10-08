@@ -46,11 +46,15 @@ Run this sequence first, before any gallery work:
 
 **When:** DESIGN.md is the source-of-truth and code is available (or being built now).
 
-**Item-list source:** the DESIGN.md sub-sections, in document order. The section template for this
-project is in `section-spine.md` — read it before building. The spine is the authoritative ordered
-list; nothing in this mode overrides it.
+**Item-list source:** the DESIGN.md sub-sections, in document order. Read `section-spine.md` for the
+shared contract, the cross-section pins and the complete section order, then the per-section entries in
+the `spine-*.md` file for the bucket you are building. The spine is the authoritative ordered list;
+nothing in this mode overrides it.
 
-When composing specimens, verify each component's real props first — see `scaffold-kit.md`.
+When composing specimens, verify each component's real props first — `scaffold-kit.md` for
+`GallerySection` and `SpecimenGroup`, `scaffold-specimen.md` for `Specimen` and `Card`,
+`scaffold-chrome-theme.md` for `ChromeFrame` / `ThemeShot` / `ThemeVideo`, `scaffold-guards.md` for the
+click guards.
 
 **Build the full structure — no silent omissions.** Build each cataloged visualizer the design system
 calls for. Do not substitute ad-hoc inline markup for a cataloged visualizer (e.g. a plain HTML table
@@ -81,10 +85,12 @@ If DESIGN.md changes (a new token group, a new component), the gallery sections 
 Each DESIGN.md sub-section becomes exactly one `GallerySection` `<h2>`. Combining two sub-sections
 into one `<h2>`, or splitting one sub-section into multiple `<h2>` entries, is a mapping violation.
 
-The complete ordered section template for this project — every `<h2>` section with its exact `id`,
-`title`, `mapsTo`, `source`, visualizer assignment, and prose-vs-boxed treatment — is in
-`section-spine.md`. Use it verbatim. Verify the mapping before building; do not reconstruct it from
-memory.
+The complete ordered section template — every `<h2>` section with its exact `id`, `title`, `mapsTo`,
+`source`, visualizer assignment and prose-vs-boxed treatment — is split across four files by bucket:
+`spine-foundations-base.md`, `spine-foundations-visual.md`, `spine-background-components.md` and
+`spine-domain-technical.md`. `section-spine.md` holds the contract they share, the pins that apply to
+every section, and the complete order as an appendix. Use the entries verbatim. Verify the mapping
+before building; do not reconstruct it from memory.
 
 H2 titles are **bucket-prefixed** to disambiguate sections in the TOC and rail (e.g. "Foundations ·
 Colors", "Components · Shell", "Technical · Z-Index Scale"). The `Background` bucket, when present, is
@@ -144,8 +150,8 @@ hand-faked markup.** This is non-negotiable in Build mode:
   compiler: filling a new nested collection with `[]` everywhere typechecks clean and leaves the check
   surface unable to render the shape just introduced — the gallery then hides the defect it exists to
   expose. Empty and zero states are worth a specimen of their own; they are not a substitute for one.
-- **Sample data may not introduce a field the real schema does not have** — see `SKILL.md` → Dogfood
-  gate. A demo field manufactures the affordance built on top of it.
+- **Sample data may not introduce a field the real schema does not have** — see `final-checks.md` →
+  Dogfood gate. A demo field manufactures the affordance built on top of it.
 - The `slug` in any demo `Project` object MUST be a real registered slug — components like `HeroMedia`
   dispatch by slug to load registered covers; a fake slug produces no output.
 - Components that render through a build pipeline (e.g. `CodeBlock` via Shiki + MDX) MUST use that
@@ -281,7 +287,8 @@ Cross-reference: the fixer triad for mismatches is in `boundaries-and-handoff.md
 ## Cross-references
 
 - Ordered section template (ordered sub-sections, visualizer assignment, prose-vs-boxed, component
-  sub-grouping, domain `[inline]`/`[standalone]` treatment) → `section-spine.md`
+  sub-grouping, domain `[inline]`/`[standalone]` treatment) → the four `spine-*.md` files, with the shared
+  contract, pins and full order in `section-spine.md`
 - Adapter-specific discovery (how to find components and tokens in code per stack) → `stack-adapters.md`
 - How `GallerySection` and `SpecimenGroup` work → `scaffold-kit.md`
 - Handoff protocol, fixer triad, code-write boundary → `boundaries-and-handoff.md`

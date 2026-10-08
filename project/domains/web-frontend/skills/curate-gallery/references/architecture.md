@@ -1,8 +1,8 @@
 # Architecture
 
 How the gallery is structured. Covers the spine-vs-adapters model, the pinned file/folder structure,
-generic↔instance split, data-binding rules, `ds-{slug}` id namespacing, the `page.tsx` template,
-and `gallery.css` contents.
+generic↔instance split, data-binding rules and `ds-{slug}` id namespacing. What the route file and the
+stylesheet must CONTAIN is owned by `page-and-css.md`; this file owns the tree they sit in.
 
 Stack-specific seams (route creation, dev-only exclusion, theme flip, component discovery) are adapter
 concerns — see `stack-adapters.md`.
@@ -161,112 +161,9 @@ and can never collide. See `scaffold-kit.md` for the `GallerySection` pseudocode
 
 ## `page.tsx` template
 
-The gallery page is a thin server component. Reproduce this structure exactly:
-
-```
-// File: <gallery-route>/page.tsx
-// Route: dev-only; NOT accessible in production builds
-
-// imports (in this order):
-import type { Metadata } from "next"        ← metadata export
-import "./gallery.css"                       ← route-scoped CSS (ThemeShot swap + .ds-reading)
-// layout primitives
-import { Container } from "@/components/layout/container"
-import { Section } from "@/components/layout/section"
-// live rail (scrapes DemoViewOnly <article> h2s)
-import { SectionProgressNav } from "@/components/project/section-progress-nav"
-// UI primitives
-import { Heading } from "@/components/ui/heading"
-import { InlineThemeSelector } from "@/components/ui/theme-selector"
-// click-guard (DemoViewOnly wraps ALL gallery sections)
-import { DemoViewOnly } from "./scaffold-kit/click-guards"
-// 5 section exports (named exports, one per bucket file)
-import { BackgroundSection }   from "./sections/background"
-import { ComponentsSections }  from "./sections/components"
-import { DomainSections }      from "./sections/domain"
-import { FoundationsSections } from "./sections/foundations"
-import { TechnicalSections }   from "./sections/technical"
-
-export const metadata: Metadata = {
-  title: "Design System",
-  robots: { index: false, follow: false },   // NOINDEX — dev-only, excluded from search
-}
-
-export default function DesignSystemPage() {
-  return (
-    <Section>
-      <Container>
-
-        // 1. LIVE TOC RAIL (only if the project has one) — position:fixed (renders in the gutter);
-        //    mounted OUTSIDE the scraped DemoViewOnly article so it doesn't ingest itself
-        <SectionProgressNav />
-
-        // 2. HEADER — outside DemoViewOnly so InlineThemeSelector stays interactive
-        <header class="mb-[--spacing-3xl] flex flex-col gap-[--spacing-lg]">
-          <Heading level={1} type="display-title">Design System</Heading>
-          <p class="body-lead">
-            Components and tokens rendered live, mirroring the DESIGN.md structure.
-            Inline page sections are listed, not previewed; background layers are
-            static captures. Switch themes with the Theme control below.
-          </p>
-          {/* InlineThemeSelector is OUTSIDE DemoViewOnly — stays fully interactive.
-              The UI catalog references this instance rather than duplicating it. */}
-          <div class="flex items-center gap-[--spacing-sm]">
-            <span class="mono-anchor">Theme</span>
-            <InlineThemeSelector />
-          </div>
-          <div class="body-caption">
-            Dev-only reference, excluded from the production build. Components render
-            on the page background; fixed and route-aware chrome render live in
-            bounded frames.
-          </div>
-        </header>
-
-        // 3. GALLERY BODY — DemoViewOnly is the <article> the rail scrapes for h2s
-        <DemoViewOnly class="flex flex-col gap-[--spacing-4xl]">
-          <FoundationsSections />
-          <BackgroundSection />
-          <ComponentsSections />
-          <DomainSections />
-          <TechnicalSections />
-        </DemoViewOnly>
-
-      </Container>
-    </Section>
-  )
-}
-```
-
-> Component + type-token names in this template are the project's — examples shown. Substitute
-> the project's own **theme-control component** and **display / lead / eyebrow / caption** type tokens; the
-> page **structure** (wrappers, rail-outside-article, header, uniform-gap article, section order) is what's
-> fixed.
-
-**Key invariants:**
-
-- Page title: `"Design System"` at `display-title` type token — never a raw font-size.
-- `robots: { index: false, follow: false }` — always noindex; this is a dev tool.
-- **Live TOC rail (conditional).** Use the project's section-nav / TOC rail **if it has one** — mounted
-  `position: fixed` (renders in the gutter), **outside** the `<DemoViewOnly>` article it scrapes (so it
-  reads the article's h2s without ingesting itself; DOM mount order doesn't affect where it renders). **No
-  such rail in the project → omit it; the gallery has no TOC.**
-- `<InlineThemeSelector />` is in the header, OUTSIDE `<DemoViewOnly>` — this is the only theme
-  control on the page; the UI catalog section references it, never duplicates it.
-- Section order inside `<DemoViewOnly>`: Foundations → Background → Components → Domain → Technical.
-  This order mirrors DESIGN.md document order exactly.
-- Ambient background is NOT suppressed — the gallery renders on the normal page background. The
-  Background section shows static captures (`ThemeShot` / `ThemeVideo`), not a live background layer.
-- **Reading-page styling** — the page is wrapped in the project's standard content-page primitives
-  (here `Section` › `Container`), exactly like a normal reading/content page, so it inherits the
-  editorial reading column (max content width + responsive padding) and vertical rhythm. "Reading-page
-  style" here means these standard wrappers — NOT the long-form `data-read="long"` reading *mode* (that
-  is for MDX deep-dives only and is NOT applied to the gallery).
-- **Uniform section spacing** — sections inside `<DemoViewOnly>` are separated by a single uniform gap
-  (`flex flex-col gap-[--spacing-4xl]`); within a section, `GallerySection` uses `gap-[--spacing-2xl]`.
-  One inter-section gap value — do not vary it per section.
-- **No gallery file paths rendered** — `source`/`mapsTo` props reference the project's real components /
-  CSS / tokens / DESIGN.md only, never the gallery's own kit/section files (see `section-spine.md` →
-  Cross-section pins → `source` points to REAL artifacts).
+Owned by `page-and-css.md` → `page.tsx` template — the annotated import order, the structure to reproduce,
+and the key invariants. Stated there and only there. This file owns where the route file sits in the tree
+(§ Pinned file/folder structure), not what goes in it.
 
 ---
 
@@ -293,30 +190,9 @@ display weight).
 
 ## `gallery.css` contents
 
-The route-scoped stylesheet is imported by `page.tsx` and applies on this route only. It contains
-exactly three rule blocks — no more:
-
-```css
-/* Dev-only styles for the /<gallery-route> gallery. Imported only by the gallery page, so these
-   rules ship and apply on that route alone — they're kept out of globals.css to avoid
-   prod-stylesheet noise. They reference the global token vars defined in globals.css. */
-
-/* JS-free theme swap for ThemeShot screenshot pairs (background layers shown as static captures).
-   Only the active theme's shot is displayed. */
-[data-theme="dark"]  .ds-shot-light { display: none }
-[data-theme="light"] .ds-shot-dark  { display: none }
-
-/* Reading-mode surface mirror, and the reading-mode-only cards.
-   STATED ONCE in `page-and-css.md` -> `gallery.css` requirements, with the rule that the
-   values are the project's own, copied from its global rules. Not repeated here: two copies
-   of a palette drift, and this file is not the one that owns the stylesheet. */
-```
-
-**Maintenance rule:** that mirror block is the only place the gallery holds copied values, so it is the
-only place that can drift. When the project's reading-mode surface tokens change, `gallery.css` is
-updated to match — the block states values the project owns, not values the gallery chose
-(`page-and-css.md` → `gallery.css` requirements). A theme in which a surface is unchanged in reading
-mode needs no override for it.
+Owned by `page-and-css.md` → `gallery.css` requirements — the three rule blocks, the example, and the
+maintenance rule for the one block that holds copied values. Stated there and only there: two copies of a
+palette drift.
 
 ---
 
@@ -339,10 +215,13 @@ updates everything together.
 ## Cross-references
 
 - Adapter seams (route creation, theme flip, production exclusion, code discovery) → `stack-adapters.md`
-- `GallerySection` / `SpecimenGroup` / `Specimen` / `Card` / `ChromeFrame` / click-guards /
-  theme-media pseudocode → `scaffold-kit.md`
-- All 9 visualizer pseudocodes + dogfooding gate → `visualizer-kit.md`
-- Ordered section template (which visualizer per sub-section, prose vs box) → `section-spine.md`
+- Scaffold primitive pseudocode — `GallerySection` / `SpecimenGroup` → `scaffold-kit.md`; `Specimen` /
+  `Card` → `scaffold-specimen.md`; `ChromeFrame` / theme-media → `scaffold-chrome-theme.md`;
+  click-guards → `scaffold-guards.md`
+- Visualizer pseudocode → the per-visualizer `visualizer-*.md` files (shared contract and generic
+  fallbacks in `visualizer-kit.md`); dogfooding gate → `visualizer-dogfood.md`
+- Ordered section template (which visualizer per sub-section, prose vs box) → the four `spine-*.md` files; shared
+  contract, pins and full order → `section-spine.md`
 - Mode derivation (Build/Inventory/Sync/Bootstrap) and item-list source per mode → `modes.md`
 - Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlay-on-hero, TOC rail) → `hard-to-demo.md`
 - Render-backed verification + gates → `verification.md`

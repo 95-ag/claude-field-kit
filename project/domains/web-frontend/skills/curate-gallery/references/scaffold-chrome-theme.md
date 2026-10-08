@@ -67,6 +67,28 @@ never mount inside ChromeFrame:
 
 ---
 
+## `theme-media` — `ThemeShot · ThemeVideo`
+
+Both components are **client components** — they read the active theme at runtime.
+Stack theme-hook → `stack-adapters.md`.
+
+Both render inside the same frame wrapper:
+```
+FRAME class = "w-fit max-w-full overflow-hidden rounded-[--radius-md]
+               border border-[--hairline] bg-[--surface-deep]"
+
+token bindings for FRAME:
+  --radius-md      corner radius
+  --hairline       border
+  --surface-deep   background (visible while image/video loads)
+```
+
+When to use static media vs live render → `hard-to-demo.md` → Live vs. screenshot.
+Short rule: live by default; static only when live is technically infeasible (full-viewport
+WebGL, document-height DOM fields).
+
+---
+
 ### `ThemeShot`
 
 ```
@@ -161,25 +183,3 @@ encoding guidance: find a dense, visually interesting segment via ffmpeg contact
   thumbnails. Sparse content compresses very small (often ~25 KB per clip).
   Both clips should cover the same moment in the effect so a theme switch cuts cleanly.
 ```
-## `theme-media` — `ThemeShot · ThemeVideo`
-
-Both components are **client components** — they read the active theme at runtime.
-Stack theme-hook → `stack-adapters.md`.
-
-Both render inside the same frame wrapper:
-```
-FRAME class = "w-fit max-w-full overflow-hidden rounded-[--radius-md]
-               border border-[--hairline] bg-[--surface-deep]"
-
-token bindings for FRAME:
-  --radius-md      corner radius
-  --hairline       border
-  --surface-deep   background (visible while image/video loads)
-```
-
-When to use static media vs live render → `hard-to-demo.md` → Live vs. screenshot.
-Short rule: live by default; static only when live is technically infeasible (full-viewport
-WebGL, document-height DOM fields).
-
----
-

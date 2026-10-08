@@ -51,7 +51,7 @@ Before handing off to the user, confirm all items pass:
 - [ ] **Pinned structure reproduced exactly** — file names, folder names, and counts match
       (`references/architecture.md`)
 - [ ] **Every DESIGN.md sub-section present as an `<h2>`, in document order** — bucket-prefixed titles, `ds-{slug}` ids
-      (`references/section-spine.md`)
+      (order: `references/section-spine.md` → Appendix; per-section entries: the four `references/spine-*.md`)
 - [ ] **Dogfooding gate passes** — no raw hex, no typography overrides (no `text-sm`, `font-medium`,
       `text-[--ink]` alongside a token class), no gratuitous boxes around prose, all visual details
       resolve from the project's own design-system tokens

@@ -45,13 +45,10 @@ much pinning):
   is always "resolve from DESIGN.md → §X".
 - **P3 — Actual inputs (instance).** The real token data fed into the visualizer. This does NOT live
   here — visualizers carry zero baked data. It lives in the project's `sections/` modules and is
-  catalogued in `section-spine.md` per section.
+  catalogued per section in the four `spine-*.md` files.
 
-Each visualizer entry below separates P1 and P2; the universal **Dogfooding gate** at the end of this
-file states the P2 principles that apply to every visualizer. P3 → `section-spine.md`.
-
-> Migration in progress: per-visualizer P1/P2 labelling is being applied section-by-section. Entries not
-> yet migrated still show the older mixed form.
+Each visualizer has its own `visualizer-*.md` file, separating P1 from P2; this file holds what they
+share. The universal **Dogfooding gate** is in `visualizer-dogfood.md`. P3 → the four `spine-*.md` files.
 
 ---
 
@@ -116,5 +113,5 @@ gap surfaces to the user when the gallery is finished.
 - **Token data arrays** for the project's instances → `sections/` bucket modules
 - **Stack-specific rendering** (inline-style syntax, SVG in JSX vs HTML, portal targets) → `stack-adapters.md`
 - **Missing token → add a token** → invoke `design-write` (see `boundaries-and-handoff.md → fixer triad`)
-- **Section composition** (which visualizer goes in which GallerySection) → `section-spine.md`
+- **Section composition** (which visualizer goes in which GallerySection) → the four `spine-*.md` files
 - **Prose-content scoping rule** (where `.prose-content` wraps are required and where they corrupt) → `hard-to-demo.md`
