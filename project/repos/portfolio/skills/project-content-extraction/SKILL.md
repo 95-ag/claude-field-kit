@@ -26,8 +26,9 @@ or cover work begins.
 ## Before writing anything — read these references
 
 1. **`references/evidence-and-modes.md`** — determines which source mode applies
-   (report+repo / repo-only / report-only), how to rank conflicting claims, and how
-   to tag confidence in repo-only mode. Read this before touching any source material.
+   (report+repo / repo-only / report-only / mixed-evidence), how to rank conflicting
+   claims, and how to tag every claim's confidence. Read this before touching any
+   source material.
 
 2. **`references/frontmatter-rules.md`** — all required and optional frontmatter
    fields, their types, build-fail conditions, and MDX body authoring rules. Read
@@ -123,7 +124,8 @@ All items are required. Do not present the MDX to the user until all pass.
 - No raw HTML in body — use components: `<Figure>`, `<Diagram>`, `<Callout>`,
   `<Stack>`, `<Highlight>`
 - No `slug:` field in frontmatter
-- In repo-only mode: no paper-style metrics written without a traceable source
+- No paper-style metrics written without a traceable source
+- No design-doc intent written as shipped outcome; `[user-confirmed]` claims carry no numbers
 - `overview.*` fields written after the body (not drafted before it)
 - Density reduction pass complete (Step 4 checklist in `extraction-procedure.md`)
 - Reader Review pass complete (Step 5 in `extraction-procedure.md`); all FLAG items resolved
@@ -135,6 +137,8 @@ All items are required. Do not present the MDX to the user until all pass.
 | PDF + repo | report+repo |
 | Repo only, no PDF | repo-only |
 | PDF only, no code | report-only |
+| Design/spec docs + partial repo + user-attested internal work | mixed-evidence |
+| Prior draft MDX only | prior-draft-only |
 
 The full mode rules — what each mode requires, forbids, and escalates to clarification —
 are in `references/evidence-and-modes.md`.
