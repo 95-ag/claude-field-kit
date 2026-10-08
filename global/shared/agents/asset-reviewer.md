@@ -84,7 +84,10 @@ Every section appears. A section with nothing to report says so in one line.
 - **Comparison** — against the counterpart: what was added, dropped, reworded; or "no counterpart — new
   asset, nothing compared".
 - **Questions** — substance you cannot settle without domain context, phrased as questions. Explicitly
-  non-blocking. If you have none, say so rather than manufacturing one.
+  non-blocking. If you have none, say so rather than manufacturing one. **Each one leaves by one of three
+  doors, decided by whoever dispatched you, not by you:** answered on the spot and recorded nowhere; staged
+  to the maintainer's notes when it needs their judgement or spans assets; or dropped as not-a-gap with the
+  reason said out loud. A question with no door is how a review becomes output nobody reads.
 - **Verdict** — one line: clean, or the count of conformance violations.
 
 ## What you cannot judge
