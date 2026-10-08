@@ -1,7 +1,8 @@
 # Safety Rules
 
-Constraints that keep DESIGN.md edits safe and auditable — across both everyday **Updates**
-(minimal-diff) and the **Realign** recovery pass (lossless restructuring).
+Constraints that keep DESIGN.md writing safe and auditable, in **every** mode — **Authoring**, everyday
+**Updates** (minimal-diff), and the **Realign** recovery pass (lossless restructuring). The posture sections
+below are per-mode; Shared rules bind all three.
 
 ---
 
@@ -52,9 +53,12 @@ Constraints that keep DESIGN.md edits safe and auditable — across both everyda
 
 ---
 
-## Shared rules (both postures)
+## Shared rules (all modes)
 
-- **Never originate.** Neither mode invents new tokens, components, rules, or design principles. A
+Each `Process:` pointer names where the detailed method lives. The rule binds in every mode, including one
+whose reading list does not include the file pointed at — there the rule stands on its own text.
+
+- **Never originate.** No mode invents new tokens, components, rules, or design principles. A
   structural gap that suggests a missing section is flagged (`FLAGGED: Section X appears empty/absent —
   no action taken`), never filled by invention.
   - **A sub-part the user's brief names is not evidence it exists** — the brief may be written from

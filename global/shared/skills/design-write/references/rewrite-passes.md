@@ -18,42 +18,9 @@ What does NOT change:
 - Paragraph content, bullet text, token values, tables — untouched.
 - Terminology — unchanged (use the Terminology pass for that).
 
-**Empty placeholder headings** — headings with no content are a distinct category. Do not classify them as structural violations requiring moves or merges. Flag them using `PLACEHOLDER` (see Manifest Entry Types below) and leave them in place.
+**Empty placeholder headings** — headings with no content are a distinct category. Do not classify them as structural violations requiring moves or merges. Flag them using `PLACEHOLDER` (`validation-heuristics.md` → Manifest Entry Types) and leave them in place.
 
 Manifest entries: MOVED (source → destination), RENAMED (heading only), PLACEHOLDER.
-
----
-
-## Manifest Entry Types
-
-Keep each entry to one line.
-
-| Entry | When to use |
-|---|---|
-| `ADDED` | New content written into a section |
-| `UPDATED` | Existing content changed in place — a value, wording, a cross-reference, or formatting |
-| `REMOVED` | Content deleted — deleting a *section*, or content the running pass does not name as routine, requires user confirmation; never on the model's own judgment |
-| `MOVED` | Content relocated — the entry names source → destination, including out of the canonical sections |
-| `RENAMED` | Heading or identifier text changed — cross-references need updating |
-| `MERGED` | Sections or bullet clusters consolidated — consolidating *sections* requires user confirmation |
-| `SPLIT` | One section divided into two |
-| `UNIFIED` | Terminology replaced doc-wide (old → new, count) |
-| `REWORDED` | A sentence rewritten forward — narration dropped, prohibition kept |
-| `PLACEHOLDER` | Empty heading with no content — flagged, not moved, not deleted |
-| `FLAGGED` | Content needing user confirmation before action — duplicative, misplaced, or class unclear |
-| `NOTED` | Observation outside the pass's action scope — no action taken |
-| `KEPT-LOCAL` | Content evaluated for hoisting and deliberately left colocated |
-| `MIRRORS` | A restatement outside this doc that this change invalidates — file and line |
-| `SIZE` | The pass's net effect on document size, in lines AND bytes |
-
-**This table is the only registry of entry types.** A pass uses no label the table does not list; one
-needing a type it lacks reports that as a finding instead of coining a label. An invented label is
-invisible to any check that reads the manifest by type, so the change it records cannot be verified.
-
-**`SIZE` reports lines and bytes** — they move in opposite directions. Replacing prose with a table adds
-rows while removing words, so a line count alone reports compression as growth.
-
-**`PLACEHOLDER` is for empty headings only** — a heading that has content but may be duplicative or misplaced is `FLAGGED`, never `PLACEHOLDER`.
 
 ---
 

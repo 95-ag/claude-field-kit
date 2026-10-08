@@ -36,9 +36,13 @@ Always read first:
 
 Then read what the mode needs:
 
-- **Authoring** → the contract's Canonical Structure Model + Section-Type Writing Modes are your skeleton; validate against `references/validation-heuristics.md`.
+- **Authoring** → the contract's Canonical Structure Model + Section-Type Writing Modes are your skeleton; then `references/safety-rules.md`, `references/validation-heuristics.md`.
 - **Update** → `references/edit-patterns.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
-- **Realign** (recovery) → `references/rewrite-passes.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
+- **Realign** (recovery) → `references/rewrite-passes.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
+
+`safety-rules.md` and `validation-heuristics.md` load in all three modes — the former's Shared rules and the
+latter's entry-type registry bind everywhere. Individual checks apply per their own mode tag, so read the tag
+before skipping one.
 
 If the DESIGN.md already exists, read it in full first — you cannot maintain a voice you haven't read.
 
@@ -135,7 +139,7 @@ MIRRORS: "surface / section / ground" vocabulary — restated in the design-syst
 ```
 
 The manifest is the audit trail: if something changed and isn't in it, that's a defect. (Full entry-type
-table for Realign passes: `rewrite-passes.md`.)
+registry, binding in every mode: `validation-heuristics.md` → Manifest Entry Types.)
 
 **A change to a boundary gets its own two sweeps** — the retired term *and* every figure measured under
 the old boundary (`edit-patterns.md` → Change a boundary).
