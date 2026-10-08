@@ -108,6 +108,7 @@ Non-negotiable stops. The numbered sections below expand each one.
 
 - Working/scratch notes files (planning scratch, skill notes, lessons drafts) go in `.claude/work/` — never in a skill folder or elsewhere
 - One-off scripts and their outputs go in `tmp/<folder>/` (gitignored), not `.claude/work/` — `work/` is session notes only
+- The Grep tool honours `.gitignore`, and `.claude/` is gitignored — a repo-root search returns zero for every doc under it. Search `.claude` explicitly before concluding nothing references a file.
 - Check `.claude/work/session.md` at the start of every task for current state
 - Update `session.md` at every checkpoint — not just session end:
   - After each `tasks.md` checkbox flip
