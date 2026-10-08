@@ -32,7 +32,7 @@ Keep each entry to one line.
 |---|---|
 | `ADDED` | New content written into a section |
 | `UPDATED` | Existing content changed in place — a value, wording, a cross-reference, or formatting |
-| `REMOVED` | Content deleted, with user confirmation; never on the model's own judgment |
+| `REMOVED` | Content deleted — deleting a *section*, or content the running pass does not name as routine, requires user confirmation; never on the model's own judgment |
 | `MOVED` | Content relocated — the entry names source → destination, including out of the canonical sections |
 | `RENAMED` | Heading or identifier text changed — cross-references need updating |
 | `MERGED` | Sections or bullet clusters consolidated — consolidating *sections* requires user confirmation |
