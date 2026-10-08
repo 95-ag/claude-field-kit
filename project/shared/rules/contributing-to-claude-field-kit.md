@@ -67,8 +67,11 @@ with little change.
   decision and let the run reach the value.
 - **Name who runs a gate, and dispatch it.** A reviewer with no conversation context compares two
   artifacts; an author greps for what they remember changing, which is a different act and finds less. An
-  asset that calls its own gate a "self-review" licenses the failure the gate exists to catch — name the
-  reviewer, and say what to do when none is available.
+  asset that calls its own gate a "self-review" licenses the failure the gate exists to catch. **Before
+  contributing an asset, dispatch the `asset-reviewer` agent on it** — a conformance defect costs less
+  caught here than at promotion, and it is the author who cannot see it. Its conformance findings are
+  verdicts; its substance *Questions* are not. With no reviewer available, run the checklist yourself and
+  say so — never call that a fresh-eyes pass.
 - **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
   nothing until one file lists the report's required sections. Define them, name which rule each
   discharges, and require that a section with nothing to report says so — an omitted section and a
@@ -76,6 +79,11 @@ with little change.
 - **Adopting a better output does not teach the asset.** When a run produces something better than the
   reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
   reproduce a rule nobody wrote down, and the next run reverts.
+- **One vocabulary for a maturity claim — `SPECIFIED` · `EXERCISED` · `VERIFIED`.** An asset that states
+  how well-proven a path is uses these three and defines nothing new. **SPECIFIED** — written, never run.
+  **EXERCISED** — run, with the limit on what the run proves stated beside it. **VERIFIED** — run in real
+  use with no outstanding limit. The label is a claim about evidence: an `EXERCISED` that names no limit is
+  an unchecked `VERIFIED`, and a `VERIFIED` that has a limit is the more common error.
 - **A skill gap is a gap to file, not a licence to hand-code.** When an asset cannot express something,
   file a note against the asset. Hand-writing the output instead leaves the asset unable to produce it
   next time, and hides that it ever couldn't.
