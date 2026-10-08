@@ -5,9 +5,13 @@
  * Usage:
  *   node skill-reference-check.mjs [<skills-dir> ...]
  *
- * Each argument is a directory holding skill folders (<skills-dir>/<skill>/.../*.md).
+ * Each argument is a directory holding skill folders (<skills-dir>/<skill>/.../*.md), or a single skill
+ * directory — one holding a SKILL.md — which is read as that one skill and says so.
  * Default: ~/.claude/skills. To check staged assets before promoting them, pass the staging dir:
  *   node global/tools/skill-reference-check.mjs incoming/skills
+ *
+ * Prefer the widest root that covers the assets: a single skill directory cannot resolve a pointer into
+ * another skill, so one reads as NO SUCH FILE there and resolves from the root above it.
  *
  * A split, a rename, or a moved section breaks a pointer silently, and the breakage reads as correct
  * prose — so this answers one question mechanically: does every `file.md` → Section pointer resolve?
@@ -24,7 +28,7 @@
  *    unresolved. That is this tool's limit, not a defect in the label — do not "fix" the label.
  */
 import { readFileSync, readdirSync, existsSync } from "fs";
-import { join, basename } from "path";
+import { join, basename, resolve } from "path";
 import { homedir } from "os";
 
 // ---------------------------------------------------------------------------
@@ -84,18 +88,35 @@ const roots = args.length ? args : [join(homedir(), ".claude", "skills")];
 const files = new Map(); // "<skill>\u0000<name>" -> { skill, name, text, headings }
 const byName = new Map(); // "<name>" -> [skill, ...]
 
+function indexSkill(dir, skill) {
+  for (const path of markdownFiles(dir)) {
+    const name = basename(path);
+    const text = readFileSync(path, "utf8");
+    const headings = new Set([...text.matchAll(HEADING)].map((match) => norm(match[1])));
+    files.set(`${skill}\u0000${name}`, { skill, name, text, headings });
+    byName.set(name, [...(byName.get(name) ?? []), skill]);
+  }
+}
+
 for (const root of roots) {
   if (!existsSync(root)) continue;
+
+  // A reviewer's natural call is the asset itself. Without this, a skill directory is walked as if it
+  // contained skills: references/ is indexed as a pseudo-skill, SKILL.md is skipped for being a file, and
+  // the run exits 0 — a green result over part of the asset rather than a refusal.
+  if (existsSync(join(root, "SKILL.md"))) {
+    const skill = basename(resolve(root));
+    indexSkill(root, skill);
+    console.log(
+      `note: ${root} holds a SKILL.md — read as the single skill "${skill}". ` +
+      `A pointer into another skill cannot resolve from here; pass the root that contains them for that.`,
+    );
+    continue;
+  }
+
   for (const entry of readdirSync(root, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
-    const skill = entry.name;
-    for (const path of markdownFiles(join(root, skill))) {
-      const name = basename(path);
-      const text = readFileSync(path, "utf8");
-      const headings = new Set([...text.matchAll(HEADING)].map((match) => norm(match[1])));
-      files.set(`${skill}\u0000${name}`, { skill, name, text, headings });
-      byName.set(name, [...(byName.get(name) ?? []), skill]);
-    }
+    indexSkill(join(root, entry.name), entry.name);
   }
 }
 
