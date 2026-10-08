@@ -5,7 +5,7 @@ description: >
   format. Use when the user wants to queue/record a to-do — "/task ...", "add a task", "note this for
   later", "backlog this", "queue X", "remind me to do Y", "track that we need to Z" — WITHOUT starting it.
   It only RECORDS the task (queueing, never execution); it never begins the work. Places active items under
-  the Now section and deferrals under Backlog, matching the tasks.md template shape. Scope:
+  the Now section and deferrals under Backlog, matching the shape tasks.md already has. Scope:
   .claude/work/tasks.md only — not a general note-taker, not /checkpoint, not the asset-capture hook.
 ---
 
@@ -25,9 +25,13 @@ starting it.
 
 1. Locate `.claude/work/tasks.md` in the current project. If it's genuinely absent and the project uses the
    convention, create it matching the shape of its sibling work docs; otherwise ask where the task should go.
-2. Phrase the task as one **flat** checkbox line in the house format:
-   `- [ ] **<short title>** — <what + why, one line>`. Datestamp only Done/Deferred entries — a fresh Now/Backlog
-   add carries none. (Cluster grouping + a `plan: <path>` header are set at plan-time, not by this skill.)
+2. Phrase the task as one **flat** checkbox item in the house format:
+   `- [ ] **<short title>** — <what + why>`, wrapped to the file's width. *Flat* means no cluster nesting,
+   not one physical line. (Cluster grouping + a `plan: <path>` header are set at plan-time, not by this skill.)
+   - **A Backlog add is a deferral, so it names its subject** — the file, the line, and a quote where one
+     applies. An entry only its author could act on is not ready to queue.
+   - **Datestamp a Backlog add** (ISO `YYYY-MM-DD`): it is a deferred entry, and the date is what makes
+     staleness checkable later. A Now add carries none.
 3. Place it:
    - **Now / active** section when the user marks it current or next.
    - **Backlog** (default) when it's a deferral / later item.
