@@ -57,8 +57,8 @@ Each entry specifies a small identity block + the three layers:
 - **title** — the `<GallerySection title="…">` value, bucket-prefixed.
 - **mapsTo** — the full DESIGN.md heading path (the `<GallerySection mapsTo="…">` eyebrow).
 - **source** — the `<GallerySection source="…">` value (omit when none).
-- **intro** — a one-line description of the section, rendered by `GallerySection` (a `body-primary`
-  paragraph under the title — see `scaffold-kit.md` → GallerySection). This is **P3 instance text**:
+- **intro** — a one-line description of the section, rendered by `GallerySection` (the intro paragraph
+  under the title — see `scaffold-kit.md` → GallerySection). This is **P3 instance text**:
   derive it from the section's DESIGN.md content; every section has one.
 - **P1 / P2 / P3** — the three layers (composition · visual alignment · actual inputs) per the legend
   above. Older un-migrated entries still show the previous "Renders as / Boxed-prose / Specimen
@@ -180,7 +180,7 @@ Philosophy / Core Principles / Things to Avoid · Accessibility Rules · Cross-C
 - Scaffold primitive pseudocode — `GallerySection`, `SpecimenGroup` → `scaffold-kit.md`; `Specimen`,
   `Card` → `scaffold-specimen.md`; `ChromeFrame`, `ThemeShot`, `ThemeVideo` →
   `scaffold-chrome-theme.md`; `DemoViewOnly`, `InertDemo` → `scaffold-guards.md`
-- Hard-to-demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlay-on-hero, sample assets,
+- Hard-to-demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components, sample assets,
   `InlineThemeSelector` placement) → `hard-to-demo.md`
 - Pinned file/folder structure → `architecture.md`; `page.tsx` and `gallery.css` contents →
   `page-and-css.md`

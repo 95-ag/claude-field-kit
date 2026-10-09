@@ -152,8 +152,8 @@ hand-faked markup.** This is non-negotiable in Build mode:
   expose. Empty and zero states are worth a specimen of their own; they are not a substitute for one.
 - **Sample data may not introduce a field the real schema does not have** — see `final-checks.md` →
   Dogfood gate. A demo field manufactures the affordance built on top of it.
-- The `slug` in any demo `Project` object MUST be a real registered slug — components like `HeroMedia`
-  dispatch by slug to load registered covers; a fake slug produces no output.
+- A demo object's identifier MUST be a real registered one wherever a component dispatches by it to
+  load content; a fake identifier produces no output.
 - Components that render through a build pipeline (e.g. `CodeBlock` via Shiki + MDX) MUST use that
   pipeline — see `hard-to-demo.md` → Build-time-transform-dependent components. A bare code component bypassing Shiki
   renders unhighlighted; that is a fidelity failure, not a compile failure.

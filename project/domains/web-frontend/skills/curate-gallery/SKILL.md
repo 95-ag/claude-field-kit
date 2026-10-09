@@ -171,7 +171,7 @@ Read each reference when the run enters that area — do not pre-load all of the
 | `references/visualizer-motion.md` | DurationScale · EasingCurves |
 | `references/visualizer-layout.md` | ShapeRow · DeviceRuler · SpanTable |
 | `references/visualizer-dogfood.md` | The gate every visualizer must pass before its section is done |
-| `references/hard-to-demo.md` | A component that resists a bounded frame: fixed chrome, side-effects, breakpoint-gated, build-time transforms, **overlay-on-hero**, **the TOC rail**, the theme selector, sample assets via the project's own generators, and live-vs-screenshot |
+| `references/hard-to-demo.md` | A component that resists a bounded frame: fixed chrome, side-effects, breakpoint-gated, build-time transforms, **a component absolutely positioned in production within another's bounds**, **the TOC rail**, the theme selector, sample assets via the project's own generators, and live-vs-screenshot |
 | `references/verification.md` | **Gate 0 parity review** by a reviewer that did not make the edits; **the gallery is a visual partner to the doc, not a second copy of it**; item-level coverage; render and build gates |
 | `references/final-checks.md` | Finishing: the dogfood gate and the validation checklist |
 | `references/boundaries-and-handoff.md` | The read-only code-write boundary; the demo-affordance carve-out and its two patterns; **the fixer triad** and the inform-only handoff that dispatches `scaffold-design-system`; where this skill's authority ends and `design-write`'s begins |

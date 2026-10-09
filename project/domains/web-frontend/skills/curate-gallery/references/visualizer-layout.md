@@ -69,8 +69,8 @@ RulerStop = {
   px: string      // breakpoint floor as string: "0", "640", "768", "1024", "1280", "1536"
   device: string  // human device label: "Mobile", "Tablet", "Laptop", "Desktop", "Wide"
   token: string   // breakpoint token name: "base", "sm", "md", "lg", "xl", "2xl"
-  used: boolean   // true = project uses this breakpoint (surface-deep);
-                  // false = part of the scale but unused (surface-elevated)
+  used: boolean   // true = project uses this breakpoint (sunken/deep level);
+                  // false = part of the scale but unused (raised level)
   boxW: number    // silhouette width in px (proportional, not scale)
   boxH: number    // silhouette height in px (proportional)
 }

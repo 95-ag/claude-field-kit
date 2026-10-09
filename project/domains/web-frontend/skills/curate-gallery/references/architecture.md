@@ -75,9 +75,9 @@ public/<gallery-route>/        ← dev-only static assets (not shipped to produc
     ├── diagram.svg            ← Diagram specimen
     ├── panel-a.svg            ← DiagramRow panel A
     ├── panel-b.svg            ← DiagramRow panel B
-    ├── logo-a.svg             ← HeroMetaOverlay logos
+    ├── logo-a.svg             ← overlaid-component logo set
     ├── logo-b.svg
-    ├── avatar-a.svg           ← HeroMetaOverlay contributors
+    ├── avatar-a.svg           ← overlaid-component avatar set
     └── avatar-b.svg
 ```
 
@@ -223,5 +223,5 @@ updates everything together.
 - Ordered section template (which visualizer per sub-section, prose vs box) → the four `spine-*.md` files; shared
   contract, pins and full order → `section-spine.md`
 - Mode derivation (Build/Inventory/Sync/Bootstrap) and item-list source per mode → `modes.md`
-- Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlay-on-hero, TOC rail) → `hard-to-demo.md`
+- Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components, TOC rail) → `hard-to-demo.md`
 - Render-backed verification + gates → `verification.md`

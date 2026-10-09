@@ -184,7 +184,8 @@ Do not infer that theming works from inspecting CSS variables. Observe it.
   tooltips on interaction.
 - Build-time-transform-dependent specimens (e.g. CodeBlock via Shiki) render styled with syntax
   highlighting, not plain monochrome text.
-- Overlay-on-hero specimens appear over the correct `surface-deep` backdrop, not over real hero art.
+- Overlaid-component specimens appear over a plain backdrop that changes with the theme, not over the
+  real component beneath.
 - TOC / section nav scrolls; the proportional indicator tracks correctly at 2xl+.
 - Reading-mode scoped preview (`SwatchGrid` `scopeClassName="ds-reading"`) — confirm overridden
   token values render correctly in each theme.

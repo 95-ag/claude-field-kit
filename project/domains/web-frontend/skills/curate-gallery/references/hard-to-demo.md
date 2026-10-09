@@ -171,21 +171,24 @@ Scoping reused styles & chrome`.
 
 ---
 
-## Overlay-on-hero — separate specimen over a plain surface-deep backdrop
+## Overlaid components — one specimen each, over a plain theme-adapted backdrop
 
-Two components that visually stack in production (a hero image and a metadata overlay) are
-**separate specimens** in the gallery — one per DESIGN.md component boundary. Combining them blurs
-the boundary and makes it hard to see each component's own behavior.
+A component that is absolutely positioned **in production** within another component's bounds is a
+**separate specimen** from the component beneath it, one per DESIGN.md component boundary. Combining
+them blurs the boundary and makes it hard to see each component's own behavior. Two neighbours own the
+cases this one does not: anything `position:fixed` in production goes to `ChromeFrame` above, and a
+Display or Feedback component with a bounded variant set renders live in its own UI section
+(→ `spine-background-components.md` → Bucket 3: Components) even where it is corner-pinned.
 
-**Requirement:** the overlay specimen is placed over a **plain, theme-adapted backdrop** — a solid
-`bg-[--surface-deep]` div at the same aspect ratio — not real hero artwork. The subject of the
-specimen is the overlay component, not the content behind it. The backdrop div must carry the same
-wrapper classes as the HeroMedia specimen so the overlay's positioning resolves identically:
-`relative aspect-video w-full overflow-hidden rounded-[--radius-md] bg-[--surface-deep]`.
+**Requirement:** the overlying component's specimen sits over a **plain, theme-adapted backdrop** — a
+solid div in the project's **sunken/deep surface level**, the fill `Card` uses for a specimen well
+(→ `scaffold-specimen.md` → Card) — never over the real component beneath. The subject of the specimen is
+the overlying component, not what sits behind it. Size the backdrop to the underlying component's box
+as production renders it, copying the wrapper classes from that component's specimen, or from its
+production container where it has none, so positioning resolves identically.
 
-Supply **full representative sample data** — multiple logos and multiple contributor avatars, not a
-single placeholder. The overlay's layout logic (spacing, truncation, max-item behavior) is only
-visible with realistic data counts.
+Supply **at least two items per collection**, and enough to reach any truncation or max-item behavior
+the component has. A single placeholder hides the layout logic.
 
 **Example:** `HeroMetaOverlay` receives two logos and two contributors:
 
@@ -206,8 +209,6 @@ const demoContributors = [
   </div>
 </Specimen>
 ```
-
-There is no `HeroMedia` inside this specimen — the background IS the `surface-deep` div.
 
 ---
 
