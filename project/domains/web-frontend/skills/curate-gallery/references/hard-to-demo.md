@@ -180,12 +180,13 @@ cases this one does not: anything `position:fixed` in production goes to `Chrome
 Display or Feedback component with a bounded variant set renders live in its own UI section
 (→ `spine-background-components.md` → Bucket 3: Components) even where it is corner-pinned.
 
-**Requirement:** the overlying component's specimen sits over a **plain, theme-adapted backdrop** — a
-solid div in the project's **sunken/deep surface level**, the fill `Card` uses for a specimen well
-(→ `scaffold-specimen.md` → Card) — never over the real component beneath. The subject of the specimen is
-the overlying component, not what sits behind it. Size the backdrop to the underlying component's box
-as production renders it, copying the wrapper classes from that component's specimen, or from its
-production container where it has none, so positioning resolves identically.
+**Requirement:** the overlying component's specimen sits over a **plain, theme-adapted backdrop**,
+never over the real component beneath. Use a `Card` (→ `scaffold-specimen.md` → Card) for the project's
+sunken/deep fill and card treatment, and pass it `relative overflow-hidden p-0` — `Card`'s box is
+neither positioned nor clipping on its own, so an absolutely positioned child would otherwise resolve
+against an ancestor instead of the backdrop. Size it with the underlying component's own classes, taken
+from that component's specimen or from its production container where it has none. The subject of the
+specimen is the overlying component, not what sits behind it.
 
 Supply **at least two items per collection**, and enough to reach any truncation or max-item behavior
 the component has. A single placeholder hides the layout logic.
@@ -203,10 +204,9 @@ const demoContributors = [
 ];
 
 <Specimen id="project-hero-overlay" name="HeroMetaOverlay" ...>
-  <div className="relative aspect-video w-full overflow-hidden
-                  rounded-[var(--radius-md)] bg-[var(--surface-deep)]">
+  <Card className="relative aspect-video overflow-hidden p-0">
     <HeroMetaOverlay logos={demoLogos} contributors={demoContributors} />
-  </div>
+  </Card>
 </Specimen>
 ```
 
