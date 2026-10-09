@@ -148,9 +148,14 @@ positive → raised bordered; uniform fallback) using simple bordered levels; la
 text** / token = code / value = eyebrow; radius always 0 (full rules → `visualizer-depth.md` → LayerStack
 → P2).
 
-**P3 — Actual inputs (`Z_INDEX_LAYERS`):** the project's z-index tokens, read **complete** from DESIGN.md
-→ Z-Index Scale; each `{ token, value, role }`. `LayerStack` sorts ascending by value internally — pass in
-any order. *(Example: 6 — `--z-base` (0) · `--z-sticky-content` (20) · `--z-scroll-to-top` (40) ·
+**P3 — Actual inputs (`Z_INDEX_LAYERS`):** the project's z-index layers, read **complete** from DESIGN.md
+→ Technical Conventions → Z-Index Scale for each layer's token and role. Each value comes from DESIGN.md
+→ YAML Registry (`z-index:` group), joined on the token's name. A layer the Registry gives no value, or a
+Registry entry no layer names, is a doc disagreement — handle it per `section-spine.md` → The three layers
+(P1 · P2 · P3); a missing value falls back per `visualizer-kit.md` → Generic fallbacks, because
+`LayerItem.value` is required. Each item is `{ token, value, role }`;
+`LayerStack` sorts ascending by value internally — pass in any order.
+*(Example: 6 — `--z-base` (0) · `--z-sticky-content` (20) · `--z-scroll-to-top` (40) ·
 `--z-pill-nav` (50) · `--z-mobile-menu-overlay` (55) · `--z-mobile-menu-panel` (60).)*
 
 ---

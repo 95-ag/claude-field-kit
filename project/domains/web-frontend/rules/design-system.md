@@ -1,6 +1,8 @@
 # Design System
 
-How to consume the design system. Token values (color, type scale, palette, spacing, radius, motion, z-index, elevation, breakpoints) live in `docs/DESIGN.md` → Foundations — reference them by name; never hardcode or duplicate values here. Read DESIGN.md before implementing any UI.
+How to consume the design system. Read DESIGN.md before implementing any UI; reference every value by its token name and never hardcode or duplicate one here.
+
+Where a value lives: spacing, radius, motion, z-index and breakpoint tokens in `docs/DESIGN.md` → YAML Registry; color and typography tokens either there or colocated in `docs/DESIGN.md` → Foundations, whichever that doc uses; elevation levels and per-level surface specs in `docs/DESIGN.md` → Foundations → Elevation & Depth.
 
 ## Stylesheet organization
 
@@ -16,7 +18,7 @@ When to split: start in one global file; move a concern into its own file once i
 
 - Use design-system tokens for every visual value — color, typography, spacing, radius, elevation, z-index, motion, and breakpoints.
 - Never use raw hex values, arbitrary pixel values, magic numbers, or one-off visual constants in components.
-- Resolve values from DESIGN.md → Foundations by token name — never eyeball them from screenshots.
+- Resolve values by token name from their canonical home — never eyeball them from screenshots.
 - Never invent a token variant the system does not define. Extend the system in DESIGN.md first, then consume it.
 
 ## Color
@@ -75,7 +77,7 @@ When to split: start in one global file; move a concern into its own file once i
 
 ## Z-index
 
-- Use z-index scale tokens only; never raw z-index values. Scale → DESIGN.md → Technical Conventions → Z-Index Scale.
+- Use z-index scale tokens only; never raw z-index values. Layer names and order → DESIGN.md → Technical Conventions → Z-Index Scale; values → DESIGN.md → YAML Registry.
 
 ## Consistency
 

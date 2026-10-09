@@ -693,7 +693,7 @@ YAML Registry              ← globally reusable tokens/scales/aliases/systems o
 # Interaction Rules        (global defaults: Hover, Focus, Disabled, Loading, Responsive Behavior)
 # Accessibility Rules
 # Cross-Cutting Rules
-# Technical Conventions    (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering)
+# Technical Conventions    (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering, Z-Index Scale)
 # Iteration Notes          (Open Decisions, Known Gaps)
 ```
 
@@ -711,7 +711,7 @@ YAML Registry              ← globally reusable tokens/scales/aliases/systems o
 | Imagery | image/figure treatment — framing, ratios, placement |
 | Motion | duration + easing tokens + motion principles/limits |
 | Shapes | the radius/shape scale |
-| Elevation & Depth | elevation levels, surface layering, any blur/shadow carve-outs |
+| Elevation & Depth | elevation levels, per-level surface treatment, any blur/shadow carve-outs (stacking order → Technical Conventions → Z-Index Scale) |
 | Iconography | the icon system — size, stroke, source |
 
 A base style/rendering layer (no component, not in the authoring registry) is a Foundations concern — classify by responsibility before placing it under `# Components`.
@@ -768,7 +768,14 @@ Aesthetic preference lists and stylistic do/don’t bullets do not qualify unles
 
 `# Technical Conventions` survives as a *narrowed implementation-policy section* covering rendering constraints, MDX conventions, build/runtime constraints affecting UX, performance-sensitive policy (LCP/FOUT, lazy loading), and animation-rendering constraints.
 
-It does not hold tokens (those belong in the YAML Registry) or component specs. Reduced-motion *behavioral* rules join Interaction Rules; reduced-motion *implementation policy* stays in Technical Conventions. Token-usage conventions move to Cross-Cutting Rules.
+It does not hold token *values* (those belong in the YAML Registry) or component specs. Reduced-motion *behavioral* rules join Interaction Rules; reduced-motion *implementation policy* stays in Technical Conventions. Token-usage conventions move to Cross-Cutting Rules.
+
+One subsection is sanctioned here — `Z-Index Scale`, one level below the `# Technical Conventions` heading:
+
+* required when the YAML Registry defines a `z-index:` group, omitted when it does not
+* a table with one row per stacking layer, lowest level first
+* two columns — the layer's token name, and the role it occupies
+* values stay in the YAML Registry — none are restated here
 
 ## Domain Components Policy
 
@@ -1114,7 +1121,7 @@ YAML Registry
 # Interaction Rules        (Hover, Focus, Disabled, Loading, Responsive Behavior)
 # Accessibility Rules
 # Cross-Cutting Rules
-# Technical Conventions   (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering)
+# Technical Conventions   (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering, Z-Index Scale)
 # Iteration Notes          (Open Decisions, Known Gaps)
 ```
 

@@ -40,6 +40,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 - The `# Technical Conventions` section contains only implementation policy (rendering, MDX, build/runtime, performance UX, animation-rendering constraints).
 - Token registries, component specs, and behavioral rules appearing inside Technical Conventions are misplaced — flag for relocation.
+- The `Z-Index Scale` subsection is the one sanctioned exception — it names tokens without their values (`design-writing-contract.md` → Technical Conventions Policy).
 
 ## Compression
 
