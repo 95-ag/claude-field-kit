@@ -45,6 +45,8 @@ Non-negotiable stops. The numbered sections below expand each one.
 - Keep each subagent single-purpose with minimal tools and clear scope
 - Use subagents to reduce main context load not to increase system complexity
 - Announce any deviation from a subagent's intended process — never silently substitute the controller's review for a skill's own spec/quality review
+- Never resume a subagent that died mid-run — dispatch a fresh one instead
+- Before re-dispatching, establish what the dead run left behind (`git status`, `git diff`, the project's checks) and say so in the new brief
 
 ### 3. Self-Improvement Loop
 

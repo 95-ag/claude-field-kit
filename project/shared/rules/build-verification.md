@@ -24,6 +24,12 @@ tool-specific commands (e.g. `stacks/node/rules/build-verification.md`).
 - **Confirming a symptom is not confirming its mechanism.** A plausible cause that explains the symptom is a
   hypothesis, not a finding — name a cause only after removing it and observing the symptom change. A fix
   built on an unfalsified cause encodes the wrong rule even when the symptom disappears.
+- **A doc sync is verified against the code before it is committed.** Diff every claim the doc makes against
+  the implementation, not only the section you edited.
+- **A counted claim is re-checked everywhere it appears, not only where you edited it.** Grep each one
+  (`N-rule`, a property tally) across the whole file, including any decision log.
+- **A finding names one instance; the fix owns the class.** Before closing a review finding, search for every
+  other instance of the same problem within the task's scope and fix those too.
 
 ## Batch gate, not per-commit
 
