@@ -56,6 +56,9 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Tokens & Terminology
 
 - Token references use `{token.name}` (resolved-value) format wherever the contract requires it.
+- **Every `{token.name}` (value) pair in the canonical sections matches the token's canonical definition
+  (YAML Registry, or a colocated Foundations table); report pairs checked and mismatches.** The carve-out
+  above exempts these pairs from the duplication check, so nothing else catches a stale one.
 - No new tokens introduced that aren't declared in **the YAML Registry, or a colocated Foundations table**. The registry is the canonical token store; a check that reads only the Foundations section passes a token that exists nowhere.
 - Stable vocabulary is consistent across the doc — no synonym drift introduced.
 
