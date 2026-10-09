@@ -307,7 +307,7 @@ The document SHOULD use:
 * dense declarative writing
 * semantically grouped writing
 * stable terminology
-* local reinforcement of important concepts
+* local reinforcement of a section's own vocabulary
 
 The document SHOULD avoid:
 
@@ -315,8 +315,6 @@ The document SHOULD avoid:
 * rhetorical filler
 * excessive abstraction
 * implementation dumps without context
-
-Important system concepts MAY be intentionally repeated locally inside sections.
 
 Technical prose SHOULD favor compressed semantic clusters over decomposed specification lists.
 
@@ -358,9 +356,9 @@ Cross-cutting interpretation rules, global overrides, and exceptions that affect
 
 ### Redundancy Rules
 
-Intentional repetition of identity-bearing concepts is permitted.
+Intentional repetition of identity-bearing **vocabulary** is permitted — the terms and named qualities a section needs to read standing alone.
 
-Important system concepts MAY be repeated locally inside sections rather than referenced abstractly from earlier sections.
+Those terms MAY be repeated locally inside sections rather than referenced abstractly from earlier sections.
 
 This improves:
 
@@ -376,7 +374,10 @@ Examples:
 * architectural containers
 * structural whitespace
 * editorial reading flow
-* no shadows
+* raised surfaces
+* sunken surfaces
+
+A rule or a value is not vocabulary: Compression Targets governs where a rule lives, the YAML Registry where a value lives.
 
 Avoid relying entirely on earlier philosophy sections for contextual understanding.
 
@@ -496,7 +497,7 @@ A valid `DESIGN.md` SHOULD:
 * keep inline body YAML secondary to prose — the top-level YAML Registry is the canonical token store, not a prose support structure
 * use semantic-token + resolved-value formatting consistently
 * avoid excessive heading nesting
-* avoid duplicating registry token *values* in prose — token *names* may be referenced freely in markdown
+* avoid duplicating registry token *values* in prose — token *names* may be referenced freely in markdown, and a name carrying its resolved value (`{radius.sm}` (4px)) is a reference, not a duplication
 * preserve consistent cadence across sections
 * satisfy defined Compression Targets
 
@@ -617,7 +618,7 @@ Avoid:
 Preferred:
 
 * stable repeated terminology
-* local reinforcement of core concepts
+* local reinforcement of core terminology
 * consistent semantic vocabulary
 
 ---
@@ -754,7 +755,7 @@ Migrate a semantic table out of Foundations *only* when consolidation under Sema
 
 `# Interaction Rules` defines *shared behavioral baselines* (hover, focus, disabled, loading, responsive behavior) — global defaults only.
 
-Component sections SHOULD reference shared interaction baselines rather than restating them verbatim, unless local restatement materially improves clarity, scanability, accessibility emphasis, or exception handling. This keeps Interaction Rules as the canonical baseline while preserving component-local nuance where it genuinely aids comprehension.
+Component sections MUST reference shared interaction baselines rather than restating them. What may live with the component is a **deviation from or specialization of** a baseline, not the baseline restated — this keeps Interaction Rules canonical while preserving component-local nuance.
 
 ## Cross-Cutting Rules Policy
 

@@ -14,7 +14,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Two-Layer Model
 
 - Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec).
-- Markdown body does not duplicate token *values* from the registry. Token *names* may be referenced freely.
+- Markdown body does not duplicate token *values* from the registry. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`design-writing-contract.md` → Token Conventions).
 - Color and typography tokens MAY remain colocated as role-based semantic tables in Foundations (Locality Principle) instead of hoisted to the top registry — a legitimate placement, not a two-layer violation. Flag only if the same tokens are duplicated across both layers.
 - Local structural-spec YAML inline (component spec blocks, per-elevation specs, grid specs, semantic-systems mappings) is permitted — this is not a two-layer violation.
 - No single monolithic YAML superblock — the registry collects globally reusable tokens, not every YAML block in the document.
@@ -48,6 +48,10 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 - A dense bullet is not automatically a violation — apply the contract's cluster-low-info / split-high-info rule: flag a bullet only when it bundles several independently-explained facts, not merely for length.
 - **Count, and report the counts** — one per target in `design-writing-contract.md` → Compression Targets, plus the provenance sweep below. Every target is mechanically checkable; a pass reporting "satisfied" with no numbers has asserted nothing.
 - **A zero is a result and is reported as one** — "0 provenance shapes" and a silently skipped sweep look identical otherwise.
+- **The no-rule-in-two-sections target is judged across the whole document**, not within one section.
+- **Each duplicate group is reported with the section that owns the fact**, so the output says where
+  the rule belongs rather than only that it repeats. Identity vocabulary is exempt
+  (`design-writing-contract.md` → Redundancy Rules).
 
 ## Tokens & Terminology
 
