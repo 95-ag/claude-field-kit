@@ -138,8 +138,10 @@ NOTED: nearby prose wall in "About" — out of scope, left as-is
 MIRRORS: "surface / section / ground" vocabulary — restated in the design-system gallery; not edited
 ```
 
-The manifest is the audit trail: if something changed and isn't in it, that's a defect. (Full entry-type
-registry, binding in every mode: `validation-heuristics.md` → Manifest Entry Types.)
+The manifest is the audit trail: if something changed and isn't in it, that's a defect. A full authoring is
+itself the record of what was written, so its manifest carries only the observations made while writing
+(for example `FLAGGED`, `NOTED`, `REWORDED`, `MIRRORS`) — never an `ADDED` line per section. (Full
+entry-type registry, binding in every mode: `validation-heuristics.md` → Manifest Entry Types.)
 
 **A change to a boundary gets its own two sweeps** — the retired term *and* every figure measured under
 the old boundary (`edit-patterns.md` → Change a boundary).

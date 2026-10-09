@@ -125,7 +125,7 @@ Keep each entry to one line.
 |---|---|
 | `ADDED` | New content written into a section |
 | `UPDATED` | Existing content changed in place — a value, wording, a cross-reference, or formatting |
-| `REMOVED` | Content deleted — deleting a *section*, or any content the running operation does not name as routine, requires user confirmation; never on the model's own judgment |
+| `REMOVED` | Content deleted — only on a user instruction naming it, or where the running operation names the deletion as routine; otherwise `FLAGGED`. Never on the model's own judgment, and never a constraint stated as history (→ Residue) |
 | `MOVED` | Content relocated — the entry names source → destination, including out of the canonical sections |
 | `RENAMED` | Heading or identifier text changed — cross-references need updating |
 | `MERGED` | Sections or bullet clusters consolidated — consolidating *sections* requires user confirmation |
