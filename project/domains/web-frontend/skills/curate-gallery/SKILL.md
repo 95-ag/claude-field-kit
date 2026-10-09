@@ -7,7 +7,7 @@ description: >
   equivalent intent: scaffolding components visually before building pages, keeping a
   living visual reference synced to DESIGN.md, or making a messy/undocumented codebase
   visible enough to author its DESIGN.md from (code-first discovery). Stack-agnostic
-  (Next.js/React verified; static-HTML specified). Do NOT use to author DESIGN.md (use
+  (Next.js/React and static-HTML adapters both EXERCISED). Do NOT use to author DESIGN.md (use
   design-write) or to generate production component/foundation code (that is the
   scaffold-design-system hand-off).
 ---
@@ -105,7 +105,7 @@ of stack — the catalog primitives, the 9 visualizer roles, the section spine, 
 universal law. The physical file/folder tree is the **layout pin**, selected by the same stack detection
 that picks the adapter (mode-decision step 1). Reproduce your stack's tree exactly.
 
-- **React/Next (VERIFIED)** — `architecture.md`, which holds the annotated tree and the
+- **React/Next (EXERCISED)** — `architecture.md`, which holds the annotated tree and the
   generic↔instance split. **The tree is stated there and only there**; a second copy here drifted from
   it once already.
 - **Static-HTML (EXERCISED)** — `stack-adapters.md` → Static-HTML pinned structure (equal-authority

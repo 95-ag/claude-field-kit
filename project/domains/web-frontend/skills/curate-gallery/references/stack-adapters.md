@@ -1,7 +1,7 @@
 # Stack Adapters
 
 The gallery spine (modes, dogfooding, handoff) is stack-neutral. Six concrete mechanics vary by stack —
-these are the **adapter seams**. This reference defines the seams, gives the verified React/Next adapter
+these are the **adapter seams**. This reference defines the seams, gives the React/Next adapter
 concretely, and specifies the static-HTML adapter contract. All other references defer stack-specific
 wiring here; do not repeat adapter detail elsewhere.
 
@@ -34,9 +34,9 @@ Before implementing the toggle:
 
 ---
 
-## React/Next adapter (VERIFIED)
+## React/Next adapter (EXERCISED)
 
-Verified against a project using App Router, next-themes, Tailwind CSS v4, MDX via next-mdx-remote +
+Exercised against a project using App Router, next-themes, Tailwind CSS v4, MDX via next-mdx-remote +
 rehype-shiki, Biome and release-allowlist deployment.
 
 ### (a) Dev-only route

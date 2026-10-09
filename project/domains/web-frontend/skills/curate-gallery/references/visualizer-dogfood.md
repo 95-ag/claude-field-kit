@@ -96,11 +96,10 @@ of use:
    dimensions), diagonal-stack offsets (`dx`, `dy`, `planeHeight`), bar/track widths
    that encode a scale. These are math values, not design tokens.
 
-2. **Gallery-internal layout constants** — fixed column widths (`w-[112px]` for bar label,
-   `w-[160px]` for duration label, `280px` left column in TypeScaleList), preview
-   container heights (`min-h-[180px]` for DepthGrid cards), default canvas size (`180px`
-   for EasingPlot), `min-width: 480px` for LayerStack scroll. These are the gallery's
-   own composition constants, not part of the project's design system.
+2. **Gallery-internal layout constants** — fixed column widths (`w-[160px]` for duration label,
+   `280px` left column in TypeScaleList), preview container heights (`min-h-[180px]` for DepthGrid
+   cards), default canvas size (`180px` for EasingPlot), `min-width: 480px` for LayerStack scroll.
+   These are the gallery's own composition constants, not part of the project's design system.
 
 These are exceptions, not a general license. Call them out explicitly in code comments.
 

@@ -244,21 +244,21 @@ rebuild must not be able to read it.
 
 ## Gate 4 — Dual-stack proof
 
-The skill claims to be stack-agnostic. Proof requires at least two adapters verified against real
+The skill claims to be stack-agnostic. Proof requires at least two adapters VERIFIED against real
 projects:
 
 | Stack | Modes run | Status |
 |---|---|---|
-| **React/Next** | Build, Sync | VERIFIED |
+| **React/Next** | Build, Sync | EXERCISED — Inventory unrun on this stack |
 | **Static-HTML** | Inventory (shakedown) | EXERCISED — adapter shape built + render-checked; awaits a static-HTML project with a forward-written DESIGN.md (see `stack-adapters.md` → Static-HTML pinned structure) |
 
-The React/Next adapter verification satisfies the first proof. The static-HTML
+No row is VERIFIED yet, so this proof is open. The static-HTML
 Inventory shakedown built and render-checked the adapter shape and harvested
 the pinned structure + component-build contract, but the **authoritative dogfood waits for a static-HTML
 project with a forward-written DESIGN.md** — a reverse-engineered doc is too debt-ridden to verify
-the fidelity gates against. Until that dogfood completes, the skill is confirmed for React/Next and
-specified-but-unconfirmed for static HTML. Do not describe the skill as fully stack-agnostic in
-materials that imply both adapters are tested.
+the fidelity gates against. Until that dogfood completes, React/Next is EXERCISED in Build and
+Sync, static HTML is EXERCISED in Inventory, and neither is VERIFIED. Do not describe the skill as fully
+stack-agnostic in materials that imply both adapters are tested.
 
 ---
 
