@@ -144,8 +144,7 @@ When two locations define different values or behaviors:
 An Update that changes a boundary — a breakpoint, a tier, a category's membership — runs two sweeps
 before the pass finishes, and reports both.
 
-1. **The retired term, across the whole document** — including `Iteration Notes` and `Rejected`. A
-   rejected option still has to name the right window.
+1. **The retired term, across the whole document** — including `Iteration Notes`.
 2. **Every figure whose measurement conditions the change alters.** A number measured under the old
    boundary is not a fact about the new one. Re-measure it, strip it, or mark it pending re-measurement —
    never restate it as current fact.

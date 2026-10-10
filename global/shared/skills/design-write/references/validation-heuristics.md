@@ -78,7 +78,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 The ban on decision-history in canonical sections is a rule about what may be written; this is the check that it has not accumulated anyway. Residue only ever grows, so sweep rather than assume.
 
 - Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `design-writing-contract.md` → Prose Anti-Patterns.
-- **Sweep the compact provenance shapes too** — a date, an attribution, a before/after pair, a supersession clause. The narration shapes above all miss them, because they tell no story. Sweep `Rejected` and `Known Gaps` as well; the shapes and the one exception are defined in `design-writing-contract.md` → Prose Anti-Patterns.
+- **Sweep the compact provenance shapes too** — a date, an attribution, a before/after pair, a supersession clause. The narration shapes above all miss them, because they tell no story. Sweep `Known Gaps` as well; the shapes and the one exception are defined in `design-writing-contract.md` → Prose Anti-Patterns.
 - **Sort every hit before touching it** — a keyword match is not a verdict:
 
 | Class | Test | Action |
