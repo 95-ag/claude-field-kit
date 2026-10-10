@@ -82,8 +82,9 @@ state and the request — not from a separate sub-skill.
 **Maintenance** — the doc exists and is being edited, aligned, restyled, or restructured.
 - Default to the **smallest viable edit**: one bullet before a paragraph, one paragraph before a
   section, one section before its neighbors.
-- Match the surrounding section's voice, cadence, and bullet density. Do not rephrase prose that
-  wasn't part of the request.
+- Match the surrounding section's terminology and the doc's tier voice
+  (`spec-writing-contract.md` → The Two-Tier Voice). Do not rephrase prose that wasn't part of the
+  request.
 - On any doc you touch, two cleanups are always in scope because they are the house style, not
   opportunistic churn: strip `## N.` heading numbers, and convert every `§N` cross-reference to a
   named path (see the writing contract). Apply them to the sections you're already editing.

@@ -11,8 +11,9 @@ below are per-mode; Shared rules bind all three.
 - **Smallest viable edit.** The narrowest change that satisfies the intent: one bullet before a
   paragraph, one paragraph before a section, one section before its neighbors. Editing content the
   request didn't mention is cleanup, not an update — stop and report it as `NOTED`.
-- **Preserve local wording.** Match the surrounding section's voice, cadence, and bullet density. Don't
-  rephrase, compress, expand, or "improve" prose that wasn't part of the request, even if suboptimal.
+- **Preserve local wording.** Match the surrounding section's terminology and its category's writing
+  mode (`design-writing-contract.md` → Section-Type Writing Modes). Don't rephrase, compress, expand,
+  or "improve" prose that wasn't part of the request, even if suboptimal.
 - **No opportunistic cleanup.** A contract violation near the edit (prose wall, wrong token format,
   heading too deep) is reported as `NOTED`, not fixed inline — unsolicited edits make diffs hard to
   review. Recommend a targeted follow-up or a Realign.

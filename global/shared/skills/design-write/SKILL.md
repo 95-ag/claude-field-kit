@@ -77,7 +77,8 @@ and Update are the everyday path; Realign is a fallback.
 
 **Update — keep it compliant** (everyday maintenance)
 - Every post-authoring change goes through here. Smallest viable edit: one bullet before a paragraph,
-  one section before its neighbors. Match the surrounding voice and bullet density.
+  one section before its neighbors. Match the surrounding section's terminology and its category's
+  writing mode (`design-writing-contract.md` → Section-Type Writing Modes).
 - New content is contract-compliant by construction (component = name → 1-line identity → 3–5 semantic
   bullets → optional YAML; tokens in `{token.name}` resolved-value form; bullets ≤ 2 visual lines).
 - Cross-layer edits (a YAML-Registry token + its prose reference) are in scope when they touch ≤ 2
