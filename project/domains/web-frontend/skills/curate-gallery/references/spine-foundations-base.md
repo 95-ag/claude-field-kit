@@ -52,8 +52,9 @@ dividers + spacing from the project's tokens; the right-column sample renders at
 (dogfood). Full rules → `visualizer-type.md` → TypeScaleList → P2.
 
 **P3 — Actual inputs (`TYPE_TOKENS`):** one entry per the project's semantic type token, read from
-DESIGN.md → Typography. Each `{ token, family, size, weight, lh?, sample, responsive? }`. `sample` =
-a one-line description of **where the token is used** (from the DESIGN.md "Role" column) — not lorem,
+DESIGN.md → Typography. Each
+`{ token, family, size, weight, lh?, sample, responsive?, tabletLh?, mobileLh? }`. `sample` = a
+one-line description of **where the token is used** (from the DESIGN.md "Role" column) — not lorem,
 not an alphabet run. `responsive` only for tokens that resize across tiers. The token count and values
 are project instance (example: 19) — they live in `sections/`, not pinned here.
 
