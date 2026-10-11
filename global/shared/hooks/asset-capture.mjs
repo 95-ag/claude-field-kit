@@ -6,8 +6,10 @@
  *      gitignored .claude/ is later wiped), and
  *  (2) queue a review task — grouped per ASSET (a skill's many ref-file edits → one entry) — under the
  *      `### Harvest` cluster of claude-field-kit's OWN .claude/work/tasks.md, naming the originating project.
- * A hand-staged note in the kit's incoming/notes/ instead queues a resolve-task under `### General` (un-shaped
- * items: candidate lessons, deferred global edits, new-asset ideas, hook bugs — triaged at harvest, not captured).
+ * A hand-staged note in the kit's incoming/notes/ instead queues a resolve-task under `### Notes` (un-shaped
+ * items: candidate lessons, deferred global edits, new-asset ideas, hook bugs — resolved with notes-triage,
+ * never harvested, never captured). A shell write into incoming/notes/ is never seen — see
+ * bash-write-adapter's KNOWN LIMITS.
  * Skips claude-field-kit's own .claude/ (kit-internal source/config, never promoted). No-ops if the kit
  * isn't present on this machine. Never promotes to a tier directly. Fail-open (always exit 0).
  *
@@ -108,15 +110,15 @@ function queueTask(c) {
 }
 
 // A hand-staged note in incoming/notes/ is un-shaped (candidate lesson, deferred global edit, new-asset idea,
-// hook bug) — NOT a captured asset. Queue a resolve-task under `### General`; harvest triages it.
+// hook bug) — NOT a captured asset. Queue a resolve-task under `### Notes`; notes-triage resolves it.
 function queueNote(name) {
   if (!existsSync(KIT_TASKS)) return;
   let content;
   try { content = readFileSync(KIT_TASKS, "utf8"); } catch { return; }
   const marker = `<!-- t3-note:${name} -->`;
   if (content.includes(marker)) return;
-  const line = `- [ ] **Note · ${name}** — resolve: shape into a rule/asset (→ harvest), apply as a fix, or drop. ${marker}`;
-  try { writeFileSync(KIT_TASKS, insertUnderCluster(content, "### General", line), "utf8"); } catch {}
+  const line = `- [ ] **Note · ${name}** — resolve with notes-triage. ${marker}`;
+  try { writeFileSync(KIT_TASKS, insertUnderCluster(content, "### Notes", line), "utf8"); } catch {}
 }
 
 const rl = createInterface({ input: process.stdin });
@@ -130,7 +132,7 @@ rl.on("close", () => {
   // latter would let a notebook inside a skill's references/ be edited without ever being staged.
   const fp = input?.tool_input?.file_path ?? input?.tool_input?.notebook_path ?? "";
   if (!fp) process.exit(0);
-  // Hand-staged note in the kit's incoming/notes/ → General resolve-task; never staged or Harvested.
+  // Hand-staged note in the kit's incoming/notes/ → Notes resolve-task; never staged or Harvested.
   const fpw = toWslPath(fp);
   if (fpw.startsWith(`${INCOMING}/notes/`) && !fpw.endsWith("/.gitkeep")) {
     queueNote(basename(fpw));

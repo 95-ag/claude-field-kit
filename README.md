@@ -126,13 +126,15 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   reach-based [Placement rule](#placement--picking-a-tier-by-reach) picks the tier (global vs project, and
   which domain/stack/repo) at promotion, not at capture.
 - **`notes/` holds rough items, not finished assets** — a lesson you haven't placed yet, a global edit you
-  didn't want to make mid-task, an idea for a new asset, or a bug in an existing hook. At harvest these are
-  triaged: turned into a rule/asset and promoted, applied as a fix, or dropped.
+  didn't want to make mid-task, an idea for a new asset, or a bug in an existing hook. They are triaged
+  apart from asset harvest, one item at a time — each item is applied as a fix, shaped into an asset, found
+  already landed, or dropped — and the note is removed once nothing in it is left.
 - **Capture is hook-driven** — the global `asset-capture` hook auto-stages any edit under a project's
   `.claude/{rules,skills,agents,hooks}` into `incoming/<type>/<project>__<file>` (skills copied whole-dir)
-  and queues a review task in that project's `tasks.md`. The staged copy is the no-loss capture; the task
-  drives review→promote. Manual capture remains the fallback. Shell edits count too — they reach the hook
-  through `bash-write-adapter`, which is why a `sed -i` sweep no longer stages nothing.
+  and queues a review task under `### Harvest` in the kit's own `tasks.md`; a note written into
+  `incoming/notes/` with an edit tool is queued under `### Notes` instead. The staged copy is the no-loss
+  capture; the task drives review→promote. Manual capture remains the fallback. Shell edits count too — they
+  reach the hook through `bash-write-adapter`, which is why a `sed -i` sweep no longer stages nothing.
 - **Global-only assets need manual capture** — a global rule, the shared `CLAUDE.md`, or a global-only skill
   has no project `.claude/` copy, so the hook never sees it; stage a shaped fix by hand into `incoming/<type>/`,
   or an unsure/deferred one into `incoming/notes/`.
