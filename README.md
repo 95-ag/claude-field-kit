@@ -135,6 +135,8 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   `incoming/notes/` with an edit tool is queued under `### Notes` instead. The staged copy is the no-loss
   capture; the task drives review→promote. Manual capture remains the fallback. Shell edits count too — they
   reach the hook through `bash-write-adapter`, which is why a `sed -i` sweep no longer stages nothing.
+  A miss is silent, because capture fails open; `asset-capture.mjs --verify <project-dir>` checks for one
+  (MISSING right after a harvest or a hand delivery is expected).
 - **Global-only assets need manual capture** — a global rule, the shared `CLAUDE.md`, or a global-only skill
   has no project `.claude/` copy, so the hook never sees it; stage a shaped fix by hand into `incoming/<type>/`,
   or an unsure/deferred one into `incoming/notes/`.
