@@ -80,13 +80,14 @@ function stageToIncoming(c) {
 }
 
 // Insert `line` under a `### <Cluster>` sub-heading in tasks.md. Create the sub-heading under `## Backlog`
-// if absent; append a Backlog if there is none. A blockquote note directly under the heading is skipped.
+// if absent; append a Backlog if there is none. A blockquote directly under the heading is skipped whole,
+// so the row lands below the section's note however many lines it runs to.
 function insertUnderCluster(content, heading, line) {
   const lines = content.split("\n");
   const h = lines.findIndex(l => l.trim() === heading);
   if (h !== -1) {
     let at = h + 1;
-    if (at < lines.length && lines[at].startsWith(">")) at++; // keep the heading's note on top
+    while (at < lines.length && lines[at].startsWith(">")) at++;
     lines.splice(at, 0, line);
     return lines.join("\n");
   }
