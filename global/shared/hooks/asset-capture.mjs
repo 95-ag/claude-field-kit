@@ -10,6 +10,8 @@
  * items: candidate lessons, deferred global edits, new-asset ideas, hook bugs — resolved with notes-triage,
  * never harvested, never captured). A shell write into incoming/notes/ is never seen — see
  * bash-write-adapter's KNOWN LIMITS.
+ * Both dedup against open rows only: a checked row is a capture already resolved, so re-editing it queues
+ * it again rather than staging it with no row to find it by.
  * Skips claude-field-kit's own .claude/ (kit-internal source/config, never promoted). No-ops if the kit
  * isn't present on this machine. Never promotes to a tier directly. Fail-open (always exit 0).
  *
@@ -21,6 +23,9 @@
  * splitting or renaming a reference file leaves the old copy in incoming/ beside its replacements and
  * nothing reports it. Deliberate: auto-deleting would fight the no-loss guarantee staging exists for.
  * Remove the stale copy by hand when harvesting a skill whose file set changed.
+ *
+ * KNOWN GAP — row detection is loose. A plain column-0 line after a row, before the next heading,
+ * inherits that row's box. Nothing in tasks.md has that shape today.
  */
 import { createInterface } from "readline";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, cpSync } from "fs";
@@ -93,6 +98,20 @@ function insertUnderCluster(content, heading, line) {
   return content.replace(/\s*$/, "") + `\n\n## Backlog\n\n${heading}\n${line}\n`;
 }
 
+// Whether `marker` sits on a row not marked `x` (`[ ]` and `[~]` are both open). A row is a `- [?]` line
+// plus its continuation lines, and a marker usually trails the last of them, so the box is carried down
+// until the next row or heading.
+function hasOpenRow(content, marker) {
+  let box = null;
+  for (const line of content.split("\n")) {
+    const row = line.match(/^- \[(.)\]/);
+    if (row) box = row[1];
+    else if (line.startsWith("#")) box = null;
+    if (box !== null && box !== "x" && line.includes(marker)) return true;
+  }
+  return false;
+}
+
 // Queue a capture review task in claude-field-kit's OWN tasks.md, grouped per ASSET (a skill's many ref-file
 // edits collapse to one entry), under the `### Harvest` cluster.
 function queueTask(c) {
@@ -103,7 +122,7 @@ function queueTask(c) {
   // dedups per tier; only the staged FILENAME flattens the separator.
   const asset = c.assetDir === "skills" ? c.rest.split("/")[0] : c.rest;
   const marker = `<!-- t3:${c.project}:${c.assetDir}/${asset} -->`; // asset-level dedup
-  if (content.includes(marker)) return;
+  if (hasOpenRow(content, marker)) return;
   const staged = `incoming/${c.assetDir}/${c.project}__${asset.replace(/\//g, "__")}`;
   const line = `- [ ] **${c.project} · ${c.assetDir}/${asset}** — staged \`${staged}\` ${marker}`;
   try { writeFileSync(KIT_TASKS, insertUnderCluster(content, "### Harvest", line), "utf8"); } catch {}
@@ -116,7 +135,7 @@ function queueNote(name) {
   let content;
   try { content = readFileSync(KIT_TASKS, "utf8"); } catch { return; }
   const marker = `<!-- t3-note:${name} -->`;
-  if (content.includes(marker)) return;
+  if (hasOpenRow(content, marker)) return;
   const line = `- [ ] **Note · ${name}** — resolve with notes-triage. ${marker}`;
   try { writeFileSync(KIT_TASKS, insertUnderCluster(content, "### Notes", line), "utf8"); } catch {}
 }
