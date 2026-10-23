@@ -1,6 +1,6 @@
 # Accessibility
 
-Reusable accessibility requirements for web UI. Spec values (focus-ring token, exact contrast targets, motion durations, etc.) live in DESIGN.md → Accessibility — reference it, never duplicate those values here.
+Reusable accessibility requirements for web UI. Spec values live in DESIGN.md — the focus-ring spec and motion durations in its YAML Registry, contrast targets in Accessibility Rules — reference them, never duplicate those values here.
 
 ## Semantic HTML
 

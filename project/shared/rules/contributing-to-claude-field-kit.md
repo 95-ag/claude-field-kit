@@ -37,7 +37,8 @@ with little change.
   `spec-write`) — never noun-only or a broad `project-*` prefix that collides. Rules are noun-named like their
   siblings.
 - **Match the house voice — kit conventions ONLY.** Reuse existing assets' terminology, section shape, and
-  density; don't coin a synonym for a concept already named. Never import another framework's voice (e.g.
+  density — density as *Bullets over prose* and *Clear, crisp, clean* define it, never a looser neighbour's;
+  don't coin a synonym for a concept already named. Never import another framework's voice (e.g.
   superpowers' *Iron Law* / *Red flags — STOP*); a skill drafted via an external tool (`writing-skills`,
   `skill-creator`) is realigned to the kit's voice before promoting.
 - **Principle, not recipe.** Write the general best-practice rule, not one situation's steps; prefer concrete

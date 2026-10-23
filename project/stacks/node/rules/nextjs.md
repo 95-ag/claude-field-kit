@@ -1,6 +1,6 @@
 # Next.js
 
-Framework conventions for a Next.js (App Router) project. Build/lint/test gates live in build-verification.md → Build Verification (Node); design tokens live in DESIGN.md → Foundations.
+Framework conventions for a Next.js (App Router) project. Build/lint/test gates live in build-verification.md → Build Verification (Node).
 
 ## Rendering
 
@@ -34,7 +34,7 @@ Framework conventions for a Next.js (App Router) project. Build/lint/test gates 
 
 - Load all fonts via `next/font`.
 - Never load fonts from external CDNs when a local or `next/font` solution exists.
-- Font families and CSS-variable names are defined in DESIGN.md → Foundations → Typography.
+- Font families and CSS-variable names come from the design system's typography tokens — never hardcode them here.
 
 ## Images & media
 

@@ -2,7 +2,7 @@
 
 Motion policy for product-focused websites and applications. Creative, storytelling, or brand-driven experiences may define an alternative motion policy.
 
-How motion is used and implemented. Timing, easing, and duration tokens live in DESIGN.md → Foundations → Motion.
+How motion is used and implemented.
 
 ## Reduced motion (non-negotiable)
 
@@ -15,7 +15,7 @@ How motion is used and implemented. Timing, easing, and duration tokens live in 
 
 - Use motion duration and easing tokens only.
 - Never use arbitrary duration values, easing curves, or animation timing.
-- Token names and values are defined in DESIGN.md → Foundations → Motion.
+- Token names and roles → DESIGN.md → Foundations → Motion; values → DESIGN.md → YAML Registry.
 
 ## Permitted
 
