@@ -159,3 +159,26 @@ If the user requests more than one pass, run them in this order:
 7. Terminology
 
 Segment the manifest by pass type with a `--- PASS: name ---` divider.
+
+---
+
+## Realign Judgment Heuristics
+
+*(Realign only.)*
+
+These are preferences and guidelines, not hard rules. Apply them with judgment — context overrides heuristic.
+
+**Subsection density.** If a subsection's content has been reduced to ≤3 bullets and carries no independent spec or structure warranting future expansion, consider collapsing it into the parent section. Flag rather than act unilaterally.
+
+**Labelled groups vs headings.** Small parallel rule clusters (≤3 bullets each, similar weight) often read better as bold-label bullet groups (`**Photography**` / `**Diagrams**`) than as H3/H4 headings. Prefer the group form when the clusters are genuinely parallel and brief.
+
+**Where the heading set is frozen, a bold label is the sub-group form at any size.** The ≤3-bullet
+guidance above assumes a heading is available; where a pass may not add one — a frozen anchor set, a depth
+cap — a labelled group is the only sub-structure left, and capping it at three bullets removes the
+structure instead. Size stops being the test.
+
+**Prose removal threshold.** Remove interpretive prose when the nearby table or spec already expresses the behavior clearly. Do not remove prose that adds framing, interpretive context, or cross-cutting rules not visible in the table itself.
+
+**Content-sufficiency language.** Do not describe sections as "thin", "underdeveloped", or "near-empty" in pass output or manifests. A short section is not a structural problem. Use `PLACEHOLDER` for empty headings; otherwise leave content-sufficiency judgments out of the manifest entirely.
+
+**Unused / reserved tokens.** A token registry should hold tokens that are in use. When a token appears unused (no component or rule consumes it), prefer flagging it; removal requires confirmation. "Unused" is a code claim — verify against the code before flagging, and never delete on the model's own judgment. Carve-out: a token the project *intentionally* maintains as a reserved scale slot is labeled as such, not flagged.

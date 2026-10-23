@@ -1,6 +1,6 @@
 # Validation Heuristics
 
-Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign**. Failed checks surface as a short remediation list. Most checks are mode-agnostic (valid structure, two-layer model, doc-first, tokens, terminology, template). A few are transform-only and tagged below: **Lossless** and **Manifest Completeness** apply to Update + Realign; the **Realign Judgment Heuristics** apply to Realign.
+Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign**. Failed checks surface as a short remediation list. Most checks are mode-agnostic (valid structure, two-layer model, doc-first, tokens, terminology, template). A few are transform-only and tagged below: **Lossless** and **Manifest Completeness** apply to Update + Realign. Realign's judgment heuristics are in `rewrite-passes.md` → Realign Judgment Heuristics.
 
 ---
 
@@ -70,6 +70,10 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 - **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `design-writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
 - **Template completeness** — every subsection the Project-Specific Schema requires is present.
 - **Anchor resolution** — every heading anchor sibling rules/docs reference resolves to a real heading.
+- **A label that code or a sibling doc cites is load-bearing like a heading.** Rewording it breaks the
+  citation and no anchor check sees it, because it is not an anchor. Treat a cited label as a rename
+  (`cross-reference-rules.md`), and expect an anchor-resolution pass to report it unresolved — that is the
+  checker's limit, not a defect in the label.
 
 ## Residue
 
@@ -172,31 +176,3 @@ quote makes the mapping ambiguous.
 ## Conflict Detection
 
 - Flag conflicting definitions of the same token, component behavior, semantic role, or interaction rule. Do not resolve automatically.
-
----
-
-## Realign Judgment Heuristics
-
-*(Realign only.)*
-
-These are preferences and guidelines, not hard rules. Apply them with judgment — context overrides heuristic.
-
-**Subsection density.** If a subsection's content has been reduced to ≤3 bullets and carries no independent spec or structure warranting future expansion, consider collapsing it into the parent section. Flag rather than act unilaterally.
-
-**Labelled groups vs headings.** Small parallel rule clusters (≤3 bullets each, similar weight) often read better as bold-label bullet groups (`**Photography**` / `**Diagrams**`) than as H3/H4 headings. Prefer the group form when the clusters are genuinely parallel and brief.
-
-**Where the heading set is frozen, a bold label is the sub-group form at any size.** The ≤3-bullet
-guidance above assumes a heading is available; where a pass may not add one — a frozen anchor set, a depth
-cap — a labelled group is the only sub-structure left, and capping it at three bullets removes the
-structure instead. Size stops being the test.
-
-**A label that code or a sibling doc cites is load-bearing like a heading.** Rewording it breaks the
-citation and no anchor check sees it, because it is not an anchor. Treat a cited label as a rename
-(`cross-reference-rules.md`), and expect an anchor-resolution pass to report it unresolved — that is the
-checker's limit, not a defect in the label.
-
-**Prose removal threshold.** Remove interpretive prose when the nearby table or spec already expresses the behavior clearly. Do not remove prose that adds framing, interpretive context, or cross-cutting rules not visible in the table itself.
-
-**Content-sufficiency language.** Do not describe sections as "thin", "underdeveloped", or "near-empty" in pass output or manifests. A short section is not a structural problem. Use `PLACEHOLDER` for empty headings; otherwise leave content-sufficiency judgments out of the manifest entirely.
-
-**Unused / reserved tokens.** A token registry should hold tokens that are in use. When a token appears unused (no component or rule consumes it), prefer flagging it; removal requires confirmation. "Unused" is a code claim — verify against the code before flagging, and never delete on the model's own judgment. Carve-out: a token the project *intentionally* maintains as a reserved scale slot is labeled as such, not flagged.

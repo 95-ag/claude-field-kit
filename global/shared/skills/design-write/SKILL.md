@@ -181,6 +181,7 @@ has the same trap: a state label a comment cites must survive as the row key.
 
 Before reporting any work done — Authoring, Update, or Realign — run `references/validation-heuristics.md`.
 Most checks are mode-agnostic (structure, two-layer model, doc-first, naming, anti-patterns, template, tokens,
-terminology); the transform-only checks (losslessness, manifest completeness, Realign judgment) apply to the
-modes that file tags. Failed checks surface as a short remediation list. For a high-stakes realign, have a
-separate subagent verify losslessness and ordering so the author isn't grading their own work.
+terminology); the transform-only checks (losslessness, manifest completeness) apply to the modes that file
+tags, and Realign's judgment heuristics are in `references/rewrite-passes.md`. Failed checks surface as a
+short remediation list. For a high-stakes realign, have a separate subagent verify losslessness and
+ordering so the author isn't grading their own work.
