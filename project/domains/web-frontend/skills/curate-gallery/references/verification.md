@@ -87,11 +87,8 @@ For each section confirm:
   `name · token · usage` caption — usage info, the icon-sizes pattern).
 - **No construction leak** — no gallery kit/section file paths appear in any rendered `source`; only
   real component / CSS / token / DESIGN.md references.
-- **No pointer into an uncommitted or ignored path** — no committed gallery text, rendered **or** in a
-  comment, cites a path that is not in the repo: a working-notes file, a scratch harness, a plan, an
-  ignored directory. This is wider than the construction leak above, which only covers the gallery's own
-  kit paths. **Every such pointer is dead for anyone who clones**, and it reads as a real reference
-  until someone tries to follow it, so a build check will never surface it.
+- **No pointer into an uncommitted or ignored path** — per `section-spine.md` → `source` points to REAL
+  artifacts. Such a pointer reads as real until someone follows it, so no build check surfaces it.
 - **Dogfood** — no typography overrides, no gratuitous boxes, all visual values from tokens.
 - **Page shell** — reading-page wrappers (standard content primitives), uniform inter-section spacing.
 

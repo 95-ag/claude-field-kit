@@ -23,7 +23,8 @@ no `Specimen`/`SpecimenGroup` wrapper, no outer `Card`. The visualizer IS the se
 **P2 — Visual alignment:** the group/grid rhythm uses the project's spacing; the ColorCard adopts the
 project's card treatment + semantic type tokens (full rules → `visualizer-scales.md` → SwatchGrid → P2).
 
-**P3 — Actual inputs (`COLOR_GROUPS`):** one `SwatchGroup` per role-cluster, read from DESIGN.md → Colors.
+**P3 — Actual inputs (`COLOR_GROUPS`):** one `SwatchGroup` per role-cluster, read from DESIGN.md → Colors;
+values per `section-spine.md` → The three layers.
 - **Always:** Surfaces · Text · Borders · Accent / brand colors
 - **If present:** Semantic (interaction/state tokens — grouped separately from Accent even when their
   value derives from accent) · Reading-mode (scoped — `scopeClassName` + a `gallery.css` rule + `darkOnly`
@@ -52,7 +53,7 @@ dividers + spacing from the project's tokens; the right-column sample renders at
 (dogfood). Full rules → `visualizer-type.md` → TypeScaleList → P2.
 
 **P3 — Actual inputs (`TYPE_TOKENS`):** one entry per the project's semantic type token, read from
-DESIGN.md → Typography. Each
+DESIGN.md → Typography (values per `section-spine.md` → The three layers). Each
 `{ token, family, size, weight, lh?, sample, responsive?, tabletLh?, mobileLh? }`. `sample` = a
 one-line description of **where the token is used** (from the DESIGN.md "Role" column) — not lorem,
 not an alphabet run. `responsive` only for tokens that resize across tiers. The token count and values
@@ -111,7 +112,8 @@ source:  "--spacing-*"
 **P2 — Visual alignment:** bar fill = the project's accent; label = code/identifier token; gaps from the
 spacing scale (full rules → `visualizer-scales.md` → BarScale → P2).
 
-**P3 — Actual inputs:** the spacing token list, read **complete** from DESIGN.md → Spacing. Each
+**P3 — Actual inputs:** the spacing token list, read **complete** from DESIGN.md → Spacing (values per
+`section-spine.md` → The three layers). Each
 `{ token, px }`; `varPrefix` names the CSS var prefix. Bars read live `var(--<prefix><token>)`.
 - **Base step scale** (always) — every step the project defines.
 - **Optional extra groups** — non-step spacing the project defines (e.g. layout gutter/margins), each
@@ -137,7 +139,8 @@ code/identifier token; usage = caption; gaps from spacing (full rules → `visua
 
 **P3 — Actual inputs (`RADIUS_TOKENS`):** **one item per distinct radius the project defines** — named
 radius tokens OR unnamed-but-distinct radius values used across the design — read **complete** from
-DESIGN.md → Shapes. The count is project-determined, not fixed. Each `ShapeItem =
+DESIGN.md → Shapes (values per `section-spine.md` → The three layers). The count is project-determined,
+not fixed. Each `ShapeItem =
 { token, radius (CSS value), value (human), usage }`; for an unnamed radius, `token` is its usage-category
 label. *(Example: 4 — `none` · `sm` · `md` · `pill`.)*
 

@@ -182,11 +182,10 @@ Display or Feedback component with a bounded variant set renders live in its own
 
 **Requirement:** the overlying component's specimen sits over a **plain, theme-adapted backdrop**,
 never over the real component beneath. Use a `Card` (→ `scaffold-specimen.md` → Card) for the project's
-sunken/deep fill and card treatment, and pass it `relative overflow-hidden p-0` — `Card`'s box is
-neither positioned nor clipping on its own, so an absolutely positioned child would otherwise resolve
-against an ancestor instead of the backdrop. Size it with the underlying component's own classes, taken
-from that component's specimen or from its production container where it has none. The subject of the
-specimen is the overlying component, not what sits behind it.
+sunken/deep fill and card treatment, and pass it `relative overflow-hidden p-0` per that section's
+`positioning` note, so the overlay resolves against the backdrop. Size it with the underlying
+component's own classes, taken from that component's specimen or from its production container where
+it has none. The subject of the specimen is the overlying component, not what sits behind it.
 
 Supply **at least two items per collection**, and enough to reach any truncation or max-item behavior
 the component has. A single placeholder hides the layout logic.

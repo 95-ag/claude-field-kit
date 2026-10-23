@@ -96,7 +96,7 @@ headingLevel rule: every Specimen heading is exactly one level below its parent 
 ```
 props:
   label?:    string   // mono-code label below the box; typically a token name or slug
-  className? string   // additional classes merged into the inner box (e.g. "aspect-video p-0")
+  className?: string  // classes merged into the inner box (e.g. "relative aspect-video overflow-hidden p-0")
   children:  node     // the demo content centered inside
 
 structure:
@@ -124,9 +124,12 @@ law: Card adopts the project's existing card treatment exactly.
   border = --hairline, fill = --surface-deep, radius = per project (e.g. none).
   Never introduce new elevation, shadows, or radius values.
 
-cover-grid usage: cover component specimens use className="aspect-video p-0" to give the
-  cover a cinematic stage. The inner box becomes a relative positioned container with
-  overflow-hidden and a nested absolute-fill child.
+positioning: the inner box is neither positioned nor clipping. Pass "relative" in className
+  for an absolutely positioned child (else it resolves against an ancestor), and
+  "overflow-hidden" only when the child must be clipped.
+
+cover-grid usage: cover component specimens use className="relative aspect-video overflow-hidden p-0"
+  to give the cover a cinematic stage, its absolute-fill child clipped to the box (see positioning).
 ```
 
 ---

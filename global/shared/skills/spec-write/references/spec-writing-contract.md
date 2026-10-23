@@ -132,7 +132,7 @@ a decision log: the record keeps its sequence, and the clause stops a stale rule
 
 Before calling a write or edit done:
 
-- Voice matches the doc's tier (Tier-1 reasoning-friendly / Tier-2 terse / plan procedural).
+- Voice is the one the doc's archetype assigns (Tier-1 reasoning-friendly / Tier-2 terse / plan procedural).
 - No `## N.` numbers and no `§`/`section N` references remain in touched sections.
 - Every cross-reference is a named path that resolves to a real heading.
 - Enumerable content is bulleted; bullets are ≤ 2 lines, one idea each.

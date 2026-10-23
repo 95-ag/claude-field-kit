@@ -71,7 +71,7 @@ state and the request — not from a separate sub-skill.
 **Authoring** — the doc is absent or being built fresh.
 - Start from the archetype's required structure in `references/doc-archetypes.md`. Each archetype
   assigns a voice: Tier 1 (product docs — design-agnostic, reasoning-rich), Tier 2 (companion docs —
-  terse, specific), or procedural (the implementation-plan doc). Read that tier's definition in
+  terse, specific), or procedural (the implementation-plan doc). Read that voice's definition in
   `references/spec-writing-contract.md` before the first draft.
 - Write in that archetype's tier/mode from the first draft. A good first write needs no later rewrite,
   so get the structure and voice right now rather than dumping prose to clean up later.
@@ -82,7 +82,7 @@ state and the request — not from a separate sub-skill.
 **Maintenance** — the doc exists and is being edited, aligned, restyled, or restructured.
 - Default to the **smallest viable edit**: one bullet before a paragraph, one paragraph before a
   section, one section before its neighbors.
-- Match the surrounding section's terminology and the doc's tier voice
+- Match the surrounding section's terminology and the doc's voice
   (`spec-writing-contract.md` → The Two-Tier Voice). Do not rephrase prose that wasn't part of the
   request.
 - On any doc you touch, two cleanups are always in scope because they are the house style, not

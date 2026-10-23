@@ -56,7 +56,7 @@ source:  "--duration-* / --ease-*"
 the project's **sunken/deep well**; labels by role; gaps from spacing (full rules → `visualizer-motion.md` →
 DurationScale + EasingCurves → P2).
 
-**P3 — Actual inputs:** read **complete** from DESIGN.md → Motion (Duration & Easing).
+**P3 — Actual inputs:** read **complete** from DESIGN.md → Motion (Duration & Easing); values per `section-spine.md` → The three layers.
 - `DURATION_TOKENS` — each `{ token, ms }` (resolved millisecond value).
 - `EASING_TOKENS` — each `{ token, curve: [x1,y1,x2,y2] }`. The cubic-bezier tuple **is** the token's
   value (P3 data, like ms or hex). **Note:** DESIGN.md may only NAME the easings; the curve numbers then

@@ -140,8 +140,8 @@ the sections an edit happens to touch.
 
 What does NOT change: token names and values — Design Identifiers still applies.
 
-Manifest entries: REMOVED (pure history only), MOVED (to Iteration Notes), REWORDED (constraint kept,
-narration dropped), FLAGGED (class unclear).
+Manifest entries: REMOVED (pure history, once the user confirms), REWORDED (constraint kept, narration
+dropped), FLAGGED (pure history awaiting confirmation, or class unclear).
 
 A pass that reports only deletions on a mature doc has almost certainly destroyed a constraint.
 

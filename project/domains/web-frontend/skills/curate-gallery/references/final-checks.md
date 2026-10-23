@@ -60,9 +60,7 @@ Before handing off to the user, confirm all items pass:
       placeholder + gap note; the needed-asset list was surfaced and the user asked (generate / placeholder)
 - [ ] **Doc→gallery parity review done** — every section (Build) or every changed section (Sync)
       compared against its mapped DESIGN.md sub-section item by item, **by something that did not
-      make the edits**: claim fidelity, visualizer choice, per-item token-data fidelity, item coverage
-      in both directions, new shapes exercised, prose-vs-box, inline-vs-standalone, component home,
-      property-block scope, no construction leaks (`references/verification.md` → Gate 0). Where no
+      make the edits**, covering every Gate 0 check (`references/verification.md` → Gate 0). Where no
       separate reviewer was available, that is stated rather than the gate being recorded as fully met.
 - [ ] **No invented affordance** — every rendered action, link, field and state traces to a rule in
       DESIGN.md or the product doc; sample data introduces no field the real schema lacks

@@ -23,11 +23,11 @@ The document MUST optimize for:
 
 `DESIGN.md` operates as two distinct layers — logical roles, not file regions:
 
-**YAML Registry layer** — globally reusable canonical tokens at the top of the document. Single source of truth for token *values*: color tokens, typography tokens, spacing scale, radius scale, motion duration and easing tokens, breakpoints, z-index scale, focus-ring spec. Inline YAML may reference registry tokens by name but must not duplicate their values.
+**YAML Registry layer** — globally reusable canonical tokens at the top of the document. Single source of truth for token *values*: color tokens, typography tokens, spacing scale, radius scale, motion duration and easing tokens, breakpoints, z-index scale, focus-ring spec. Inline YAML may reference registry tokens by name but must not duplicate their values. A color or typography token's value may instead be defined in a Foundations table that maps name to value — a definition, not the role-to-token mapping of category 2 below; a value has one home, so a value defined in both layers is a duplicate owned by the registry.
 
 **Markdown Body layer** — canonical for *meaning*: semantic intent, role, operational constraints, and **a bounded reason**. Markdown is where behavior is described, not where values are stored.
 
-**Bounded, and it is the word the body most often loses.** State the requirement; add a reason only where a future reader would otherwise undo the rule, and cap it at one clause. The alternatives considered, the measurements behind a choice, and the decision's history belong in `Iteration Notes`, not beside the rule — unbounded, this one word turns a contract into a decision log.
+**Bounded, and it is the word the body most often loses.** State the requirement; add a reason only where a future reader would otherwise undo the rule, and cap it at one clause. The alternatives considered, the measurements behind a choice (a `Known Gaps` observation is not one), and the decision's history stay out of the doc — version control holds them; unbounded, this one word turns a contract into a decision log.
 
 Local-spec YAML is still permitted inline when locality aids comprehension — per-elevation-level surface specs, component spec blocks, semantic-systems mappings. The two-layer model separates *roles* (canonical tokens vs. semantic meaning), not file regions. There is no single monolithic YAML superblock.
 
@@ -39,7 +39,7 @@ The top YAML registry is for primitive/token systems only — not for every reus
 
 Three distinct categories guide placement decisions:
 
-**1. Primitive/Token Registries → top YAML registry**
+**1. Primitive/Token Registries → top YAML registry** (a color or typography value may instead be defined in a Foundations table: → Two-Layer Document Model)
 Color tokens, typography tokens, spacing scale, radius scale, motion duration + easing tokens, breakpoints, z-index scale, focus-ring spec.
 
 **2. Semantic Interpretation Systems → colocated by default; hoist only when broadly reused**
@@ -134,7 +134,7 @@ Targets:
 * no bullet restating a table or YAML block adjacent to it
 * no rule stated in more than one section
 
-Every target above is mechanically checkable and is counted, not eyeballed (`validation-heuristics.md` → Compression).
+Every target above is counted, not eyeballed — a judgment target by the instances found (`validation-heuristics.md` → Compression).
 
 Avoid:
 
@@ -219,7 +219,7 @@ YAML MUST NOT:
 
 * replace semantic explanation
 * appear before identity/behavior description
-* restate information already sufficiently communicated in prose unless structural hierarchy or implementation precision requires it
+* restate information already communicated in prose
 * contain inline `#` comments of any kind — value annotations and conditional/responsive specs become proper keys; all interpretive semantics belong in prose or bullets above the block
 * form a single monolithic superblock — the registry collects globally reusable tokens, not every YAML block in the document
 
@@ -498,7 +498,6 @@ A valid `DESIGN.md` SHOULD:
 * use semantic-token + resolved-value formatting consistently
 * avoid excessive heading nesting
 * avoid duplicating registry token *values* in prose — token *names* may be referenced freely in markdown, and a name carrying its resolved value (`{radius.sm}` (4px)) is a reference, not a duplication
-* preserve consistent cadence across sections
 * satisfy defined Compression Targets
 
 A valid component SHOULD:
@@ -574,7 +573,7 @@ Avoid:
 * excessive abstraction without grounding
 * repeating identical information across prose and YAML
 * process/source metadata in canonical sections — cross-doc citations ("see PRODUCT.md §7.4"), open-question markers, and self-containment notes ("Restated from X for self-containment") are transient authoring artifacts, not design-system content. Open decisions belong in `Iteration Notes → Open Decisions`; gaps belong in `Iteration Notes → Known Gaps`.
-* decision-history / iteration narration in canonical sections — "we renamed X→Y", "chose A over B", "previously…", migration residue, and self-justifying placement ("isn't a component, so no file"). Canonical content states the current decision, not the path to it; decision history → `Iteration Notes`, never inline.
+* decision-history / iteration narration in canonical sections — "we renamed X→Y", "chose A over B", "previously…", migration residue, and self-justifying placement ("isn't a component, so no file"). Canonical content states the current decision, not the path to it; decision history stays out of the doc — version control holds it.
 * **provenance of any shape, in any canonical section, `Known Gaps` included.** The narration ban above reads as covering only sentences that tell a story, so provenance survives it in compact forms. The shapes, each a decision's *origin* rather than its content: **a date** in any format; **an attribution** ("an owner decision", "per the review", "as agreed"); **a before/after pair** ("was X, now Y"); **a supersession clause** naming what a rule replaced. The one exception is a `Known Gaps` measurement, where the date IS part of the observation — the only place a date belongs.
 * **a pointer into a path that is not in the repository** — a working-notes file, a plan, a scratch harness, an ignored directory. It is dead for anyone who clones and reads as a real source until someone follows it, so nothing surfaces it. State the fact inline instead.
 * unlocated evidence claims — a sentence asserting that a measurement, a rationale, an option set, or a prior decision *exists* without naming where it lives (a file path, a named heading, a commit) and without stating the fact inline. DESIGN.md is the design contract, so an unverifiable claim in it propagates into code. Prefer stating the fact inline; a pointer is only as durable as its target's next prune.
@@ -755,7 +754,7 @@ Migrate a semantic table out of Foundations *only* when consolidation under Sema
 
 `# Interaction Rules` defines *shared behavioral baselines* (hover, focus, disabled, loading, responsive behavior) — global defaults only.
 
-Component sections MUST reference shared interaction baselines rather than restating them. What may live with the component is a **deviation from or specialization of** a baseline, not the baseline restated — this keeps Interaction Rules canonical while preserving component-local nuance.
+Component sections MUST reference shared interaction baselines rather than restating them. What may live with the component: a **deviation from or specialization of** a baseline, or behavior no baseline covers (the component's own sequencing or affordances) — never the baseline restated. This keeps Interaction Rules canonical while preserving component-local nuance.
 
 ## Cross-Cutting Rules Policy
 
@@ -831,9 +830,9 @@ Characteristics:
 * concise explanatory prose
 * implementation vocabulary permitted
 
-Foundations sections should remain implementation-agnostic unless explicitly defining technical conventions. Framework-specific setup code (imports, config boilerplate, framework initialization) belongs in Technical Conventions or implementation docs, not conceptual design foundations.
+Foundations sections should remain implementation-agnostic. Framework-specific setup code (imports, config boilerplate, framework initialization) belongs in Technical Conventions or implementation docs, not conceptual design foundations.
 
-Exception: implementation-policy decisions that materially affect UX or rendering behavior (e.g. font self-hosting for LCP/FOUT, build-time syntax highlighting) may appear in Foundations as a compact policy note — not as raw framework code.
+Implementation-policy decisions that materially affect UX or rendering behavior (e.g. font self-hosting for LCP/FOUT, build-time syntax highlighting) live in Technical Conventions (→ Technical Conventions Policy); a Foundations section may point to one, never state it.
 
 ---
 
@@ -955,6 +954,33 @@ Characteristics:
 * references spine primitives (Components, Foundations) by token name
 * product-specific composition narratives — not generic design-system rules
 * may introduce page-specific structural conventions (reading grids, editorial hierarchies, layout logic)
+
+---
+
+### Background Sections
+
+Mode:
+
+* descriptive system specification
+
+Characteristics:
+
+* describes the one ambient subsystem
+* references tokens by name
+* no page-bound placement — the subsystem is standalone (→ Background Policy)
+
+---
+
+### Accessibility Rules Sections
+
+Mode:
+
+* normative requirements
+
+Characteristics:
+
+* each rule is a stated requirement, not a figure derived from the document's values (→ A requirement, never a derived fact)
+* references the implementing token (e.g. the focus ring) by name (→ Token Conventions)
 
 ---
 

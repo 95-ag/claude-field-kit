@@ -16,10 +16,10 @@ Common maintainer operations with the correct approach for each.
 
 ## Update a token's resolved value
 
-1. Find the token in the YAML registry.
-2. Update the resolved value in the registry — this is the single source of truth.
+1. Find the token's canonical definition — the YAML registry entry, or the Foundations table where a colocated color/typography value is defined.
+2. Update the resolved value there — that definition is the single source of truth.
 3. Scan the markdown body for inline resolved-value mentions (e.g., `(44px)` in prose) and update them as cross-layer follow-ons.
-4. Diff summary: `UPDATED: \`token.name\` resolved value old → new in YAML Registry; N inline references updated in markdown body`
+4. Diff summary: `UPDATED: \`token.name\` resolved value old → new in its canonical definition; N inline references updated in markdown body`
 
 ---
 
@@ -41,7 +41,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 1. Identify the correct location within the `# Components` section (alphabetical, or by category if the section is grouped).
 2. Create the component using the contract-defined format (`design-writing-contract.md` → Component Writing Contract).
 3. Confirm contextual usage examples are included.
-4. Shared interaction-state baselines (hover/focus/disabled/loading/responsive defaults) belong in `# Interaction Rules`. Component sections may include local interaction behavior, sequencing, or affordance details when they are structurally tied to the component itself.
+4. Shared interaction-state baselines (hover/focus/disabled/loading/responsive defaults) belong in `# Interaction Rules`. A component section references them and carries only the interaction content `design-writing-contract.md` → Interaction Rules Policy permits.
 5. Diff summary: `ADDED: component \`component-name\` to Components`
 
 ---

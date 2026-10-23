@@ -13,9 +13,9 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Two-Layer Model
 
-- Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec).
+- Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec) — color and typography values may be defined in Foundations instead (next bullet).
 - Markdown body does not duplicate token *values* from the registry. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`design-writing-contract.md` → Token Conventions).
-- Color and typography tokens MAY remain colocated as role-based semantic tables in Foundations (Locality Principle) instead of hoisted to the top registry — a legitimate placement, not a two-layer violation. Flag only if the same tokens are duplicated across both layers.
+- A color or typography value defined in a Foundations table is a sanctioned home, not a two-layer violation (`design-writing-contract.md` → Two-Layer Document Model). Flag only a value defined in both layers; its owner is set there too.
 - Local structural-spec YAML inline (component spec blocks, per-elevation specs, grid specs, semantic-systems mappings) is permitted — this is not a two-layer violation.
 - No single monolithic YAML superblock — the registry collects globally reusable tokens, not every YAML block in the document.
 
@@ -27,7 +27,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Interaction Rules
 
 - Global hover/focus/disabled/loading/responsive *defaults* are consolidated under `# Interaction Rules`. Flag duplication of defaults across multiple locations.
-- Component-local interaction nuances (deviations from or specializations of the baseline) may live with the component. Do not flag component-local nuance as a duplication violation.
+- Component-local interaction content the contract permits (`design-writing-contract.md` → Interaction Rules Policy) may live with the component. Do not flag it as a duplication violation.
 
 ## Domain Components
 
@@ -44,13 +44,19 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Compression
 
+*(All modes — Authoring and Update count the sections they touch; Realign counts the whole doc. In
+Update, a miss the edit did not introduce follows `safety-rules.md` → Update posture.)*
+
 - Compression targets satisfied (per `design-writing-contract.md` → Compression Targets); the contract is the source of truth for the specific limits.
 - A dense bullet is not automatically a violation — apply the contract's cluster-low-info / split-high-info rule: flag a bullet only when it bundles several independently-explained facts, not merely for length.
-- **Count, and report the counts** — one per target in `design-writing-contract.md` → Compression Targets, plus the provenance sweep below. Every target is mechanically checkable; a pass reporting "satisfied" with no numbers has asserted nothing.
+- **Count, and report the counts** — one per target in `design-writing-contract.md` → Compression Targets, plus the provenance sweep below. A pass reporting "satisfied" with no numbers has asserted nothing.
 - **A zero is a result and is reported as one** — "0 provenance shapes" and a silently skipped sweep look identical otherwise.
-- **The no-rule-in-two-sections target is judged across the whole document**, not within one section.
-- **Each duplicate group is reported with the section that owns the fact**, so the output says where
-  the rule belongs rather than only that it repeats. Identity vocabulary is exempt
+- **The no-rule-in-two-sections target compares each counted section against the whole document**, not
+  within one section.
+- **Each duplicate group is reported once, with the section that owns the fact**, so the output says
+  where the rule belongs rather than only that it repeats. A duplicate one of the scoped checks above
+  also catches (Two-Layer Model, Semantic Systems, Interaction Rules) is the same group, owned where that
+  check places it. Identity vocabulary is exempt
   (`design-writing-contract.md` → Redundancy Rules).
 
 ## Tokens & Terminology
@@ -65,7 +71,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Doc-First, Anti-Patterns & Template
 
 - **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `design-writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
-- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `design-writing-contract.md` → Prose Anti-Patterns); history lives in Iteration Notes.
+- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `design-writing-contract.md` → Prose Anti-Patterns).
 - **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `design-writing-contract.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
 - **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `design-writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
 - **Template completeness** — every subsection the Project-Specific Schema requires is present.
@@ -87,12 +93,12 @@ The ban on decision-history in canonical sections is a rule about what may be wr
 
 | Class | Test | Action |
 |---|---|---|
-| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Move to `Iteration Notes`, or flag for deletion with its destination named. Never delete on the model's own judgment (`safety-rules.md` governs, in every mode). |
+| Pure history | States only what changed and when. Nothing breaks if a future editor never reads it. | Flag for deletion — version control holds it. Never delete on the model's own judgment (`safety-rules.md` governs, in every mode). |
 | Constraint stated as history | The sentence exists to prevent a recurrence. Removing it makes a specific mistake available again. | Reword forward into a present-tense rule. **Never delete.** |
 
 - Rewording forward drops the narration and keeps the prohibition: "we removed the gold-on-gold pairing because it erased the scale" becomes "do not pair gold on gold — it erases the scale".
 - An ambiguous hit is the user's call — flag it and leave it in place.
-- Report the hit count and the split by class. A hit reworded forward is logged `REWORDED`, never `REMOVED`.
+- Report the hit count and the split by class. A hit reworded forward is logged `REWORDED`, never `REMOVED`; a pure-history hit is `FLAGGED` until the user confirms it.
 
 ## Lossless
 

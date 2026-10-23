@@ -40,6 +40,10 @@ template cleanly separated from any one project's instance values.
   or vice-versa), surface it to the user when the gallery is finished (inform-only handoff) — never
   silently drop or invent. Missing-but-intended tokens fall back per `visualizer-kit.md` → Generic
   fallbacks.
+- **Values (P3).** A section reads tokens and roles from its DESIGN.md section and each value from the YAML
+  Registry — or, for color and typography, the Foundations table that defines it (the Registry wins a value
+  in both) — joined on the token's name, unless the section's own P3 names another source. A missing required
+  value, or a value no token names, is an open design gap for `design-write`, surfaced as above.
 - **Ordering (all layers).** Within a section, items render in the **same order DESIGN.md lists them**
   (color groups, shapes, elevation levels, components, domain items, …). Section headings and their
   order also match DESIGN.md. Never reorder for visual preference.
@@ -80,13 +84,22 @@ These hold across every section. Prior rebuilds drifted on each, so the parity r
 ### `source` points to REAL artifacts — never the gallery's own files
 
 The `source` prop on `GallerySection`/`Specimen` (and the `mapsTo` eyebrow) reference the **project's
-real** component / CSS file / token selector / DESIGN.md path — e.g. `@/components/ui/button`,
+real** component / CSS file / token selector / DESIGN.md heading path — e.g. `@/components/ui/button`,
 `src/styles/theme.css → :root`, `--spacing-*`, `DESIGN.md → Foundations → Colors`,
 `src/app/page.tsx · [inline]`. They NEVER reference the gallery's own construction files
 (`scaffold-kit/catalog.tsx`, `visualizer-kit/swatch-grid.tsx`, `sections/foundations.tsx`). The
 gallery's own kit/section paths must not appear anywhere in the rendered output — that is a
 construction leak. Conceptual sections (Z-Index, Responsive, Elevation) use a token/DESIGN.md
 reference, not a code path.
+
+**Never cite a path that is not in the repo.** No committed gallery text, rendered or in a comment,
+points at a working-notes file, a scratch harness, a plan or an ignored directory — every such pointer
+is dead for anyone who clones. This is wider than the construction leak, which covers only the
+gallery's own kit paths.
+
+**A declared package is a real artifact.** A `source` may name a package the project declares as a
+dependency, written exactly as the component imports it (e.g. `@radix-ui/react-dialog`) — never a
+path into `node_modules/`, which is an ignored directory.
 
 **Code path vs design path.** Every component/domain `Specimen` shows its **code file path** — `source`
 = the real import path *where the component is called from* (e.g. `@/components/ui/button`). The **design

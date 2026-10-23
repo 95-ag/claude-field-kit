@@ -29,7 +29,7 @@ props:
   id:       string       // namespaced section id; rendered as "ds-{id}"
   title:    string       // rendered as h2; the rail scrapes this text for the TOC label
   intro:    string       // body-primary paragraph; appears after the mapsTo eyebrow
-  mapsTo:   string       // full DESIGN.md path, e.g. "Foundations → Colors"
+  mapsTo:   string       // full DESIGN.md heading path, e.g. "Foundations → Colors"
   source?:  string       // optional source path/selector; shown below mapsTo when present
   children: node
 

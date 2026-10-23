@@ -83,7 +83,8 @@ house style. Before writing anything, resolve each input from its owner:
 | Input | Owner |
 |---|---|
 | Where a component file goes, and its name | the repo's component-structure rule |
-| Token names, values, and every visual constant | DESIGN.md → Foundations |
+| Token values | DESIGN.md → YAML Registry (a color or typography value may instead be defined in a Foundations table) |
+| Token names and roles, and every other visual constant | DESIGN.md → Foundations (z-index layers: Technical Conventions → Z-Index Scale) |
 | Which stylesheet a concern lives in, and when it splits | the repo's design-system rule |
 | Server/client boundary, imports, fonts, images | the repo's framework rule |
 | Accessibility floors and motion obligations | the repo's accessibility and motion rules |
