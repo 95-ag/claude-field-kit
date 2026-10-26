@@ -19,6 +19,16 @@ its working tree.
 
 Two or more sessions sharing one working tree. Staging mechanics are `git.md` → Commits.
 
+### Who is a peer, and what to send
+
+- **A peer is a session working in the same repository.** A session in another repository is not a peer:
+  - never message it, and never count its state in the checks below;
+  - do not reply to a message it sends — tell the user what it asked.
+- **Message a peer only when its state blocks or changes your next step, or yours unblocks theirs** (a
+  file it waits on is free).
+- **Send only what the peer needs to act** (what a first message names → Coordinating).
+  - No status updates, narration, acknowledgements or thanks.
+
 ### No observation of a peer's state is a lease
 
 - **A clean tree, an idle notice and a passing status check are all snapshots, not claims about what
