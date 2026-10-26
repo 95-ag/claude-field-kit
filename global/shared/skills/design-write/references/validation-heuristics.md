@@ -1,6 +1,6 @@
 # Validation Heuristics
 
-Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign**. Failed checks surface as a short remediation list. Most checks are mode-agnostic (valid structure, two-layer model, doc-first, tokens, terminology, template). A few are transform-only and tagged below: **Lossless** and **Manifest Completeness** apply to Update + Realign. Realign's judgment heuristics are in `rewrite-passes.md` → Realign Judgment Heuristics.
+Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign**. Failed checks go to the report's Check results (`SKILL.md` → Output Format). Most checks are mode-agnostic (valid structure, two-layer model, doc-first, tokens, terminology, template). A few are transform-only and tagged below: **Lossless** and **Manifest Completeness** apply to Update + Realign. Realign's judgment heuristics are in `rewrite-passes.md` → Realign Judgment Heuristics.
 
 ---
 

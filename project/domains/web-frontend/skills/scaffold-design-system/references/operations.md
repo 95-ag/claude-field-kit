@@ -61,9 +61,9 @@ cannot generate. Scope boundaries and the reference index live in `SKILL.md` —
 **Align never widens.** Drift spotted outside the run's scope is reported, not fixed in
 passing.
 
-**Status: unverified.** Fresh was exercised end to end; Align's steps are specified from it and
+**Status:** Align is `SPECIFIED` (`SKILL.md` → Operation status) — its steps are derived from Fresh and
 have not yet been run against real drifted code. Treat a surprise here as a finding about this
-file, and record it.
+file, and file it as a note against the skill.
 
 ---
 
@@ -152,7 +152,8 @@ is still logged, or the next reader re-derives the same question.
 
 ## The run report
 
-Rules across these references end in "state it in the report". **This is that report** — one document
+Every rule in these references that defers to the run's record — "state it in the report", "record",
+"name it in the handoff" — discharges here. **This is that report** — one document
 per run, handed over with the code. A rule that defers to a report the skill never defines is
 unenforceable, and a gate cannot assert against it.
 
@@ -164,18 +165,22 @@ section states the obligation.
 | Section | Carries | Stated in |
 |---|---|---|
 | **Resolved roots** | the component-tree root and the stylesheet directory, and which of the three resolution steps settled each | `SKILL.md` → Project-native contract |
-| **Items** | every item in scope, its operation (Fresh or Align), and its outcome — including an Align that needed no edit | `operations.md` → Align, step 5 |
-| **Skipped** | each entry not generated, with its reason under the three-case table | → Documented ≠ generatable |
+| **Items** | every item in scope, its operation (Fresh or Align), and its outcome — including an Align that needed no edit; each undocumented item found mid-run, left for the user to scope | `operations.md` → Fresh; → Align, step 5; → Scope resolution |
+| **Skipped** | each entry not generated, with its reason under the three-case table; each token variant the doc does not define, left uncreated; each block deferred, with the task that owns it | → Documented ≠ generatable; → Fresh, step 4; `foundations-mapping.md` → Triage the whole document |
 | **Inferred values** | every value the doc did not state that rendering required, listed **apart from** the transcribed ones, each with the gap it fills and what it was derived from | → Fresh, step 4 |
 | **Emitted nothing** | each documented block that correctly produced no token | `foundations-mapping.md` → Which keys become tokens |
 | **Drift and spec gaps** | each finding in the shape above, with a **status** and an **owner** | → Doc drift is reported, not fixed |
 | **Removals** | boilerplate removed, and the collateral breakage it causes outside this skill's scope — the file, the identifiers, what it renders as now, an owner | `foundations-boundaries.md` → Exhaustive replacement |
+| **Forced edits** | each out-of-scope file edited because this run's type edit broke the typecheck, with the file and the type edit that forced it | `foundations-boundaries.md` → Exhaustive replacement |
+| **Closures** | each namespace closed, the doc sentence that licenses it, quoted, and the utilities the closure removes | `foundations-framework.md` → Namespace closures remove derived utilities |
 | **Unsatisfied contracts** | each published token whose satisfaction lies outside the run, with its mount point and the variables it must define | `foundations-boundaries.md` → A published contract names its mount point |
-| **Config edits** | every framework-configuration edit, with what breaks without it | `verification.md` → Framework configuration the gate cannot report |
-| **Forced choices** | where a spec sanctioned two mechanisms, which was taken and the constraint that eliminated the other | `component-behavior.md` → Two sanctioned mechanisms are not two valid choices |
-| **Demo touch-points** | each affordance emitted for the gallery, named | `component-set.md` → Demo affordances |
-| **Gates** | each gate's result, and any gate skipped with why — a skipped gate 1 states that no baseline existed | `verification.md` → The gate ladder |
-| **Review-only** | what the layer cannot enforce and a reviewer must therefore carry | `foundations-mapping.md` → A token's home is its namespace |
+| **Config edits** | every framework-configuration edit, with what breaks without it, and each output-changing setting left unedited | `verification.md` → Framework configuration the gate cannot report |
+| **Forced choices** | where a spec sanctioned two mechanisms, which was taken and the constraint that eliminated the other; where script is forced, what forces it, its pre-script default and its first-frame reconciliation | `component-behavior.md` → Two sanctioned mechanisms are not two valid choices; `component-behavior.md` → Prefer the platform's declarative mechanism over a scripted one |
+| **Per-component bindings** | each focus-ring rebinding and the ground that caused it; reduced motion per component — gated, or not applicable — including a forced script's gate | `component-behavior.md` → The first component to establish a contrast ground rebinds the focus ring; → Motion: each component owns its own gate |
+| **Unwritten dependencies** | each dependency edge pointing outside the batch, and the component that will own it | `component-set.md` → A dependency edge that points outside the batch |
+| **Demo touch-points** | each affordance emitted for the gallery, named; each page fragment exported instead, with its case | `component-set.md` → Demo affordances |
+| **Gates** | each gate's result, and any gate skipped with why — a skipped gate 1 states that no baseline existed; each namespace probed, and each relied on unprobed | `verification.md` → The gate ladder; `foundations-mapping.md` → A token's home is its namespace |
+| **Review-only** | what the layer cannot enforce and a reviewer must therefore carry, including that no global reduced-motion kill-switch exists | `foundations-mapping.md` → A token's home is its namespace; → Motion: the layer emits no reduced-motion kill-switch |
 
 ---
 

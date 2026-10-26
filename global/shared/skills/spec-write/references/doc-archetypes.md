@@ -117,4 +117,4 @@ Voice: terse, specific, affirmative prohibitions ("never add a `slug` field"). N
 - A path must resolve to a real heading in the target doc. When you author or edit, verify each path you
   write still points at an existing heading — headings move, paths must move with them.
 - When a doc you're editing references a heading you're renaming, update the back-references in the same
-  pass, and list each one in the diff summary.
+  pass, and list each one in the manifest.

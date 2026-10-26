@@ -105,10 +105,15 @@ state and the request — not from a separate sub-skill.
 
 ## Output Format
 
-For an edit or a section-level change, show:
+Every run ends in one report with four sections, in this order — the same shape as `design-write`'s.
+**A section with nothing to report says "none"** — an omitted section and a forgotten one look the same.
 
-1. **The changed block(s)** — only what changed, unless the doc is short enough that full is clearer.
-2. **A one-line-per-hunk diff summary**, mirroring the design skills' convention:
+1. **Changed blocks** — only what changed, unless the doc is short enough that full is clearer. For a
+   full authoring, the complete doc plus a short summary of the structure used; for a pre-approved
+   batch, what was written for that review.
+2. **Manifest** — one line per change, factual, no rationale prose. Labels: `ADDED` · `UPDATED` ·
+   `RESTYLED` · `STRIPPED` · `RELINKED` · `REMOVED` (every removal) · `FLAGGED` (awaiting the user's
+   confirmation) · `NOTED` (seen, out of scope):
 
 ```
 ADDED: "Page Specifications → Project Detail → Overview" — new subsection
@@ -119,7 +124,9 @@ RELINKED: "§7.4" → "PRODUCT.md → Page Specifications → Project Detail" (3
 NOTED: nearby prose wall in "About" not in scope — left as-is, recommend a restyle pass
 ```
 
-For a full first-time authoring, output the complete doc plus a short summary of the structure you used.
+3. **Check results** — the Alignment drift list, and any check that failed.
+4. **Questions** — every `TODO:` left while authoring, and each decision only the user can make, with a
+   recommendation (Behavioral Defaults → A product change often needs a design change behind it).
 
 ## Behavioral Defaults
 

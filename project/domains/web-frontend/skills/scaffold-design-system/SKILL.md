@@ -135,8 +135,8 @@ Run this at the start of every invocation:
 7. **Generate**, foundations before the components that consume them.
 8. **Verify with compiled evidence**, then run the repo's gate. A green build does not
    prove a utility exists or a first frame is correct → `references/verification.md`.
-9. **Write the run report, and fix nothing in the doc.** Every rule in these references that ends
-   in "state it in the report" discharges here; its required sections are listed in
+9. **Write the run report, and fix nothing in the doc.** Every rule in these references that defers
+   to the run's record discharges here; its required sections are listed in
    `references/operations.md` → The run report, and a section with nothing to report says so. Doc
    drift, spec gaps, and contradictions hand off to `design-write` on the user's confirmation.
 
@@ -149,7 +149,7 @@ names that reference's full topic set, so a rule is never left without a home.
 
 | Reference | Read when… |
 |---|---|
-| `references/operations.md` | Choosing and running Fresh or Align; resolving run scope; handling documented-but-not-generatable entries; transcribing rather than inventing, and the one escape hatch — a value rendering requires that the doc omits is inferred narrowly, reported as inferred, and handed to `design-write`, never invented silently and never stalled on; reporting doc drift, with a status **and** an owner on every logged spec gap; **the run report — the one document every "state it in the report" rule discharges into, its required sections, and the rule that a section with nothing to report says so**; the two invocation paths and resolving a dispatched operation from evidence rather than the dispatch label |
+| `references/operations.md` | Choosing and running Fresh or Align; resolving run scope; handling documented-but-not-generatable entries; transcribing rather than inventing, and the one escape hatch — a value rendering requires that the doc omits is inferred narrowly, reported as inferred, and handed to `design-write`, never invented silently and never stalled on; reporting doc drift, with a status **and** an owner on every logged spec gap; **the run report — the one document every rule deferring to the run's record discharges into, its required sections, and the rule that a section with nothing to report says so**; the two invocation paths and resolving a dispatched operation from evidence rather than the dispatch label |
 | `references/foundations-mapping.md` | Which documented values become tokens, and what each one is called: fenced-block triage over the whole doc (every block, plus values stated only in prose); which keys become tokens and which resolve at the point of use; the three transcription rules — a reference stays a reference, missing stays missing, and units are transcribed rather than converted; a token's home is its namespace, a namespace-less token is consumed as `utility-(--token)` and named for its role in the doc's own vocabulary, never rehomed into a namespace whose utilities would lie about it; composite typography roles and the class layer their unmodifiable properties force; the layer emits **no** global reduced-motion kill-switch — that obligation is reassigned to each motion-attaching component, and a habitual best practice can be off-spec where the doc says otherwise |
 | `references/foundations-framework.md` | The framework mechanics that decide how the layer must be written, each of which builds green when got wrong: `@theme static` as the requirement for a published contract, and why an unknown namespace is utility-less rather than separately discarded; scale key names that collide with the framework's own scales, caught by diffing two key lists at design time rather than by probing; namespace closures, the three-question test that licenses one, and the zero-step utilities a closure removes |
 | `references/foundations-boundaries.md` | Where the token layer's own edges are, and what therefore lands in the report rather than in a fix: exhaustive replacement of unsanctioned boilerplate, the collateral breakage it causes in files outside this skill's scope, and the narrow licence for the out-of-scope edit a typecheck forces; a published contract naming the mount point that satisfies it when that mount point lies outside the run, and a font token's two levels; the stylesheet file split |
@@ -179,4 +179,4 @@ treating a run as cold.
 **The whole evidence base is a single Next.js / Tailwind v4 pass.** Every framework-specific finding
 in these references was measured once, on one stack, on the versions named at the top of each file.
 Treat a surprise on another stack — or another major version — as a finding about these files, and
-record it rather than working around it.
+file it as a note against the skill rather than working around it.

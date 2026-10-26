@@ -82,7 +82,7 @@ and Update are the everyday path; Realign is a fallback.
 - New content is contract-compliant by construction (component = name → 1-line identity → 3–5 semantic
   bullets → optional YAML; tokens in `{token.name}` resolved-value form; bullets ≤ 2 visual lines).
 - Cross-layer edits (a YAML-Registry token + its prose reference) are in scope when they touch ≤ 2
-  canonical sections — one diff entry per layer. Use `edit-patterns.md`; keep cross-references intact
+  canonical sections — one manifest entry per layer. Use `edit-patterns.md`; keep cross-references intact
   (`cross-reference-rules.md`). Disciplined updates are what keep drift from ever building up.
 
 **Realign — recover from drift** (fallback, not routine)
@@ -122,11 +122,15 @@ content.
 
 ## Output Format
 
-For an edit or section-level change, show:
+Every run ends in one report with four sections, in this order. **A section with nothing to report
+says "none"** — an omitted section and a forgotten one look the same.
 
-1. **The changed block(s)** — only what changed, unless the doc is short enough that full is clearer.
-   For a full authoring, output the complete doc plus a short summary of the structure used.
-2. **A one-line-per-change manifest** — factual, no rationale prose:
+1. **Changed blocks** — only what changed, unless the doc is short enough that full is clearer. For a
+   full authoring, the complete doc plus a short summary of the structure used; for a pre-approved
+   batch, what was written for that review.
+2. **Manifest** — one line per change, factual, no rationale prose; every `FLAGGED`, `NOTED`,
+   `PLACEHOLDER` or `MIRRORS` entry the references call for lands here — including a retired token's
+   consumer (`edit-patterns.md` → Remove a section or component) and each duplicate group, once:
 
 ```
 ADDED: token `surface-interactive` to YAML Registry → colors
@@ -144,9 +148,6 @@ itself the record of what was written, so its manifest carries only the observat
 (for example `FLAGGED`, `NOTED`, `REWORDED`, `MIRRORS`) — never an `ADDED` line per section. (Full
 entry-type registry, binding in every mode: `validation-heuristics.md` → Manifest Entry Types.)
 
-**A change to a boundary gets its own two sweeps** — the retired term *and* every figure measured under
-the old boundary (`edit-patterns.md` → Change a boundary).
-
 **Name the mirrors.** A doc's rules are frequently restated in prose elsewhere — a gallery, a README, an
 onboarding page. Those copies typecheck, lint and render while asserting the opposite of the doc, so
 nothing detects the mismatch afterwards. At the end of a run, add a `MIRRORS:` entry for each changed rule
@@ -157,6 +158,12 @@ verbatim, or cite a section as the source of a figure: rewording falsifies the f
 breaks the second. Before rewording, grep the code for quoted doc phrases and for section names cited as a
 source — keep the quoted text verbatim, or list each as `MIRRORS:` with file and line. A table conversion
 has the same trap: a state label a comment cites must survive as the row key.
+
+3. **Check results** — the remediation list for failed checks, and every count a check requires:
+   zeros, pairs checked, blocks parsed, hits by class, and both boundary sweeps (`validation-heuristics.md`;
+   `edit-patterns.md` → Change a boundary).
+4. **Questions** — every `TODO:` left while authoring, and each decision only the user can make, with a
+   recommendation (Behavioral Defaults → Ask whether the change is visual or behavioural).
 
 ## Behavioral Defaults
 
@@ -182,6 +189,6 @@ has the same trap: a state label a comment cites must survive as the row key.
 Before reporting any work done — Authoring, Update, or Realign — run `references/validation-heuristics.md`.
 Most checks are mode-agnostic (structure, two-layer model, doc-first, naming, anti-patterns, template, tokens,
 terminology); the transform-only checks (losslessness, manifest completeness) apply to the modes that file
-tags, and Realign's judgment heuristics are in `references/rewrite-passes.md`. Failed checks surface as a
-short remediation list. For a high-stakes realign, have a separate subagent verify losslessness and
-ordering so the author isn't grading their own work.
+tags, and Realign's judgment heuristics are in `references/rewrite-passes.md`. Failed checks go to the
+report's Check results (Output Format). For a high-stakes realign, have a separate subagent verify
+losslessness and ordering so the author isn't grading their own work.

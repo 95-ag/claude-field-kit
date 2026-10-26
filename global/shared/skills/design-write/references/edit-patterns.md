@@ -9,8 +9,8 @@ Common maintainer operations with the correct approach for each.
 1. Confirm with the user: token name, resolved value, semantic role.
 2. Determine the correct registry group (e.g., colors, typography, spacing, rounded, motion, breakpoints, z-index, or another canonical primitive-token group).
 3. Add the entry to the YAML registry at the top of the document, in the appropriate group and position — or, where the doc defines that color/typography group's values in a Foundations table, to that table (`design-writing-contract.md` → Two-Layer Document Model).
-4. If the token also needs a row in a semantic-role table (e.g., a color token with a semantic-role mapping), add a follow-on markdown update with its own diff entry.
-5. Diff summary: `ADDED: token \`token-name\` to [YAML Registry | Foundations table] → [group]`
+4. If the token also needs a row in a semantic-role table (e.g., a color token with a semantic-role mapping), add a follow-on markdown update with its own manifest entry.
+5. Manifest: `ADDED: token \`token-name\` to [YAML Registry | Foundations table] → [group]`
 
 ---
 
@@ -19,7 +19,7 @@ Common maintainer operations with the correct approach for each.
 1. Find the token's canonical definition — the YAML registry entry, or the Foundations table where a colocated color/typography value is defined.
 2. Update the resolved value there — that definition is the single source of truth.
 3. Scan the markdown body for inline resolved-value mentions (e.g., `(44px)` in prose) and update them as cross-layer follow-ons.
-4. Diff summary: `UPDATED: \`token.name\` resolved value old → new in its canonical definition; N inline references updated in markdown body`
+4. Manifest: `UPDATED: \`token.name\` resolved value old → new in its canonical definition; N inline references updated in markdown body`
 
 ---
 
@@ -32,7 +32,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 3. Find and replace all markdown body references (prose, bullets, component spec blocks).
 4. Find and replace in sibling docs the user names (e.g. project config, session/work notes, rules files).
 5. **Read the changed section's prose end to end.** A rename is a find-and-replace; a rule change is not, and both arrive through the same edit. A sweep can rename every symbol correctly, build green, and leave a section still asserting the retired rule in words.
-6. Diff summary lists every touched location — registry first, then markdown body, then sibling docs.
+6. Manifest lists every touched location — registry first, then markdown body, then sibling docs.
 
 ---
 
@@ -42,7 +42,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 2. Create the component using the contract-defined format (`design-writing-contract.md` → Component Writing Contract).
 3. Confirm contextual usage examples are included.
 4. Shared interaction-state baselines belong in `# Interaction Rules`. A component section references them and carries only the interaction content `design-writing-contract.md` → Interaction Rules Policy permits.
-5. Diff summary: `ADDED: component \`component-name\` to Components`
+5. Manifest: `ADDED: component \`component-name\` to Components`
 
 ---
 
@@ -53,7 +53,7 @@ For adding a row to a surface hierarchy, typography roles, interaction semantics
 1. Identify the target table (e.g., `Foundations → Colors → Semantic Roles` or `Semantic Systems → Surface Hierarchy`).
 2. Add the row in the correct semantic grouping.
 3. Check whether the same semantic concern is referenced elsewhere in the document — if so, update those references rather than adding a competing restatement (anti-fragmentation rule).
-4. Diff summary: `ADDED: semantic mapping row \`role-name\` to [table location]`
+4. Manifest: `ADDED: semantic mapping row \`role-name\` to [table location]`
 
 ---
 
@@ -67,7 +67,7 @@ For adding a row to a surface hierarchy, typography roles, interaction semantics
    retired token, either apply the nearest already-approved analogous fix and flag it, or — where no
    analogous fix is approved — flag it and stop. Inventing a replacement is origination
    (`safety-rules.md` → Shared rules, Never originate). Report the choice either way.
-5. Diff summary: `REMOVED: section/component name — N cross-references updated`
+5. Manifest: `REMOVED: section/component name — N cross-references updated`
 
 ---
 
@@ -78,7 +78,7 @@ When a stable-vocabulary term is renamed (e.g., "tonal depth" → "tonal layerin
 2. Find all occurrences in the document.
 3. Replace consistently.
 4. Check sibling docs if named by the user.
-5. Diff summary: `UNIFIED: "old term" → "new term" (N occurrences in DESIGN.md, M in sibling docs)`
+5. Manifest: `UNIFIED: "old term" → "new term" (N occurrences in DESIGN.md, M in sibling docs)`
 
 Note: whole-doc terminology sweeps are better handled by the rewriter's Terminology Consistency Pass.
 
@@ -89,7 +89,7 @@ Note: whole-doc terminology sweeps are better handled by the rewriter's Terminol
 1. Confirm the component already has: name, identity statement, semantic bullets.
 2. Place the YAML block after the bullets, not before or between them.
 3. Carry variants, states and structure — never a value the bullets already state (`design-writing-contract.md` → Component Writing Contract).
-4. Diff summary: `ADDED: YAML spec block to \`component-name\``
+4. Manifest: `ADDED: YAML spec block to \`component-name\``
 
 ---
 
@@ -101,7 +101,7 @@ E.g., a broken `Foundations → Colors` path after a heading rename.
 2. Trace the correct current heading path.
 3. Update the reference.
 4. Scan for other instances of the same broken path.
-5. Diff summary: `UPDATED: cross-reference "old path" → "new path" (N occurrences)`
+5. Manifest: `UPDATED: cross-reference "old path" → "new path" (N occurrences)`
 
 See `references/cross-reference-rules.md` for heading-path format rules.
 
@@ -113,7 +113,7 @@ Iteration Notes use bullet-first, concise, non-defensive writing. No prose walls
 
 1. Add or update the relevant bullet or entry.
 2. Do not restructure surrounding content.
-3. Diff summary: `UPDATED: Iteration Notes — [description of what changed]`
+3. Manifest: `UPDATED: Iteration Notes — [description of what changed]`
 
 ---
 

@@ -1,8 +1,8 @@
-# Final checks — the dogfood gate and the validation checklist
+# Final checks — the dogfood gate, the validation checklist and the run report
 
 The two lists a run finishes against: the gallery must obey the design system it displays, and every
-pinned requirement must be present. Both are **non-negotiable** and neither is a substitute for the
-gates in `verification.md`, which this checklist points into.
+pinned requirement must be present; the run report closes the run. Both lists are **non-negotiable**,
+and neither is a substitute for the gates in `verification.md`, which this checklist points into.
 
 ---
 
@@ -68,4 +68,23 @@ Before handing off to the user, confirm all items pass:
 - [ ] Build gate green — linter, typecheck, and production build pass; gallery route prerenders; zero
       duplicate ids
 - [ ] Code-write boundary respected — no edits to production code without explicit per-case user agreement
-- [ ] Every mismatch reported to the user; no auto-fixes applied
+- [ ] Every mismatch reported to the user in the run report; no auto-fixes applied
+
+---
+
+## The run report
+
+Every rule in these references that says "report it", "say so" or "surface it" discharges here — one report
+per run, handed to the user. **A section with nothing to report says "none"**; an omitted section and a
+forgotten one look the same.
+
+| Section | Carries | Stated in |
+|---|---|---|
+| **Gates** | each gate's result; whether Gate 0's reviewer was separate; each finding as confirmed by render or inferred from markup | `verification.md` → Gate 0; → Gate 1 |
+| **Mismatches** | each doc⇄code mismatch, in the inform-only finding shape | `boundaries-and-handoff.md` → Inform-only handoff |
+| **Design gaps** | each documented value the gallery cannot place, each fallback used for a missing token, and each content-schema shape a demo needs that the project lacks — open gaps for `design-write` | `section-spine.md` → The three layers; `visualizer-type.md` → P1 — Template (universal structure); `visualizer-kit.md` → Generic fallbacks; → Dogfood gate |
+| **Classification concerns** | each candidate, missing tag or pending classification surfaced for the user | `modes.md` → Evidence-based concerns |
+| **Omitted pieces** | each cataloged piece substituted or omitted, with its stated reason | `modes.md` → Build mode |
+| **Gallery limits** | what the gallery cannot show, kept off the page | `verification.md` → The gallery is a visual partner to the doc, not a second copy of it |
+| **Local extensions** | each piece built in the project's `_kit/` beyond the pinned kit | `scaffold-specimen.md` → Local extensions, and the one to watch |
+| **Assets** | each placeholder, the needed-asset list, and the user's choice | `hard-to-demo.md` → Sample assets |

@@ -58,9 +58,9 @@ After any rename or structural move, also grep sibling **rule docs** for the old
 
 ---
 
-## Enumeration in Diff Summary
+## Enumeration in the Manifest
 
-Every cross-reference update must be listed individually in the diff summary. No vague "updated references."
+Every cross-reference update must be listed individually in the manifest. No vague "updated references."
 
 Format:
 ```

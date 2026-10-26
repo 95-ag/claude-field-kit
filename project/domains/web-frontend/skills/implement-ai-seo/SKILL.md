@@ -108,8 +108,9 @@ Do not implement SSR changes directly unless the user confirms — flag and expl
 
 ## Output
 
-After implementing changes, summarize:
-- What was added or modified
-- What was skipped (already correct)
-- What requires user input to complete
-- Any rendering issues flagged but not changed
+After implementing changes, report under these five headings. A heading with nothing to report says "none".
+- **Inventory** — what existed and what was missing before any change
+- **Added or modified**
+- **Skipped** — already correct
+- **Needs user input** — every field left out and flagged, including a missing OG image
+- **Rendering issues** — client-side-rendered content flagged but not changed: affected pages, the SSR or SSG recommendation, and the tradeoff

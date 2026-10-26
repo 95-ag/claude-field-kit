@@ -181,4 +181,5 @@ Read each reference when the run enters that area — do not pre-load all of the
 
 Two lists close a run and neither is optional — **the dogfood gate** (the gallery obeys the design system
 it displays) and **the validation checklist** (every pinned requirement is present). Both are in
-`final-checks.md`, and they sit after the gates in `verification.md`, never instead of them.
+`final-checks.md`, and they sit after the gates in `verification.md`, never instead of them. The run ends
+in **the run report** (`final-checks.md` → The run report), where every "report it" rule discharges.

@@ -54,8 +54,8 @@ carrying `'use client'` makes the panel a client component too, which destroys t
 entire purpose.
 
 - **This overrides the structure rule's allowance that a tight family may share one file.** The split
-  is forced by the directive's scope, not chosen by preference — say so, or the next reader tidies
-  the two files back into one.
+  is forced by the directive's scope, not chosen by preference — say so in the source, or the next reader
+  tidies the two files back into one.
 - **Every presentational extraction out of a client component is therefore two files, not one.**
   Count it into the expected output before generating: an extraction turns an N-component batch into
   N+1 files.
