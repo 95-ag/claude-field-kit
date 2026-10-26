@@ -31,9 +31,9 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Domain Components
 
-- `## Domain Components` appears between `## Components` and `## Interaction Rules` — not at the end of the document.
+- `# Domain Components` appears between `# Components` and `# Interaction Rules` — not at the end of the document.
 - Each domain component SHOULD primarily compose, specialize, or extend one or more canonical spine systems, and MAY assume a specific page context or content schema.
-- Domain Components MUST NOT contain globally reusable UI systems — those belong in `## Components`.
+- Domain Components MUST NOT contain globally reusable UI systems — those belong in `# Components`.
 - If the project defines a doc↔code tagging convention for Domain Components (e.g. an `[inline]`/`[standalone]` tag bound to a component-structure rule), verify every leaf is tagged and the tag matches reality; parent group headers carry no tag. Projects without such a convention skip this check.
 
 ## Technical Conventions Scope

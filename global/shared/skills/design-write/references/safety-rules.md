@@ -40,9 +40,9 @@ below are per-mode; Shared rules bind all three.
 - **One pass at a time.** A single invocation runs one defined pass unless the user explicitly requests a
   combined pass. Combined passes segment the manifest with `--- PASS: name ---` dividers so each set of
   changes is independently auditable. (Pass catalog: `rewrite-passes.md`.)
-- **Canonical-ordering preservation.** Reordering must comply with the contract's canonical spine (see
-  `design-writing-contract.md` → Canonical Structure Model). Optional / bracketed sections may be absent without
-  violation. A reorder that places a section outside the spine is rejected — surface the conflict and ask.
+- **Canonical-ordering preservation.** Reordering must comply with `design-writing-contract.md` → Canonical Spine —
+  its Canonical ordering and Subsection order rules. Sections marked optional may be absent without violation. A
+  reorder that places a section outside the spine is rejected — surface the conflict and ask.
 - **Section-preserving by default.** Prefer migrations that keep existing section boundaries. Merging two
   distinct sections requires duplication that is **substantial and explicit** (the same information, not
   just the same concept area) AND user confirmation. Overlap of concept scope alone is not grounds to
@@ -50,7 +50,8 @@ below are per-mode; Shared rules bind all three.
   suspends this default — cross-section restructuring is its entire point.)
 - **Empty placeholder headings are not violations.** A heading with no content is a placeholder — not an
   orphan, hierarchy violation, or merge candidate. Use `PLACEHOLDER` in the manifest; leave it in place.
-  Never invent content to fill it.
+  Never invent content to fill it; the only fill is the user-confirmed line `design-writing-contract.md` →
+  Canonical Spine allows for an empty required section.
 
 ---
 

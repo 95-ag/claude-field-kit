@@ -680,7 +680,12 @@ which dramatically improves agent consistency.
 
 ## Canonical Spine
 
-The canonical spine provides the organizing structure for any substantial design system. Not every section is mandatory in every product — the inner ontology of `# Semantic Systems` in particular is an optional organizing layer, not a forced extraction target.
+The canonical spine provides the organizing structure for any substantial design system. `# Semantic Systems` is an optional organizing layer, not a forced extraction target.
+
+* **Required sections** — a top-level section marked optional may be omitted; every other top-level section is required. A project schema may require an optional one (→ Schema Rules).
+* **Empty required section** — never padded. Once the user confirms it has nothing to document, it holds one line saying so (e.g. `None — no page-bound compositions.`). Until then it carries the Authoring `TODO:` line (`SKILL.md` → Modes), or, met empty in an existing doc, stays an empty placeholder.
+* **Canonical ordering** — top-level sections appear in the block's order; an optional section, when present, takes its slot.
+* **Subsection order** — the project schema's where it pins one; otherwise the block's Foundations, Interaction Rules and Iteration Notes lists and Components Sub-Taxonomy's Shell → UI → Document. Any other section keeps the doc's own order.
 
 ```
 YAML Registry              ← globally reusable tokens/scales/aliases/systems only
@@ -1097,7 +1102,7 @@ Preferred terminology:
 Project-specific schema defines:
 
 * exact required sections
-* canonical ordering
+* subsection ordering within each spine section
 * required terminology
 * local structural conventions
 
@@ -1121,7 +1126,7 @@ The universal contract defines the template. The project schema fixes the concre
 Project schemas MAY:
 
 * require specific sections
-* define canonical ordering
+* fix subsection order within a spine section — top-level order is the Canonical Spine's
 * enforce terminology
 * introduce specialized modules
 * define local constraints
@@ -1136,21 +1141,11 @@ Project schemas MUST NOT:
 
 ## Portfolio Schema Example
 
-### Canonical Spine (Required)
+### Spine Instance
 
-```
-YAML Registry
-# Overview
-# Foundations              (Colors, Typography, Spacing, Layout, Motion, Shapes, Elevation & Depth)
-# Semantic Systems         (optional organizing layer)
-# Components               ← reusable / portable UI systems
-# Domain Components        ← page/domain-bound compositions
-# Interaction Rules        (Hover, Focus, Disabled, Loading, Responsive Behavior)
-# Accessibility Rules
-# Cross-Cutting Rules
-# Technical Conventions   (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering, Z-Index Scale)
-# Iteration Notes          (Open Decisions, Known Gaps)
-```
+* `# Foundations` instantiates Colors, Typography, Spacing, Layout, Motion, Shapes, Elevation & Depth — no Prose, Imagery, or Iconography subsection
+* `# Semantic Systems` kept as an optional organizing layer
+* `# Background` omitted — the system has no ambient background
 
 ### Required Domain Components (Portfolio-Specific)
 
@@ -1159,22 +1154,6 @@ YAML Registry
   ## Project Detail
   ## About Layouts
 ```
-
-### Canonical Ordering
-
-Sections SHOULD appear in this order:
-
-1. YAML token registry
-2. identity/philosophy
-3. foundational primitives (colors, typography, spacing, motion, elevation)
-4. optional semantic organizing layer
-5. reusable components
-6. page/domain-bound compositions (Domain Components)
-7. interaction baselines
-8. accessibility rules
-9. cross-cutting system constraints
-10. implementation infrastructure (Technical Conventions)
-11. iteration notes
 
 ---
 

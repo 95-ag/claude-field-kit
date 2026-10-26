@@ -9,7 +9,7 @@ Seven pass types. Run one per invocation unless explicitly combined.
 **Purpose:** Reorganize section hierarchy and ordering without altering prose content.
 
 What changes:
-- Top-level and subsection ordering aligned to canonical schema.
+- Top-level and subsection order aligned to `design-writing-contract.md` → Canonical Spine (Canonical ordering, Subsection order).
 - Orphaned subsections relocated to correct parent.
 - Heading levels normalized (no deeper than H4).
 - Duplicate section titles resolved.
@@ -109,7 +109,7 @@ Scope: document-wide. Operates across all section boundaries simultaneously.
 What changes:
 - Globally reusable canonical tokens extracted into a top-of-document YAML Registry (see *Canonical Does Not Mean Centralized* in the contract).
 - Sections relocated to new spine positions per an approved migration mapping table.
-- Sections reclassified as Domain Components are relocated to `## Domain Components`, placed between `## Components` and `## Interaction Rules`.
+- Sections reclassified as Domain Components are relocated to `# Domain Components`, placed between `# Components` and `# Interaction Rules`.
 
 What does NOT change:
 - Token names and values — preserved verbatim (Tokens Are Sacred still applies).
