@@ -48,10 +48,6 @@ below are per-mode; Shared rules bind all three.
   just the same concept area) AND user confirmation. Overlap of concept scope alone is not grounds to
   merge — when in doubt, flag and leave separate. (Carve-out: an explicit Architectural-Migration pass
   suspends this default — cross-section restructuring is its entire point.)
-- **Empty placeholder headings are not violations.** A heading with no content is a placeholder — not an
-  orphan, hierarchy violation, or merge candidate. Use `PLACEHOLDER` in the manifest; leave it in place.
-  Never invent content to fill it; the only fill is the user-confirmed line `design-writing-contract.md` →
-  Canonical Spine allows for an empty required section.
 
 ---
 
@@ -61,11 +57,15 @@ Each `Process:` pointer names where the detailed method lives. The rule binds in
 whose reading list does not include the file pointed at — there the rule stands on its own text.
 
 - **Never originate.** No mode invents new tokens, components, rules, or design principles. A
-  structural gap that suggests a missing section is flagged (`FLAGGED: Section X appears empty/absent —
-  no action taken`), never filled by invention.
+  structural gap that suggests a missing section is flagged (`FLAGGED: Section X appears absent — no action
+  taken`), never filled by invention.
   - **A sub-part the user's brief names is not evidence it exists** — the brief may be written from
     memory or an older copy. Creating it to satisfy the instruction is origination. Flag it, name what the
     document actually has, and let the user choose.
+- **Empty placeholder headings are not violations.** A heading with no content is a placeholder — not an
+  orphan, hierarchy violation, or merge candidate. Use `PLACEHOLDER` in the manifest; leave it in place.
+  Never invent content to fill it; its only fills are the ones `design-writing-contract.md` → Canonical Spine
+  allows for an empty required section — the Authoring `TODO:` line, or the user-confirmed line.
 - **Design identifiers are sacred.** Token, component, semantic-role, and domain-component names, and
   stable vocabulary, change only via explicit instruction or a user-confirmed terminology migration.
   Before *adding* a token, confirm name, resolved value, and role — names are load-bearing; a wrong one

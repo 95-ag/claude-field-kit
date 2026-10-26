@@ -8,9 +8,9 @@ Common maintainer operations with the correct approach for each.
 
 1. Confirm with the user: token name, resolved value, semantic role.
 2. Determine the correct registry group (e.g., colors, typography, spacing, rounded, motion, breakpoints, z-index, or another canonical primitive-token group).
-3. Add the entry to the YAML registry at the top of the document, in the appropriate group and position.
+3. Add the entry to the YAML registry at the top of the document, in the appropriate group and position — or, where the doc defines that color/typography group's values in a Foundations table, to that table (`design-writing-contract.md` → Two-Layer Document Model).
 4. If the token also needs a row in a semantic-role table (e.g., a color token with a semantic-role mapping), add a follow-on markdown update with its own diff entry.
-5. Diff summary: `ADDED: token \`token-name\` to YAML Registry → [group]`
+5. Diff summary: `ADDED: token \`token-name\` to [YAML Registry | Foundations table] → [group]`
 
 ---
 
@@ -41,7 +41,7 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 1. Identify the correct location within the `# Components` section (alphabetical, or by category if the section is grouped).
 2. Create the component using the contract-defined format (`design-writing-contract.md` → Component Writing Contract).
 3. Confirm contextual usage examples are included.
-4. Shared interaction-state baselines (hover/focus/disabled/loading/responsive defaults) belong in `# Interaction Rules`. A component section references them and carries only the interaction content `design-writing-contract.md` → Interaction Rules Policy permits.
+4. Shared interaction-state baselines belong in `# Interaction Rules`. A component section references them and carries only the interaction content `design-writing-contract.md` → Interaction Rules Policy permits.
 5. Diff summary: `ADDED: component \`component-name\` to Components`
 
 ---
@@ -88,7 +88,8 @@ Note: whole-doc terminology sweeps are better handled by the rewriter's Terminol
 
 1. Confirm the component already has: name, identity statement, semantic bullets.
 2. Place the YAML block after the bullets, not before or between them.
-3. Diff summary: `ADDED: YAML spec block to \`component-name\``
+3. Carry variants, states and structure — never a value the bullets already state (`design-writing-contract.md` → Component Writing Contract).
+4. Diff summary: `ADDED: YAML spec block to \`component-name\``
 
 ---
 

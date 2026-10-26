@@ -63,9 +63,7 @@ When deciding whether a YAML block, role table, or rule should be hoisted to a g
 ### Headings
 
 * Prefer shallow hierarchy.
-* Avoid nesting deeper than:
-
-  * `H2 → H3 → H4`
+* Spine sections are H1; avoid nesting deeper than H4.
 * Avoid unnecessary subsection fragmentation.
 
 ### Paragraphs
@@ -290,10 +288,15 @@ Component specs SHOULD remain colocated with their component entry unless the sa
 
 ```yaml
 button-primary:
-  backgroundColor: "{colors.accent}"
-  textColor: "{colors.accent-on}"
-  height: "{spacing.interactive-md}"
-  rounded: "{rounded.md}"
+  variants:
+    compact:
+      height: "{height-interactive-sm}"
+  states:
+    pressed:
+      backgroundColor: "{colors.accent-pressed}"
+  structure:
+    - icon (optional, leading)
+    - label
 ```
 
 When a reusable token already exists, component and local specs SHOULD reference the token rather than restating the resolved value. Local structural specs that are genuinely self-contained (not derived from a registry token) may include their own values.
@@ -434,6 +437,8 @@ These categories SHOULD be semantically grouped into dense, readable bullets rat
 
 Not every component requires every category, but reusable components SHOULD communicate enough information to understand role and behavior without reading implementation specs.
 
+A component's YAML spec block carries its variants, states and structure — never a value its bullets already state (→ YAML Rules).
+
 Components SHOULD include contextual examples.
 
 Preferred:
@@ -497,7 +502,7 @@ A valid `DESIGN.md` SHOULD:
 * keep inline body YAML secondary to prose — the top-level YAML Registry is the canonical token store, not a prose support structure
 * use semantic-token + resolved-value formatting consistently
 * avoid excessive heading nesting
-* avoid duplicating registry token *values* in prose — token *names* may be referenced freely in markdown, and a name carrying its resolved value (`{radius.sm}` (4px)) is a reference, not a duplication
+* avoid restating a token *value* outside its one home (→ Two-Layer Document Model) — token *names* may be referenced freely in markdown, and a name carrying its resolved value (`{radius.sm}` (4px)) is a reference, not a duplication
 * satisfy defined Compression Targets
 
 A valid component SHOULD:
@@ -695,7 +700,7 @@ YAML Registry              ← globally reusable tokens/scales/aliases/systems o
 # Background               (optional — ambient background subsystem; promote here when present)
 # Components               ← reusable / portable UI systems
 # Domain Components        ← page/domain-bound compositions and layouts
-# Interaction Rules        (global defaults: Hover, Focus, Disabled, Loading, Responsive Behavior)
+# Interaction Rules        (shared baselines: Hover, Focus, Disabled, Loading, Responsive Behavior)
 # Accessibility Rules
 # Cross-Cutting Rules
 # Technical Conventions    (narrowed — rendering, MDX, build/runtime, performance UX, animation-rendering, Z-Index Scale)
@@ -719,6 +724,8 @@ YAML Registry              ← globally reusable tokens/scales/aliases/systems o
 | Elevation & Depth | elevation levels, per-level surface treatment, any blur/shadow carve-outs (stacking order → Technical Conventions → Z-Index Scale) |
 | Iconography | the icon system — size, stroke, source |
 
+Rows other than Colors and Typography hold no token values: they name and describe their tokens, whose values live in the YAML Registry (→ Two-Layer Document Model).
+
 A base style/rendering layer (no component, not in the authoring registry) is a Foundations concern — classify by responsibility before placing it under `# Components`.
 
 ## Background Policy
@@ -736,7 +743,7 @@ An ambient background subsystem — a full-viewport visual layer the product ren
 
 - **Shell** — site-wide application chrome mounted once per application. Composes UI primitives; assumes no page/route/schema. (Shell→UI is an accepted forward-reference.)
 - **UI** — portable primitives composed by engineers in application code; no page/route/schema assumptions.
-- **Document** — blocks composed by authors through the system's authoring registry (MDX, CMS, rich text, etc.). A system with no authored content has an empty Document group.
+- **Document** — blocks composed by authors through the system's authoring registry (MDX, CMS, rich text, etc.). A system with no authored content omits the Document group.
 
 **Boundary = who composes, not file format.** The UI/Document boundary is the authoring registry. An engineer-placed snippet primitive belongs in UI even if it looks like code; an author-fenced block belongs in Document. The same concept may exist in both layers because composition context differs.
 
@@ -757,7 +764,7 @@ Migrate a semantic table out of Foundations *only* when consolidation under Sema
 
 ## Interaction Rules Policy
 
-`# Interaction Rules` defines *shared behavioral baselines* (hover, focus, disabled, loading, responsive behavior) — global defaults only.
+`# Interaction Rules` defines *shared behavioral baselines* — hover, focus, disabled, loading, responsive behavior, and any behavior two or more components share. One component's own behavior is never a baseline.
 
 Component sections MUST reference shared interaction baselines rather than restating them. What may live with the component: a **deviation from or specialization of** a baseline, or behavior no baseline covers (the component's own sequencing or affordances) — never the baseline restated. This keeps Interaction Rules canonical while preserving component-local nuance.
 
@@ -765,7 +772,7 @@ Component sections MUST reference shared interaction baselines rather than resta
 
 `# Cross-Cutting Rules` is narrowly scoped: it contains only rules that genuinely span multiple foundations, components, or interaction contexts and cannot reasonably live in any single canonical home.
 
-Examples: "no shadows anywhere in v1," "all interactive elements meet 44×44px touch target," "no client-side syntax highlighting."
+Examples: "no shadows anywhere in v1," "all interactive elements meet 44×44px touch target."
 
 Aesthetic preference lists and stylistic do/don’t bullets do not qualify unless they are operationally enforceable as system-wide constraints. This prevents Cross-Cutting Rules from becoming a Do’s & Don’ts dumping ground.
 
@@ -794,7 +801,7 @@ Domain Components MUST:
 Domain Components MUST NOT:
 
 * introduce a parallel taxonomy that fragments the spine
-* duplicate token values from the registry
+* restate a token value outside its one home (→ Two-Layer Document Model)
 * contain globally reusable components (those belong in `# Components`)
 
 ---
@@ -833,9 +840,9 @@ Characteristics:
 * table-first where appropriate
 * token-oriented
 * concise explanatory prose
-* implementation vocabulary permitted
+* token names and CSS custom properties permitted (→ Doc-First — No Code References)
 
-Foundations sections should remain implementation-agnostic. Framework-specific setup code (imports, config boilerplate, framework initialization) belongs in Technical Conventions or implementation docs, not conceptual design foundations.
+Foundations sections stay framework-agnostic. Framework-specific setup code (imports, config boilerplate, framework initialization) belongs in Technical Conventions or implementation docs, not conceptual design foundations.
 
 Implementation-policy decisions that materially affect UX or rendering behavior (e.g. font self-hosting for LCP/FOUT, build-time syntax highlighting) live in Technical Conventions (→ Technical Conventions Policy); a Foundations section may point to one, never state it.
 
@@ -854,7 +861,7 @@ Characteristics:
 * spatial behavior focused
 * reading-flow oriented
 * concise structural rules
-* responsive behavior descriptions
+* responsive behavior descriptions — breakpoints named by token; their values stay in the YAML Registry
 
 ---
 
@@ -915,7 +922,7 @@ Characteristics:
 
 * semantic mapping first — roles before values
 * minimal prose (the table carries primary load)
-* cross-references to Foundations rather than restating token values
+* cross-references to Foundations rather than restating token values outside their one home
 
 ---
 
@@ -923,13 +930,15 @@ Characteristics:
 
 Mode:
 
-* declarative global defaults
+* declarative shared baselines
+
+Applies to every Interaction Rules subsection except Responsive Behavior, which takes the Foundations — Layout Subsections mode.
 
 Characteristics:
 
 * affirmative behavioral rules (what happens, not what is forbidden)
 * cross-component baseline — not per-component nuance
-* component-specific deviations live in the component section, not here
+* component-local content (→ Interaction Rules Policy) lives in the component section, not here
 
 ---
 
@@ -1200,4 +1209,4 @@ Agents MUST NOT:
 * introduce unnecessary hierarchy depth
 * move content into semantically unrelated sections
 * place page-specific implementation details inside foundational system sections — page-specific policy (e.g. a single page's image treatment) belongs near the component or layout section that owns the page context, not in global Foundations rules
-* place responsive infrastructure (breakpoints, viewport constraints, nav behavior thresholds) as isolated siblings to layout specs — these belong under `Interaction Rules → Responsive Behavior`
+* place responsive behavior (what changes at each breakpoint, viewport constraints, nav behavior thresholds) as isolated siblings to layout specs — it belongs under `Interaction Rules → Responsive Behavior`

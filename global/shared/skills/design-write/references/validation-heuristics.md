@@ -13,8 +13,8 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Two-Layer Model
 
-- Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec) — color and typography values may be defined in Foundations instead (next bullet).
-- Markdown body does not duplicate token *values* from the registry. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`design-writing-contract.md` → Token Conventions).
+- Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec) — color and typography values may be defined in Foundations instead (`design-writing-contract.md` → Two-Layer Document Model).
+- No token *value* is restated outside its one home. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`design-writing-contract.md` → Token Conventions).
 - A color or typography value defined in a Foundations table is a sanctioned home, not a two-layer violation (`design-writing-contract.md` → Two-Layer Document Model). Flag only a value defined in both layers; its owner is set there too.
 - Local structural-spec YAML inline (component spec blocks, per-elevation specs, grid specs, semantic-systems mappings) is permitted — this is not a two-layer violation.
 - No single monolithic YAML superblock — the registry collects globally reusable tokens, not every YAML block in the document.
@@ -26,7 +26,8 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Interaction Rules
 
-- Global hover/focus/disabled/loading/responsive *defaults* are consolidated under `# Interaction Rules`. Flag duplication of defaults across multiple locations.
+- Shared interaction baselines are consolidated under `# Interaction Rules`. Flag a baseline restated in more than one location.
+- Flag behavior no baseline covers that two or more components each carry locally — it is a baseline (`design-writing-contract.md` → Interaction Rules Policy).
 - Component-local interaction content the contract permits (`design-writing-contract.md` → Interaction Rules Policy) may live with the component. Do not flag it as a duplication violation.
 
 ## Domain Components

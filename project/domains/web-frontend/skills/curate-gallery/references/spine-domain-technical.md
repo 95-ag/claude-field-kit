@@ -107,9 +107,9 @@ radius 0; horizontal scroll on overflow); the `Touch targets` / `Collapsing stra
 token. (Full visualizer rules → `visualizer-layout.md` → SpanTable, and → DeviceRuler → P2.)
 
 **P3 — Actual inputs:**
-- `ZONES` (SpanTable) = the project's responsive zones, read from DESIGN.md → Responsive Behavior; each
-  `{ name, width, changes[] }` with the **key** layout changes per zone. *(Example: Desktop(xl) ·
-  Tablet(md) · Mobile(base).)*
+- `ZONES` (SpanTable) = the project's responsive zones, each `{ name, width, changes[] }` — the name and
+  **key** layout changes read from DESIGN.md → Responsive Behavior, the width per `section-spine.md` →
+  The three layers. *(Example: Desktop(xl) · Tablet(md) · Mobile(base).)*
 - `ZONE_BARS` (DeviceRuler) = the fixed silhouette standard (geometry below) + which breakpoints the
   project marks `used`. *(Example: base/md/xl used.)*
 - **Touch-targets** + **Collapsing-strategy** = **explicit bullet (`<ul>`) prose**, key points, read
