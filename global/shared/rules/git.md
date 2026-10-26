@@ -39,6 +39,13 @@ feature-*/fix-*  ← cut from dev, squash-merged into dev
 - Pass the project's verification gate (stack rule) before committing.
 - One logical change per commit; never mix unrelated changes.
 - **Never** `git add --all` / `-A` / `.` — stage by explicit path (bulk-add grabs secrets, artifacts, noise).
+- **Explicit-path staging is right on a tree you are alone in, and not sufficient on a shared one.**
+  - `git add <path>` stages whatever is in that path, including a concurrent session's in-flight work, so
+    the commit carries lines its message never mentions — and a later commit of theirs may depend on
+    them, which makes the mistake unrevertable.
+  - Where another session shares the working tree, **commit by pathspec**: `git commit -m "…" -- <paths>`
+    takes those paths from the working tree and leaves the index untouched.
+  - A file git has never seen must be `git add`ed first — safe, because it is a path only you own.
 - Prefer small clustered commits over phase-sized ones — understandable from the diff alone.
 - Refactors stay behavior-safe unless intentionally changing behavior; incremental over rewrites.
 - After a **subagent** reports a commit, verify it landed on the intended branch — a subagent commit can detach HEAD (`git symbolic-ref --short HEAD` should resolve; the branch tip should have moved).

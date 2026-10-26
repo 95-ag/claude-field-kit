@@ -46,6 +46,22 @@ Comments capture genuine decisions and intent — never restate what the code al
 
 ---
 
+## Reading a document or a comment
+
+Writing one is *Comments* above; this section is about trusting one you did not write.
+
+**When two docs disagree, read the code — not the doc that agrees with you.** Deciding by majority is luck. A sentence that contradicts itself is the usual tell: a claim stated beside its own exception usually means the claim died and the exception outlived it.
+
+**A note about the code is not the code.** A provenance claim is cheap to verify and expensive to act on; one carried in a brief can stay false for months.
+
+**A comment describing a rejected design, or behavior that does not happen, is worse than none.** Check its claim against what the code actually does before quoting it forward.
+
+**Correcting a falsified reason means inventing a new one.** A stale value has a replacement you can derive; a stale reason has only the one its author holds. Surface it, name what falsified it, and stop.
+
+**When a task names its own evidence, check the evidence exists before budgeting the work.** A task can demand an artifact nobody produced and survive for weeks, because no one looks until it is actioned. Close it on the property it was protecting instead.
+
+---
+
 ## Abstraction
 
 **Do not abstract early.** Premature abstraction is worse than duplication — it locks in assumptions before the problem is fully understood.

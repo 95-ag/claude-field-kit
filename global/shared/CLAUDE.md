@@ -1,4 +1,5 @@
 @rules/engineering.md
+@rules/sessions-and-subagents.md
 
 ## Workflow Orchestration
 
@@ -37,17 +38,9 @@ Non-negotiable stops. The numbered sections below expand each one.
 - Once a plan document under `/home/ag-95/.claude/plans/<name>.md` is finalized, run `plan-visualize` on it before presenting the plan for chat sign-off. Advisory only — a skipped or failed visual pass never blocks or replaces the sign-off.
 
 
-### 2. Subagent Strategy
+### 2. Subagents and Parallel Sessions
 
-- Use subagents only when necessary to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents when beneficial
-- Avoid subagents for simple or linear tasks to prevent overhead and token waste
-- Keep each subagent single-purpose with minimal tools and clear scope
-- Use subagents to reduce main context load not to increase system complexity
-- Announce any deviation from a subagent's intended process — never silently substitute the controller's review for a skill's own spec/quality review
-- Never resume a subagent that died mid-run — dispatch a fresh one instead
-- Before re-dispatching, establish what the dead run left behind (`git status`, `git diff`, the project's checks) and say so in the new brief
-- Split a subagent task that both decides and acts into pure decision logic and a separate execution step — shorter runs die less often
+- `rules/sessions-and-subagents.md` — dispatching subagents, and working beside peer sessions on one tree
 
 ### 3. Self-Improvement Loop
 
@@ -93,7 +86,7 @@ Non-negotiable stops. The numbered sections below expand each one.
 ## Git Discipline
 
 - Propose cluster(s) + exact single-line message(s) and wait for approval before any index-mutating command. Inside a plan, clusters must be written into the plan's Commits section — plan approval covers them; outside a plan, propose-and-wait in chat each time.
-- Stage explicit paths only — never `git add -A`, `--all`, or `.`
+- Stage explicit paths only — never `git add -A`, `--all`, or `.`; on a tree another session shares, commit by pathspec (`git.md` → Commits)
 - Commit messages: single line, `-m "..."` only
 - Never open, merge, or delete PRs/branches — hand the user PR title + body + next-branch commands
 - Project's `rules/git.md` owns the details

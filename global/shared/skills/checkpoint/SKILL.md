@@ -22,8 +22,7 @@ and memory sync via their own mechanisms). This skill only reconciles the work d
 
 ## Run it yourself — never from a subagent
 
-A dispatched subagent stops and reports back instead of writing: it prunes from its own context, not the
-project's, and cannot know which items the owner has reviewed. Delegate gathering input, never the edit.
+A dispatched subagent stops and reports back instead of writing.
 
 ## Procedure
 
