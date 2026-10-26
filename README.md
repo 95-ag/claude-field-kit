@@ -232,68 +232,78 @@ minimal other context loaded.
 > [`contributing-to-claude-field-kit.md`](project/shared/rules/contributing-to-claude-field-kit.md) — these
 > conventions are mirrored there for builders.
 
-- Bullets over prose; one concept per line; no filler. If a line gets overloaded, break it into multiple
-  lines or sub-points rather than packing concepts onto one — machine-readability never at the cost of human
+- **Bullets over prose; one concept per line.** No filler. If a line gets overloaded, break it into multiple
+  lines or sub-points rather than packing concepts onto one — machine-readable, never at the cost of human
   scannability.
-- No duplication across files — state a rule once, cross-reference it; even within a multi-file asset, put the
-  rule in one canonical file and reference it from the others.
+- **No duplication — state a rule once, cross-reference it.** Even within a multi-file asset (a skill's
+  `SKILL.md` + `references/`), put the rule in one canonical file and reference it from the others.
 - **Never cite a work file as a source.** `lessons.md`, `session.md` and `tasks.md` are gitignored and
   pruned, so a pointer into one dangles once the entry is promoted or cut. Carry the rule in the asset, or
   cross-reference the rule it was promoted into. Naming one as a target, as `checkpoint` does, is not citing it.
-- **Skill names** use `<domain>-<verb>` with a non-colliding prefix (`design-write`, `spec-write`) — not
-  noun-only (`project-docs`) or a broad `project-*` prefix that collides across skills.
-- **Match the house voice — kit conventions ONLY.** Reuse existing assets' terminology, section shape, and
-  density — density as *Bullets over prose* and *Clear, crisp, clean* define it, never a looser neighbour's;
-  don't coin a synonym for a concept already named. Never import another framework's voice (e.g.
-  superpowers' *Iron Law* / *Red flags — STOP*); a skill drafted via an external tool (`writing-skills`,
-  `skill-creator`) is realigned to the kit's voice — `checkpoint`'s shape is the reference — before promoting.
-- **Concrete over vague** — prefer concrete metrics to vague thresholds ("split past ~10 items", not "when it
-  gets big").
-- **Principle vs mechanic** — keep the principle in its own rule and a tool-specific mechanic in that tool's
+- **Name for what it does.** Skills use `<domain>-<verb>` with a non-colliding prefix (`design-write`,
+  `spec-write`) — never noun-only or a broad `project-*` prefix that collides. Rules are noun-named like their
+  siblings.
+- **Match the house voice — kit conventions ONLY.**
+  - Reuse existing assets' terminology, section shape, and density — density as *Bullets over prose* and
+    *Clear, crisp, clean* define it, never a looser neighbour's.
+  - Don't coin a synonym for a concept already named.
+  - Never import another framework's voice (e.g. superpowers' *Iron Law* / *Red flags — STOP*).
+  - A skill drafted via an external tool (`writing-skills`, `skill-creator`) is realigned to the kit's
+    voice — `checkpoint`'s shape is the reference — before promoting.
+- **Principle, not recipe.** Write the general best-practice rule, not one situation's steps; prefer concrete
+  metrics over vague thresholds ("split past ~10 items", not "when it gets big").
+- **Principle vs mechanic.** Keep the principle in its own rule and a tool-specific mechanic in that tool's
   rule; don't duplicate one lesson across both.
-- **Multi-mode asset → mode-neutral checks** — write a skill's validation/check doc neutral by default, tag
-  the genuinely mode-specific checks, and run validation in every mode (a check framed for one mode silently
-  skips the others).
-- Clear, crisp, clean — the smallest content that fully conveys the rule. Trimming removes redundancy and
-  filler, never usable info: condense the wording, never drop a rule's actual content.
-- Split by what must load together: keep stack/domain specifics out of the shared core so a project loads
-  only what applies.
+- **Multi-mode asset → mode-neutral checks.** If a skill has modes, write its validation/check doc neutral by
+  default, tag the genuinely mode-specific checks, and run validation in every mode — a check framed for one
+  mode silently skips the others.
+- **Clear, crisp, clean** — the smallest content that fully conveys the rule. Condense the wording; never drop
+  a rule's actual content.
+- **Split by what must load together** — keep unrelated concerns in separate files, and stack/domain
+  specifics out of the shared core, so a reader loads only what applies.
 - Template files (skeletons copied into a project and filled) use the `.template.md` suffix; the bootstrap
   procedure (`project/shared/BOOTSTRAP.md`) drops the suffix when seeding a project.
-- Keep any single **auto-loaded** doc under ~200 lines; split longer ones by sub-topic. (This README is read
-  on demand, not auto-loaded, so it may run longer.)
-- **The frontmatter `description` fails invisibly.** Keep it ≤1024 characters with no angle brackets — the
-  claude.ai Skill validator rejects longer and reads `<that doc>` as a tag, though both load fine locally.
-  Measure the *folded* string, and re-wrap with hyphen-breaking off: a break inside `spec-write` folds back
-  as `spec- write` — valid YAML, wrong text. Condense wording; never drop a rule.
+- **Keep an auto-loaded doc lean** — under ~200 lines; split a longer one by sub-topic. (This
+  README is read on demand, not auto-loaded, so it may run longer.)
+- **The frontmatter `description` fails invisibly.**
+  - Keep it ≤1024 characters with no angle brackets — the claude.ai Skill validator rejects longer and reads
+    `<that doc>` as a tag, though both load fine locally.
+  - Measure the *folded* string.
+  - Re-wrap with hyphen-breaking off: a break inside `spec-write` folds back as `spec- write` — valid YAML,
+    wrong text.
 - **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
   licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
 - **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
-  not that it behaves; when a change alters behavior, dry-run it on a real input before sign-off. Strip any
-  pre-seeded answers first, and check what the target project auto-loads — its agent-instruction files may
-  import session notes, task lists, or lessons that restate the very decisions under test, so a genuinely
-  cold trial needs a project that never made them. Otherwise the test measures the hint, not the skill.
-  An `Example:` stating what one project *chose* is itself a pre-seeded answer — give the shape of the
-  decision and let the run reach the value.
+  not that it behaves.
+  - When a change alters behavior, dry-run it on a real input before sign-off.
+  - Strip any pre-seeded answers first.
+  - Check what the target project auto-loads — its agent-instruction files may import session notes, task
+    lists, or lessons that restate the very decisions under test, so a genuinely cold trial needs a project
+    that never made them. Otherwise the test measures the hint, not the skill.
+  - An `Example:` stating what one project *chose* is itself a pre-seeded answer — give the shape of the
+    decision and let the run reach the value.
 - **Name who runs a gate, and dispatch it.** A reviewer with no conversation context compares two
-  artifacts; an author greps for what they remember changing, which is a different act and finds less. An
-  asset that calls its own gate a "self-review" licenses the failure the gate exists to catch. **Before
-  contributing an asset, dispatch the `asset-reviewer` agent on it** — a conformance defect costs less
-  caught here than at promotion, and it is the author who cannot see it. Its conformance findings are
-  verdicts; its substance *Questions* are not. With no reviewer available, run the checklist yourself and
-  say so — never call that a fresh-eyes pass.
+  artifacts; an author greps for what they remember changing, which is a different act and finds less.
+  - An asset that calls its own gate a "self-review" licenses the failure the gate exists to catch.
+  - **Before contributing an asset, dispatch the `asset-reviewer` agent on it** — a conformance defect
+    costs less caught here than at promotion, and it is the author who cannot see it.
+  - Its conformance findings are verdicts; its substance *Questions* are not.
+  - With no reviewer available, run the checklist yourself and say so — never call that a fresh-eyes pass.
 - **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
-  nothing until one file lists the report's required sections. Define them, name which rule each
-  discharges, and require that a section with nothing to report says so — an omitted section and a
-  forgotten one are indistinguishable.
+  nothing until one file lists the report's required sections.
+  - Define them, and name which rule each discharges.
+  - Require that a section with nothing to report says so — an omitted section and a forgotten one are
+    indistinguishable.
 - **Adopting a better output does not teach the asset.** When a run produces something better than the
   reference, record the *technique* in the asset — not just the artifact as a new baseline. An asset cannot
   reproduce a rule nobody wrote down, and the next run reverts.
 - **One vocabulary for a maturity claim — `SPECIFIED` · `EXERCISED` · `VERIFIED`.** An asset that states
-  how well-proven a path is uses these three and defines nothing new. **SPECIFIED** — written, never run.
-  **EXERCISED** — run, with the limit on what the run proves stated beside it. **VERIFIED** — run in real
-  use with no outstanding limit. The label is a claim about evidence: an `EXERCISED` that names no limit is
-  an unchecked `VERIFIED`, and a `VERIFIED` that has a limit is the more common error.
+  how well-proven a path is uses these three and defines nothing new.
+  - **SPECIFIED** — written, never run.
+  - **EXERCISED** — run, with the limit on what the run proves stated beside it.
+  - **VERIFIED** — run in real use with no outstanding limit.
+  - The label is a claim about evidence: an `EXERCISED` that names no limit is an unchecked `VERIFIED`, and
+    a `VERIFIED` that has a limit is the more common error.
 - **A skill gap is a gap to file, not a licence to hand-code.** When an asset cannot express something,
   file a note against the asset. Hand-writing the output instead leaves the asset unable to produce it
   next time, and hides that it ever couldn't.
