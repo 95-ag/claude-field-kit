@@ -5,9 +5,9 @@ framing is in `operations.md`. The token layer states its own rules in `foundati
 `foundations-framework.md` and `foundations-boundaries.md`; the component layer in
 `component-set.md`, `component-shape.md` and `component-behavior.md`.
 
-Framework behavior below was observed on **Next.js 16.3.4 (App Router, static export) with Tailwind
-CSS v4.3.3**, by running the gates. On another framework the questions are portable and the answers
-are not.
+Framework behavior below is `EXERCISED` on **Next.js 16.3.4 (App Router, static export) with Tailwind
+CSS v4.3.3** — the gates were run. Re-measure on another major version; on another framework the
+questions are portable and the answers are not.
 
 ---
 
@@ -73,11 +73,11 @@ compiler and read the result.
   see the command order below.
 - **Read the probe's output as nested CSS, not as lines.** Compiled utilities sit **inside** an
   `@layer`, so they are emitted indented; a line-anchored match (`^\.utility`) finds none of them and
-  reports every utility as missing — a total failure that is entirely the reader's. The direction of
-  the error is what makes it dangerous: it fails toward "nothing compiled", which looks like exactly
-  the defect the probe exists to find, so it gets believed and acted on. **Validate the reader against
-  a utility that cannot be missing** (a stock one the project does not touch) before trusting any
-  negative result from it — the same rule the method section below states for findings generally.
+  reports every utility as missing.
+  - The error fails toward "nothing compiled", which looks like exactly the defect the probe exists to
+    find, so it gets believed and acted on.
+  - **Validate the reader against a utility that cannot be missing** (a stock one the project does not
+    touch) before trusting any negative result from it.
 
 ---
 

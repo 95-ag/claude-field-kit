@@ -5,8 +5,9 @@ leaves open, and the gates it owns. Read while writing the effects and the motio
 component IS — boundary, props, markup — is in `component-shape.md`; proving any of this is in
 `verification.md`, which is structurally blind to most of it.
 
-Framework behavior below was observed on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3**, by
-rendering and compiling. On another framework the questions are portable and the answers are not.
+Framework behavior below is `EXERCISED` on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3** —
+rendered and compiled. Re-measure on another major version; on another framework the questions are
+portable and the answers are not.
 
 ---
 

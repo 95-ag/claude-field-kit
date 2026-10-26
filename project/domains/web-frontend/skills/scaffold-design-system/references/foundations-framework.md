@@ -5,7 +5,7 @@ compilation, which key names collide, and what closing a namespace costs. Every 
 measured, and every one of them builds green when got wrong. Which values become tokens is in
 `foundations-mapping.md`; the probe that checks any of this is in `verification.md`.
 
-Framework behavior below was observed on **Tailwind CSS v4, version 4.3.3**, by compiling — not read
+Framework behavior below is `EXERCISED` on **Tailwind CSS v4, version 4.3.3** — compiled, not read
 from documentation. Re-measure on another major version; on another framework the questions are
 portable and the answers are not.
 
@@ -54,8 +54,7 @@ value, not an error.
 
 **The collision is independent of any namespace closure.** Reopening the shadowed scale leaves the
 wrong value in place, which falsifies the closure as its cause; the key names are the whole
-mechanism. This was named wrongly once here — the method rule that catches it is in
-`verification.md` → Name a cause only once it is isolated by falsification.
+mechanism. Isolate it per `verification.md` → Name a cause only once it is isolated by falsification.
 
 *Example:* the nine named steps are emitted as `--spacing-space-3xs` … `--spacing-space-3xl`
 and read as `p-space-md`; `--spacing-0` stays unprefixed.
@@ -68,7 +67,6 @@ Closing a namespace (assigning it `initial`) makes "values outside the scale are
 toolchain-enforced rather than advisory.
 
 **The test is three questions against the doc, all of which must answer yes. Any no means no closure.**
-Without it this is the run's largest unforced decision, and two runs in a row reported it as such.
 
 1. **Does the doc PROHIBIT off-scale values, in words?** A sentence like "never use a value outside
    this scale" is an enforcement philosophy; a table listing nine steps is an enumeration, and an

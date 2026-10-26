@@ -6,9 +6,9 @@ decisions are in `foundations-framework.md`; what the layer cannot satisfy on it
 `foundations-boundaries.md`. The operation framing is in `operations.md`; proof is in
 `verification.md`.
 
-Framework behavior below was observed on **Tailwind CSS v4, version 4.3.3**, by compiling — not read
-from documentation. Re-measure on another major version; on another framework the questions are
-portable and the answers are not.
+Framework behavior below is `EXERCISED` on **Tailwind CSS v4, version 4.3.3** — compiled, not read from
+documentation — except where marked `SPECIFIED`. Re-measure on another major version; on another
+framework the questions are portable and the answers are not.
 
 ---
 
@@ -47,11 +47,13 @@ Three transcription rules hold throughout (`operations.md` → Fresh, step 4):
 - **Missing stays missing.** A property the doc leaves unstated is left unset, never filled with a
   plausible default.
 - **Units are transcribed, never converted.** A value the doc states in one unit is emitted in that
-  unit. A conversion is a reinterpretation wearing the look of a transcription: it assumes a root size
-  the doc never fixed, so the emitted value tracks the user's text-size setting where the doc said it
-  should not, or stops tracking it where the doc said it should — and the two agree at the default, so
-  every check passes. Where the doc's unit is wrong for what it governs, that is drift to report, not
-  a conversion to perform.
+  unit.
+  - A conversion is a reinterpretation wearing the look of a transcription: it assumes a root size the
+    doc never fixed.
+  - So the emitted value tracks the user's text-size setting where the doc said it should not, or stops
+    tracking it where the doc said it should — and the two agree at the default, so every check passes.
+  - Where the doc's unit is wrong for what it governs, that is drift to report, not a conversion to
+    perform.
 
 *Example:* the `elevated-paper` block emits two shadow tokens (its shadows have no
 expression but a variable); the `modal-scrim` block — a color that is already a palette token plus an
@@ -70,24 +72,23 @@ left unset on every role but the one the doc gives a value for.
   family a namespace mints is part of what the token publishes.
 - **Name a namespace-less token for the role it serves, in the doc's own vocabulary** — the framework
   mints no utility family to borrow a convention from, so nothing else supplies the name. Take the
-  doc's term for the thing (`--touch-target`, not `--min-size-44`), and keep the name free of any
-  known namespace's prefix, since a `--text-`/`--shadow-`/`--spacing-` lead-in silently files the
-  token into that namespace and mints utilities for it. **Where the doc names the value, that name is
-  the token name**; where it does not, the name is an inferred value like any other and is reported as
-  one (`operations.md` → The run report). Unstated, fonts, strokes, durations, the z-scale, the focus
-  ring and shadows get freshly invented names on every run, and no gate compares two runs' names.
+  doc's term for the thing (*Example* below), and keep the name free of any known namespace's prefix —
+  a prefix files the token into that namespace (previous bullet).
+  - **Where the doc names the value, that name is the token name**; where it does not, the name is an
+    inferred value like any other and is reported as one (`operations.md` → The run report).
+  - Unstated, a namespace-less token — a stroke width, a duration, a z-index step, the focus ring — gets
+    a freshly invented name on every run, so its name comes from the doc or is reported.
 
-**The namespace list below is the framework's documented set, with only part of it probed here — treat
-it as the candidate list, not as measured.** Separating the two matters because this file's header
-claims compiled provenance for what follows, and a documented claim inheriting that sentence reads as
-measured when it is not. So: **the run probes the namespaces it actually relies on** and reports the
-result (`verification.md` → A green build never proves a utility exists); a namespace taken from this
-list without a probe is an assumption the run is carrying.
+**The run probes every namespace it relies on** and reports the result (`verification.md` → A green
+build never proves a utility exists); a namespace taken from the `SPECIFIED` list below without a probe
+is an assumption the run reports.
 
-Documented on Tailwind 4.3.3 as generating utilities: `--color-*`, `--font-*`, `--text-*`,
-`--spacing-*`, `--radius-*`, `--ease-*`, `--breakpoint-*`, `--leading-*`, `--tracking-*`,
-`--shadow-*`, `--container-*`, `--border-width-*`. **Compiled here:** there is **no `--z-*` namespace**
-and no `--duration-*` (only the single `--default-transition-duration`), and **`--spacing` is a
+`SPECIFIED` — documented on Tailwind 4.3.3 as generating utilities, not compiled here: `--color-*`,
+`--font-*`, `--text-*`, `--spacing-*`, `--radius-*`, `--ease-*`, `--breakpoint-*`, `--leading-*`,
+`--tracking-*`, `--shadow-*`, `--container-*`, `--border-width-*`.
+
+**`EXERCISED` — compiled here** (limit: version 4.3.3 only): there is **no `--z-*` namespace** and no
+`--duration-*` (only the single `--default-transition-duration`), and **`--spacing` is a
 multiplier, not a named scale** — stock utilities resolve as `calc(var(--spacing) * n)`.
 
 So z-index values, durations, stroke widths and accessibility floors are plain variables there:

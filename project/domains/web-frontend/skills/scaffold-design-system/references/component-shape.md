@@ -5,8 +5,9 @@ forces, its props and element, and how it consumes tokens. Read while writing th
 the markup. What it DOES at runtime is in `component-behavior.md`; set-level ordering and
 placement are in `component-set.md`.
 
-Framework behavior below was observed on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3**, by
-rendering and compiling. On another framework the questions are portable and the answers are not.
+Framework behavior below is `EXERCISED` on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3** —
+rendered and compiled. Re-measure on another major version; on another framework the questions are
+portable and the answers are not.
 
 ---
 

@@ -5,7 +5,7 @@ cannot satisfy, and how its files are laid out. Each of these reaches past what 
 edit, so each ends in the run report rather than in a fix (`operations.md` → The run report).
 Which values become tokens is in `foundations-mapping.md`.
 
-Framework behavior below was observed on **Tailwind CSS v4, version 4.3.3**, by compiling — not read
+Framework behavior below is `EXERCISED` on **Tailwind CSS v4, version 4.3.3** — compiled, not read
 from documentation. Re-measure on another major version; on another framework the questions are
 portable and the answers are not.
 
@@ -32,8 +32,8 @@ does not state is removed, not left beside the real tokens where it reads as san
 
 **A consequence that breaks the TYPECHECK is a different case from one that breaks the page.** Report-
 and-leave works above because the tree still compiles. Where the skill's own type edit makes an
-out-of-scope file invalid — a union narrowed to one member, so its prop must go, and the only caller
-sits in a page this skill never touches — neither move is right: leaving it hands over a red tree, and
+out-of-scope file invalid (*Example:* a union narrowed to one member, so a prop must go from its only
+caller, in a page), neither move is right: leaving it hands over a red tree, and
 widening scope to "fix the page" abandons the boundary. **Make the forced edit and nothing more**, when
 all four hold:
 
@@ -60,8 +60,8 @@ resolve to a fallback stack while every gate stays green.
 - **Emit the token anyway.** Publishing the contract is the token layer's job; satisfying it is not
   always the token layer's to do.
 - **Name the mount point in the handoff** — the file, the mechanism the repo's framework rule
-  prescribes, and the exact variable names it must define — and state that the contract is
-  unsatisfied until it is wired.
+  prescribes, the exact variable names it must define, and the token that reads each — and state that
+  the contract is unsatisfied until it is wired.
 - **Never read the token back as proof.** Confirm the family against a rendered element's computed
   style; until the mount point exists, that is what shows the fallback
   (`verification.md` → Framework configuration the gate cannot report).
@@ -71,15 +71,13 @@ resolve to a fallback stack while every gate stays green.
 **A font token is a contract at two levels, and only the upper one is this skill's.** The design token
 (`--font-<role>`) is emitted here and mints the utility family; its **value** is a `var()` naming a
 second variable that the loader defines at the mount point. So the token references a name the skill
-does not own, and both levels have to be stated in the handoff: the token's own name, and the exact
-loader variable its value points at.
+does not own; the mount-point handoff above names both levels.
 
 - **The token's value is a reference, never a literal family name.** A restated family compiles,
   renders, and quietly drops the loader's generated fallback stack and its own `font-display`
   behaviour — the page looks right on a warm cache and reflows on a cold one. This is the
   reference-stays-a-reference rule in `foundations-mapping.md` → Which keys become tokens, at the one
-place where the thing referenced does not exist
-  yet.
+  place where the thing referenced does not exist yet.
 - **A mismatch between the two names fails silently in both directions**: the loader defines a variable
   nothing reads, and the token resolves to nothing. Neither end errors, so the names are checked
   against each other by reading both, not by building.

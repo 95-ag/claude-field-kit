@@ -6,8 +6,7 @@ description: >
   system" — and on any equivalent intent: turning documented design decisions into real
   code, or bringing drifted code back in line with the doc. Materializes the design
   system's code layer — foundations (token/theme CSS) and reusable components — from
-  DESIGN.md, under the target repo's own rules and verification gate. Project-native
-  (Next.js/Tailwind v4 verified; other stacks specified, not yet exercised). It emits only
+  DESIGN.md, under the target repo's own rules and verification gate. It emits only
   what DESIGN.md already states — token names and values are added to the doc by
   design-write first. Do NOT use to author or edit DESIGN.md (that is design-write) or to
   build the dev-only component gallery (that is curate-gallery).
@@ -39,6 +38,8 @@ Full procedure for both, and the invocation paths: `references/operations.md`.
 | Reusable components — `ui/` `layout/` `shell/` `icons/` `background/` `document/` | Page composition |
 | `[standalone]` domain components | Content wiring and content population |
 | Framework configuration, narrowly — see `references/verification.md` → Framework configuration the gate cannot report | The gallery's own area |
+| A page's export of a fragment the gallery demos, narrowly — `references/component-set.md` → Demo affordances | |
+| An out-of-scope file's forced typecheck edit, narrowly — `references/foundations-boundaries.md` → Exhaustive replacement | |
 | | DESIGN.md itself — that is `design-write` |
 
 This skill owns its own scope; the table above is canonical for it. The **gallery's** side of
@@ -48,7 +49,8 @@ skill — is defined once in `curate-gallery/references/boundaries-and-handoff.m
 **Demo affordances are this skill's to emit.** That file's per-case user gate binds the gallery;
 this skill is pre-authorized for the two patterns `hard-to-demo.md` names, on a component that
 matches one of its documented triggers. Both conditions, and the procedure for naming and
-recording each touch-point → `references/component-set.md`.
+recording each touch-point → `references/component-set.md`. Exporting a fragment private to a page
+needs neither condition; its own rule is in the same file.
 
 ---
 

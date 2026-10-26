@@ -5,8 +5,9 @@ lands, and the demo affordances the gallery depends on. Read once per run. A sin
 own rules are in `component-shape.md` (boundary, API, markup) and `component-behavior.md`
 (effects, mechanisms, motion); the operation framing is in `operations.md`.
 
-Framework behavior below was observed on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3**, by
-rendering and compiling. On another framework the questions are portable and the answers are not.
+Framework behavior below is `EXERCISED` on **Next.js 16.3.4 (App Router) with Tailwind CSS v4.3.3** —
+rendered and compiled. Re-measure on another major version; on another framework the questions are
+portable and the answers are not.
 
 ---
 
@@ -92,8 +93,8 @@ the production component. **This skill emits them at generation time.** The auth
 conditions that must both hold, and who the per-case gate binds — is stated once in
 `curate-gallery/references/boundaries-and-handoff.md` → Carve-out. This section is the procedure.
 
-**Use only the two named patterns; the technique detail for each is in
-`curate-gallery/references/hard-to-demo.md`.**
+**Use only the two named patterns, or the export below where it applies; the technique detail for each
+pattern is in `curate-gallery/references/hard-to-demo.md`.**
 
 | Pattern | Choose it when |
 |---|---|
@@ -138,6 +139,7 @@ whether anything may import it.
   deliberately is worse, because it ships with a sanctioning comment attached.
 - **This is the third option, and it outranks both patterns above where it applies** — it needs no
   affordance at all, so neither the extraction nor the prop has to be justified against a trigger.
+- **Name the case in the report:** a fragment private to a page, which the gallery demos.
 - **The production edit is an export, and nothing else.** Where making the fragment reachable would
   take any change beyond adding an export, it is not this case: fall back to the two patterns, or
   propose.
