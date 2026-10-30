@@ -19,6 +19,10 @@
  * nearest real heading), because the two are triaged differently. Exit is non-zero when anything is
  * unresolved: a promotion hold, not a crash.
  *
+ * An in-file pointer — `(→ Heading)` or `(-> Heading)`, in parentheses — resolves against the file it sits in,
+ * then any other file of the same skill. A bare `A → B` is prose (a flow, a mapping) and is not read. A target
+ * whose first hop names a doc archetype — `(→ SCHEMA)`, `(→ implementation-plan)` — passes when no heading matches.
+ *
  * Limits, stated so they are not rediscovered as bugs:
  *  - Only the FIRST hop of a chained reference is verified — `file.md` → Visualizer → P2 confirms
  *    Visualizer exists, not P2.
@@ -26,6 +30,8 @@
  *    falls out as a PARAPHRASE and needs a human read.
  *  - A bold label a sibling doc cites is load-bearing like a heading but is not one, so it reports as
  *    unresolved. That is this tool's limit, not a defect in the label — do not "fix" the label.
+ *  - An in-file target over 80 characters is not read, and code — fenced or inline — is read like prose.
+ *  - Two roots holding a skill of the same name are indexed as one skill.
  */
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, basename, resolve } from "path";
@@ -40,6 +46,11 @@ import { homedir } from "os";
 const REF =
   /`(?:(?!references\/)([a-z0-9-]+)\/)?(?:references\/)?([a-z0-9-]+\.md)`(?:\s*(?:→|->)\s*([^`\n|]{2,80}?))?(?=\s*(?:[.,;)|]|$|→|->|\n))/gm;
 
+// A blank line ends the capture, so an unclosed `(→` cannot swallow the next paragraph.
+const IN_FILE = /\((?:→|->)\s*((?:(?!\n\s*\n)[^)]){2,80})\)/g;
+// (→ `file.md` → X) is a file pointer, which REF already reads.
+const FILE_POINTER = /`[^`]*\.md`/;
+
 // Back-ticked (### `Specimen`), numbered (### 1. Colors), and the various dash characters.
 const HEADING = /^#{1,4}\s+(.+)$/gm;
 
@@ -53,6 +64,11 @@ const EXTERNAL = new Set([
   "build-verification.md", "accessibility.md", "motion.md", "visual-verification.md",
   "browser-testing.md", "nextjs.md",
 ]);
+const DOC_ARCHETYPES = new Set([
+  "design.md", "product.md", "project.md", "architecture.md", "schema.md", "implementation-plan.md",
+]);
+const namesDocArchetype = (target) =>
+  DOC_ARCHETYPES.has(`${target.split(/→|->/)[0].trim().toLowerCase().replace(/\.md$/, "")}.md`);
 
 /** Strip back-ticks, bold, leading numbering and dash variants so a reference and a heading compare. */
 function norm(text) {
@@ -77,6 +93,25 @@ function markdownFiles(dir) {
 }
 
 const distinctiveWords = (text) => text.split(/\W+/).filter((word) => word.length > 3);
+
+/** null when the first hop names a heading in `headings`; otherwise its DEAD or PARAPHRASE verdict. */
+function judgeHop(hop, headings) {
+  const firstHop = norm(hop.split("→")[0].split("->")[0]);
+  if (!firstHop) return null;
+
+  const forms = [firstHop, norm(firstHop.split("(")[0])].filter(Boolean);
+  const resolves = headings.some((heading) =>
+    forms.some((form) => heading === form || heading.startsWith(form) || form.startsWith(heading)),
+  );
+  if (resolves) return null;
+
+  // A near-match shares at least two distinctive words with some real heading.
+  const hopWords = new Set(distinctiveWords(firstHop));
+  const near = headings.find(
+    (heading) => distinctiveWords(heading).filter((word) => hopWords.has(word)).length >= 2,
+  );
+  return near ? `PARAPHRASE (nearest: ${JSON.stringify(near)})` : "DEAD";
+}
 
 // ---------------------------------------------------------------------------
 // Index every heading across every skill in every root
@@ -131,6 +166,11 @@ if (files.size === 0) {
 
 const unresolved = new Set();
 
+const headingsBySkill = new Map();
+for (const { skill, headings } of files.values()) {
+  headingsBySkill.set(skill, [...(headingsBySkill.get(skill) ?? []), ...headings]);
+}
+
 for (const key of [...files.keys()].sort()) {
   const { skill, name, text } = files.get(key);
   for (const [, refSkill, refFile, hop] of text.matchAll(REF)) {
@@ -151,23 +191,17 @@ for (const key of [...files.keys()].sort()) {
     }
     if (!hop) continue;
 
-    const firstHop = norm(hop.split("→")[0].split("->")[0]);
-    if (!firstHop) continue;
+    const verdict = judgeHop(hop, [...files.get(target).headings]);
+    if (verdict) unresolved.add(`${skill}/${name}: ${verdict}  \`${refFile}\` → ${JSON.stringify(hop.trim())}`);
+  }
 
-    const { headings } = files.get(target);
-    const forms = [firstHop, norm(firstHop.split("(")[0])].filter(Boolean);
-    const resolves = [...headings].some((heading) =>
-      forms.some((form) => heading === form || heading.startsWith(form) || form.startsWith(heading)),
-    );
-    if (resolves) continue;
-
-    // A near-match shares at least two distinctive words with some real heading.
-    const hopWords = new Set(distinctiveWords(firstHop));
-    const near = [...headings].find(
-      (heading) => distinctiveWords(heading).filter((word) => hopWords.has(word)).length >= 2,
-    );
-    const verdict = near ? `PARAPHRASE (nearest: ${JSON.stringify(near)})` : "DEAD";
-    unresolved.add(`${skill}/${name}: ${verdict}  \`${refFile}\` → ${JSON.stringify(hop.trim())}`);
+  for (const [, captured] of text.matchAll(IN_FILE)) {
+    if (FILE_POINTER.test(captured)) continue;
+    const pointer = captured.replace(/\n\s*>\s?/g, " ");
+    const verdict = judgeHop(pointer, headingsBySkill.get(skill));
+    if (verdict && !namesDocArchetype(pointer)) {
+      unresolved.add(`${skill}/${name}: ${verdict}  (→ ${JSON.stringify(pointer.replace(/\s+/g, " ").trim())})`);
+    }
   }
 }
 
