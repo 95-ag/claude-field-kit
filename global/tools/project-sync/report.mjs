@@ -5,6 +5,8 @@ export class Refusal extends Error {
   }
 }
 
+export const STALE_COPY_REMEDY = "delete the copy and its .kit and .project sidecars, then re-run --apply";
+
 const ACTION_SECTIONS = [
   ["replace", "Replace"],
   ["add", "Add"],
@@ -12,7 +14,7 @@ const ACTION_SECTIONS = [
   ["remove", "Remove"],
   ["record", "Record"],
 ];
-const NOTE_SECTIONS = ["edited-no-base", "removed-by-project", "retired-edited", "opted-out-on-disk", "binary-edited", "symlink", "project-only"];
+const NOTE_SECTIONS = ["edited-no-base", "removed-by-project", "retired-edited", "renamed-edited", "opted-out-on-disk", "binary-edited", "symlink", "project-only"];
 
 function section(title, lines) {
   return [`${title}: ${lines.length ? "" : "none"}`.trimEnd(), ...lines.map((line) => `  - ${line}`)];
@@ -37,13 +39,15 @@ export function renderPlan(projectName, plan, preview) {
 
 const describeDelivered = (delivered) => (delivered ? `${delivered.commit.slice(0, 7)} (${delivered.date})` : "none");
 
-const openNotes = (plan, result) => plan.notes.filter((n) => !(n.kind === "edited-no-base" && result.resolved.includes(n.kit)));
+const openNotes = (plan, result) => plan.notes.filter((n) => !(["edited-no-base", "renamed-edited"].includes(n.kind) && result.resolved.includes(n.kit)));
 
 // exactly what keeps --apply from exiting 0
 export function owedLines(plan, result) {
   return [
-    ...result.conflicts.map((kitPath) => `${kitPath} — merge conflict; merge by hand, then --resolved`),
-    ...openNotes(plan, result).filter((n) => n.kind === "edited-no-base").map((n) => `${n.kit} — edited, no recorded base; merge by hand, then --resolved`),
+    ...result.conflicts.map((kitPath) => `${kitPath} — merge conflict; merge in the workspace copy, then --resolved`),
+    ...openNotes(plan, result).filter((n) => n.kind === "edited-no-base").map((n) => `${n.kit} — edited, no recorded base; merge in the workspace copy, then --resolved`),
+    ...openNotes(plan, result).filter((n) => n.kind === "renamed-edited").map((n) => `${n.kit} — renamed from ${n.from}, edited in the project; merge in the workspace copy, then --resolved`),
+    ...plan.notes.filter((n) => n.kind === "binary-edited").map((n) => `${n.kit} — edited binary — replace by hand or add to skip`),
     ...plan.held.map((h) => `${h.skill} — held skill (edited: ${h.files.join(", ")})`),
   ];
 }
@@ -58,6 +62,11 @@ const rulesLines = ({ changed, unmatched, missingTable }, dry = false) =>
     ? ["no Rules table — not edited"]
     : [...changed.map((line) => (dry ? line.replace(/^added /, "would add ").replace(/^removed /, "would remove ") : line)), ...unmatched.map((path) => `no row found for ${path}`)];
 
+function movedFrom(plan, kitPath) {
+  const rename = plan.notes.find((n) => n.kind === "renamed-edited" && n.kit === kitPath && n.fromTarget !== n.target);
+  return rename ? `; ${rename.fromTarget} removed` : "";
+}
+
 export function renderReport(projectName, plan, result) {
   const kindRows = (kind) => result.done.filter((a) => a.kind === kind).map((a) => `${a.kit} -> ${a.target}`);
   const noteRows = (kinds) => openNotes(plan, result).filter((n) => kinds.includes(n.kind)).map((n) => `${n.target}${n.kit ? ` (${n.kit})` : ""}${n.detail ? ` — ${n.detail}` : ""}`);
@@ -67,19 +76,26 @@ export function renderReport(projectName, plan, result) {
   const lines = [`== ${projectName} ==`];
   lines.push(...section("Replaced", kindRows("replace")));
   lines.push(...section("Added", kindRows("add")));
-  lines.push(...section("Merged", [...kindRows("merge"), ...result.resolved.map((kitPath) => `${kitPath} — resolved by hand, record advanced`)]));
+  lines.push(...section("Merged", [...kindRows("merge"), ...result.resolved.map((kitPath) => `${kitPath} — resolved by hand, record advanced${movedFrom(plan, kitPath)}`)]));
   lines.push(...section("Removed", result.done.filter((a) => a.kind === "remove").map((a) => a.target)));
-  lines.push(...section("Conflicts", result.conflicts.map((kitPath) => `${kitPath} -> ${targetOf(kitPath)}`)));
-  lines.push(...section("Edited without base", noteRows(["edited-no-base"])));
+  const merging = (kitPath) => {
+    const workspace = result.workspaces?.[kitPath];
+    if (!workspace) return "";
+    if (workspace.stale) return ` — merge copy ${workspace.path} is stale (${workspace.stale}) — ${STALE_COPY_REMEDY}`;
+    return ` — merge in ${workspace.path}${workspace.kept ? `; workspace copy kept (written ${workspace.date})` : ""}`;
+  };
+  lines.push(...section("Conflicts", result.conflicts.map((kitPath) => `${kitPath} -> ${targetOf(kitPath)}${merging(kitPath)}`)));
+  lines.push(...section("Edited without base", openNotes(plan, result).filter((n) => n.kind === "edited-no-base").map((n) => `${n.target} (${n.kit})${merging(n.kit)}`)));
   lines.push(...section("Removed by the project", noteRows(["removed-by-project"])));
-  lines.push(...section("Held skills", plan.held.map((h) => `${h.skill} (edited: ${h.files.join(", ")})`)));
+  lines.push(...section("Held skills", [...plan.held.map((h) => `${h.skill} (edited: ${h.files.join(", ")})`), ...(plan.taken ?? []).map((t) => `${t.skill} — taken from the kit (edited: ${t.files.join(", ")})`)]));
   lines.push(...section("Skipped / opted out", noteRows(["opted-out-on-disk"])));
   lines.push(...section("Settings", settingsLines(result.settings)));
   lines.push(...section("Rules table", rulesLines(result.rules)));
   lines.push(...section("Still owed", owedLines(plan, result)));
   lines.push(`Backup path: ${result.backup ?? "none"}`);
   lines.push(`delivered: ${describeDelivered(result.before)} -> ${describeDelivered(result.after)}`);
-  lines.push(...section("Notes", [...noteRows(["retired-edited", "binary-edited", "symlink", "project-only"]), ...(recorded ? [`${recorded} file(s) already current, recorded`] : [])]));
+  const renamedRows = openNotes(plan, result).filter((n) => n.kind === "renamed-edited").map((n) => `${n.target} (${n.kit}) — ${n.detail}${merging(n.kit)}`);
+  lines.push(...section("Notes", [...renamedRows, ...noteRows(["retired-edited", "binary-edited", "symlink", "project-only"]), ...(recorded ? [`${recorded} file(s) already current, recorded`] : [])]));
   return lines.join("\n");
 }
 

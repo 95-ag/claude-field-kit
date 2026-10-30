@@ -1,6 +1,6 @@
 import { chmodSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, renameSync, rmSync, symlinkSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
-import { join, dirname, basename } from "path";
+import { join, dirname, basename, relative, sep } from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import { makeFamily, makeKit, makeProject, validRecord, tool, cleanup } from "./sandbox.mjs";
@@ -73,7 +73,7 @@ try {
     const newBlob = kitMod.blobAt(kit.dir, "HEAD", "shared/rules/a.md");
     check("blobAt/readBlob: a path at a commit reads back its bytes", oldBlob !== newBlob && kitMod.readBlob(kit.dir, oldBlob).toString().includes("Keep things"));
     check("blobAt: absent path is null", kitMod.blobAt(kit.dir, "HEAD", "shared/rules/nope.md") === null);
-    check("everBlobs: holds superseded and current versions", kitMod.everBlobs(kit.dir).has(oldBlob) && kitMod.everBlobs(kit.dir).has(newBlob));
+    check("pathHistoryBlobs: holds a path's superseded and current versions", kitMod.pathHistoryBlobs(kit.dir, "shared/rules/a.md").has(oldBlob) && kitMod.pathHistoryBlobs(kit.dir, "shared/rules/a.md").has(newBlob));
     const paths = kitMod.everPaths(kit.dir);
     check("everPaths: keeps renamed-away paths and derives skill dirs", paths.has("stacks/node/rules/b.md") && paths.has("stacks/node/rules/c.md") && paths.has("domains/web/skills/s1"));
     const renames = kitMod.renamesSince(kit.dir, first);
@@ -183,6 +183,11 @@ try {
     branched.git("checkout", "-q", "-b", "other");
     check("--catalog runs on a dirty kit", tool(dirty.dir, ["--catalog"]).status === 0);
     check("--catalog runs on a non-main kit", tool(branched.dir, ["--catalog"]).status === 0);
+    const plain = makeFamily();
+    mkdirSync(join(plain, "project", "shared", "rules"), { recursive: true });
+    writeFileSync(join(plain, "project", "shared", "rules", "a.md"), "# A\n");
+    const noGit = tool(plain, ["--catalog"]);
+    check("--catalog on a folder that is not a git checkout is REFUSED, not a crash", noGit.status === 1 && /^REFUSED: .+not a git checkout/m.test(noGit.stdout) && noGit.stderr === "", out(noGit));
     const flag = tool(shared.dir, ["--frobnicate", makeProject("p", validRecord())]);
     check("usage: unknown flag exits 2", flag.status === 2, out(flag));
   }
@@ -337,8 +342,8 @@ try {
       writeFileSync(d.abs(".claude/rules/node/b.md"), "# Rule B\n\nproject edits\n");
       const edited = planProject(kit.dir, d.project, d.rec);
       check(
-        "plan: kit rename, edited copy -> retired-edited note naming the new kit path, no merge across paths",
-        noWork(edited) && notesOf(edited, "retired-edited").length === 1 && edited.notes[0].kit === BLOB_B && String(edited.notes[0].detail).includes("stacks/node/rules/c.md"),
+        "plan: kit rename, edited copy -> renamed-edited note on the new kit path carrying the old path and its base, no action",
+        noWork(edited) && edited.notes.length === 1 && notesOf(edited, "renamed-edited").length === 1 && edited.notes[0].kit === "stacks/node/rules/c.md" && edited.notes[0].target === ".claude/rules/node/c.md" && edited.notes[0].from === BLOB_B && edited.notes[0].fromTarget === ".claude/rules/node/b.md" && edited.notes[0].base === d.rec.files[BLOB_B],
         show(edited),
       );
       rmSync(d.abs(".claude/rules/node/b.md"));
@@ -511,6 +516,8 @@ try {
       const backupOf = (r) => (r.stdout.match(/^Backup path: (.+)$/m) ?? [])[1];
       const read = (d, rel) => readFileSync(d.abs(rel), "utf8");
       const RULE_A = "# Rule A\n\nKeep things\nsmall.\n\n## Detail\nmore\n";
+      const readBlobText = (kit, path) => kitMod.readBlob(kit.dir, headBlob(kit, path)).toString("utf8");
+      const workspace = (kit, d, rel) => join(kit.dir, "tmp", "project-sync-merge", basename(d.project), rel);
       const apply = (kit, d, extra = [], env = {}) => tool(kit.dir, ["--apply", d.project, ...extra], env);
       const backups = (kit) => (existsSync(join(kit.dir, "tmp", "project-sync-backup")) ? readdirSync(join(kit.dir, "tmp", "project-sync-backup")) : []);
 
@@ -590,17 +597,20 @@ try {
         check("apply: conflict keeps its entry; the clean file advanced; delivered advanced", rec.files[BLOB_A] === d.rec.files[BLOB_A] && rec.files[BLOB_B] === headBlob(kit, BLOB_B) && rec.delivered.commit === kit.git("rev-parse", "HEAD").trim(), JSON.stringify(rec));
         check("apply: conflicts are reported by path", /^Conflicts:\n\s+- shared\/rules\/a\.md/m.test(run.stdout) && /^Still owed:\n\s+- .*shared\/rules\/a\.md/m.test(run.stdout), run.stdout);
 
-        writeFileSync(d.abs(".claude/rules/a.md"), "# Rule A\n\nKeep both things\nsmall.\n\n## Detail\nmore\n");
         const stillConflicts = apply(kit, d);
-        check("apply: a hand-merge that is not HEAD still conflicts on a plain run", stillConflicts.status === 1 && readRec(d.project).files[BLOB_A] === d.rec.files[BLOB_A], out(stillConflicts));
+        check("apply: a plain re-run still conflicts and leaves the project file alone", stillConflicts.status === 1 && read(d, ".claude/rules/a.md") === conflicting && readRec(d.project).files[BLOB_A] === d.rec.files[BLOB_A], out(stillConflicts));
         const refused = apply(kit, d, ["--resolved", BLOB_B]);
         check("apply: --resolved refuses a path that is not conflicted", refused.status === 1 && refused.stdout.includes("REFUSED") && readRec(d.project).files[BLOB_A] === d.rec.files[BLOB_A], out(refused));
+        const handMerged = "# Rule A\n\nKeep both things\nsmall.\n\n## Detail\nmore\n";
+        writeFileSync(workspace(kit, d, "rules/a.md"), handMerged);
         const resolved = apply(kit, d, ["--resolved", BLOB_A]);
         check(
-          "apply: --resolved on a conflicted file -> entry = HEAD blob, file untouched, exit 0",
-          resolved.status === 0 && readRec(d.project).files[BLOB_A] === headBlob(kit, BLOB_A) && read(d, ".claude/rules/a.md").includes("Keep both things"),
+          "apply: --resolved on a conflicted file -> project file = workspace copy, entry = HEAD blob, exit 0",
+          resolved.status === 0 && readRec(d.project).files[BLOB_A] === headBlob(kit, BLOB_A) && read(d, ".claude/rules/a.md") === handMerged,
           out(resolved),
         );
+        const resolvedBackup = backupOf(resolved) ?? "";
+        check("apply: --resolved backs up the project copy it overwrites", existsSync(join(resolvedBackup, ".claude/rules/a.md")) && readFileSync(join(resolvedBackup, ".claude/rules/a.md"), "utf8") === conflicting, resolvedBackup);
         const after = planProject(kit.dir, d.project, readRec(d.project));
         check("apply: after --resolved the next plan reports nothing for it", noWork(after) && after.notes.length === 0, show(after));
       }
@@ -626,8 +636,9 @@ try {
         persist(d);
         const first = apply(kit, d);
         check("apply: edited, no base -> reported, exit 1, file and entry untouched", first.status === 1 && /^Edited without base:\n\s+- .*rules\/a\.md/m.test(first.stdout) && read(d, ".claude/rules/a.md") === "# Rule A\n\nproject side\n" && !(BLOB_A in readRec(d.project).files), out(first));
+        writeFileSync(workspace(kit, d, "rules/a.md"), "# Rule A\n\nkit side\nproject side\n");
         const resolved = apply(kit, d, ["--resolved", BLOB_A]);
-        check("apply: edited-no-base then --resolved -> entry = HEAD blob, exit 0", resolved.status === 0 && readRec(d.project).files[BLOB_A] === headBlob(kit, BLOB_A) && read(d, ".claude/rules/a.md") === "# Rule A\n\nproject side\n", out(resolved));
+        check("apply: edited-no-base then --resolved -> project file = workspace copy, entry = HEAD blob, exit 0", resolved.status === 0 && readRec(d.project).files[BLOB_A] === headBlob(kit, BLOB_A) && read(d, ".claude/rules/a.md") === "# Rule A\n\nkit side\nproject side\n", out(resolved));
         const plain = apply(kit, d);
         check("apply: the next default run reports nothing for it", plain.status === 0 && /^Edited without base: none$/m.test(plain.stdout) && !plain.stdout.includes("rules/a.md"), out(plain));
       }
@@ -647,6 +658,308 @@ try {
           run.status === 1 && /^Held skills:\n\s+- domains\/web\/skills\/s1/m.test(run.stdout) && read(d, ".claude/skills/s1/references/r.md") === "# edited by the project\n" && read(d, ".claude/rules/a.md") === "# Rule A\n\nnew text\n" && readRec(d.project).files[`${SKILL}/SKILL.md`] === d.rec.files[`${SKILL}/SKILL.md`],
           out(run),
         );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: v2\n---\n");
+        kit.write("project/domains/web/skills/s1/references/r.md", "# Ref v2\n");
+        kit.write("project/domains/web/skills/s1/references/extra.md", "# Extra\n");
+        kit.commit("revise s1, add extra");
+        writeFileSync(d.abs(".claude/skills/s1/references/r.md"), "# edited by the project\n");
+        mkdirSync(d.abs(".claude/skills/s1/evals"), { recursive: true });
+        writeFileSync(d.abs(".claude/skills/s1/evals/case.md"), "# project eval\n");
+        const staged = join(kit.dir, "incoming", "skills", "p__s1", "references");
+        mkdirSync(staged, { recursive: true });
+        writeFileSync(join(staged, "r.md"), "# a staged copy that must not be read\n");
+        persist(d);
+        const run = apply(kit, d, ["--take-kit", SKILL]);
+        const backup = backupOf(run) ?? "";
+        const rec = readRec(d.project);
+        check(
+          "take-kit: held skill -> every file equals kit HEAD, exit 0, taken skill reported",
+          run.status === 0 && read(d, ".claude/skills/s1/SKILL.md").includes("description: v2") && read(d, ".claude/skills/s1/references/r.md") === "# Ref v2\n" && read(d, ".claude/skills/s1/references/extra.md") === "# Extra\n" && /taken from the kit/.test(run.stdout) && !/^Still owed:\n\s+- /m.test(run.stdout),
+          out(run),
+        );
+        check(
+          "take-kit: backup holds the project's edited file; the added file is listed in added.json",
+          existsSync(join(backup, ".claude/skills/s1/references/r.md")) && readFileSync(join(backup, ".claude/skills/s1/references/r.md"), "utf8") === "# edited by the project\n" && JSON.parse(readFileSync(join(backup, "added.json"), "utf8")).includes(".claude/skills/s1/references/extra.md"),
+          backup,
+        );
+        check(
+          "take-kit: record entries = HEAD blobs for every file of the skill",
+          [`${SKILL}/SKILL.md`, `${SKILL}/references/r.md`, `${SKILL}/references/extra.md`].every((f) => rec.files[f] === headBlob(kit, f)),
+          JSON.stringify(rec.files),
+        );
+        check("take-kit: project-only files inside the skill dir are untouched", read(d, ".claude/skills/s1/evals/case.md") === "# project eval\n");
+        check("take-kit: the staged copy in incoming/ is neither read nor changed", readFileSync(join(staged, "r.md"), "utf8") === "# a staged copy that must not be read\n" && readdirSync(join(kit.dir, "incoming")).join() === "skills" && readdirSync(join(kit.dir, "incoming", "skills")).join() === "p__s1");
+        check("take-kit: the next plan finds nothing to do", noWork(planProject(kit.dir, d.project, rec)));
+        const restored = tool(kit.dir, ["--restore", backup]);
+        check("take-kit: --restore puts the edited file back and removes the added one", restored.status === 0 && read(d, ".claude/skills/s1/references/r.md") === "# edited by the project\n" && !existsSync(d.abs(".claude/skills/s1/references/extra.md")), out(restored));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: v2\n---\n");
+        kit.git("rm", "-q", "project/domains/web/skills/s1/references/r.md");
+        kit.commit("retire r");
+        writeFileSync(d.abs(".claude/skills/s1/references/r.md"), "# edited by the project\n");
+        persist(d);
+        const run = apply(kit, d, ["--take-kit", `${SKILL}/`]);
+        const rec = readRec(d.project);
+        check(
+          "take-kit: a file the kit retired is removed and its entry dropped; a trailing slash on the skill dir is accepted",
+          run.status === 0 && !existsSync(d.abs(".claude/skills/s1/references/r.md")) && rec.files[`${SKILL}/references/r.md`] === undefined && rec.files[`${SKILL}/SKILL.md`] === headBlob(kit, `${SKILL}/SKILL.md`),
+          out(run),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/domains/web/skills/s1/references/r.md", "# Ref v2\n");
+        kit.commit("revise r");
+        persist(d);
+        const bytes = read(d, ".claude/skills/s1/references/r.md");
+        const recBefore = read(d, ".claude/kit-delivery.json");
+        const notHeld = apply(kit, d, ["--take-kit", SKILL]);
+        check(
+          "take-kit: a skill that is not held -> refused naming the path and saying so, nothing written",
+          notHeld.status === 1 && /REFUSED: .*domains\/web\/skills\/s1.*not held/.test(notHeld.stdout) && read(d, ".claude/skills/s1/references/r.md") === bytes && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === 0,
+          out(notHeld),
+        );
+        const unknown = apply(kit, d, ["--take-kit", "domains/web/skills/nope"]);
+        check("take-kit: an unknown path -> refused, nothing written", unknown.status === 1 && /REFUSED: .*domains\/web\/skills\/nope/.test(unknown.stdout) && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === 0, out(unknown));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/domains/web/skills/s1/references/r.md", "# Ref v2\n");
+        kit.write("project/shared/rules/a.md", `${RULE_A}kit addition\n`);
+        kit.commit("revise r and a");
+        writeFileSync(d.abs(".claude/skills/s1/references/r.md"), "# edited by the project\n");
+        const recBefore = (persist(d), read(d, ".claude/kit-delivery.json"));
+        const mixed = apply(kit, d, ["--take-kit", `${SKILL},domains/web/skills/nope`]);
+        check("take-kit: one bad path refuses the whole run before any write", mixed.status === 1 && mixed.stdout.includes("REFUSED") && read(d, ".claude/skills/s1/references/r.md") === "# edited by the project\n" && read(d, ".claude/rules/a.md") === RULE_A && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === 0, out(mixed));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/domains/web/skills/s1/references/r.md", "# Ref v2\n");
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("revise r and a");
+        writeFileSync(d.abs(".claude/skills/s1/references/r.md"), "# edited by the project\n");
+        writeFileSync(d.abs(".claude/rules/a.md"), RULE_A.replace("Keep things", "Keep project things"));
+        persist(d);
+        apply(kit, d);
+        writeFileSync(workspace(kit, d, "rules/a.md"), RULE_A.replace("Keep things", "Keep both things"));
+        const run = apply(kit, d, ["--take-kit", SKILL, "--resolved", BLOB_A]);
+        const rec = readRec(d.project);
+        check(
+          "take-kit: combines with --resolved in one run -> skill taken, rule resolved, exit 0",
+          run.status === 0 && read(d, ".claude/skills/s1/references/r.md") === "# Ref v2\n" && rec.files[BLOB_A] === headBlob(kit, BLOB_A) && rec.files[`${SKILL}/references/r.md`] === headBlob(kit, `${SKILL}/references/r.md`),
+          out(run),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        const e = deliverAll(kit, "q");
+        const exitOf = (args) => tool(kit.dir, args).status;
+        check(
+          "flags: --take-kit needs --apply and one project, rejects a flag-like value, excludes --restore",
+          [
+            [d.project, "--take-kit", SKILL],
+            ["--apply", d.project, "--take-kit"],
+            ["--apply", "--take-kit", "--resolved", BLOB_A, d.project],
+            ["--apply", "--take-kit", SKILL, d.project, e.project],
+            ["--apply", "--take-kit", SKILL, "--all"],
+            ["--status", "--take-kit", SKILL, d.project],
+            ["--restore", "x", "--apply", "--take-kit", SKILL],
+          ].every((args) => exitOf(args) === 2),
+          JSON.stringify([[d.project, "--take-kit", SKILL], ["--restore", "x", "--apply", "--take-kit", SKILL]].map(exitOf)),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.write("project/stacks/node/rules/b.md", "# Rule B\n\nkit side\n");
+        kit.commit("kit edits a and b");
+        const conflicting = RULE_A.replace("Keep things", "Keep project things");
+        writeFileSync(d.abs(".claude/rules/a.md"), conflicting);
+        writeFileSync(d.abs(".claude/rules/node/b.md"), "# Rule B\n\nproject side\n");
+        delete d.rec.files[BLOB_B];
+        persist(d);
+        const incomingBefore = existsSync(join(kit.dir, "incoming"));
+        const dry = tool(kit.dir, [d.project]);
+        check("workspace: a dry run writes no workspace", dry.status === 0 && !existsSync(join(kit.dir, "tmp", "project-sync-merge")), out(dry));
+
+        const run = apply(kit, d);
+        const wsA = workspace(kit, d, "rules/a.md");
+        const wsB = workspace(kit, d, "rules/node/b.md");
+        const markers = existsSync(wsA) ? readFileSync(wsA, "utf8") : "";
+        check("workspace: a conflict leaves a merge copy with markers; the project file is untouched", run.status === 1 && /^<<<<<<< project$/m.test(markers) && /^={7}$/m.test(markers) && /^>>>>>>> kit$/m.test(markers) && markers.includes("Keep project things") && markers.includes("Keep kit things") && read(d, ".claude/rules/a.md") === conflicting, out(run) + markers);
+        check(
+          "workspace: edited with no base gets the project copy and the kit HEAD copy beside it as .kit",
+          existsSync(wsB) && readFileSync(wsB, "utf8") === "# Rule B\n\nproject side\n" && existsSync(`${wsB}.kit`) && readFileSync(`${wsB}.kit`, "utf8") === "# Rule B\n\nkit side\n" && read(d, ".claude/rules/node/b.md") === "# Rule B\n\nproject side\n" && !existsSync(d.abs(".claude/rules/node/b.md.kit")),
+        );
+        check("workspace: the paths contain no .claude segment", !relative(join(kit.dir, "tmp", "project-sync-merge"), wsA).split(sep).includes(".claude") && wsA.startsWith(join(kit.dir, "tmp", "project-sync-merge", basename(d.project))), wsA);
+        check("workspace: the report names the workspace path for conflicts and for edited-without-base", new RegExp(`^Conflicts:\\n\\s+- shared/rules/a\\.md.*${wsA.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "m").test(run.stdout) && new RegExp(`^Edited without base:\\n\\s+- .*${wsB.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "m").test(run.stdout), run.stdout);
+        check("workspace: incoming/ is not created or touched", existsSync(join(kit.dir, "incoming")) === incomingBefore);
+
+        const bBefore = read(d, ".claude/rules/node/b.md");
+        const recBefore = read(d, ".claude/kit-delivery.json");
+        const backupsBefore = backups(kit).length;
+        const left = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved with markers left is refused and writes nothing", left.status === 1 && left.stdout.includes("REFUSED") && /conflict marker/.test(left.stdout) && read(d, ".claude/rules/a.md") === conflicting && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === backupsBefore, out(left));
+
+        rmSync(wsA);
+        const missing = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved with no workspace copy is refused and writes nothing", missing.status === 1 && missing.stdout.includes("REFUSED") && read(d, ".claude/rules/a.md") === conflicting && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === backupsBefore, out(missing));
+
+        const regenerated = apply(kit, d);
+        check("workspace: a removed workspace copy is written afresh by the next apply", regenerated.status === 1 && /^<<<<<<< project$/m.test(readFileSync(wsA, "utf8")) && existsSync(`${wsA}.kit`), out(regenerated));
+        check("workspace: a conflict gets the .kit sidecar with the kit HEAD bytes", readFileSync(`${wsA}.kit`, "utf8") === RULE_A.replace("Keep things", "Keep kit things"));
+
+        writeFileSync(wsB, "# Rule B\n\n<<<<<<< oops\nproject side\n");
+        const leftB = apply(kit, d, ["--resolved", BLOB_B]);
+        check("workspace: markers left in an edited-no-base copy are refused too", leftB.status === 1 && /conflict marker/.test(leftB.stdout) && read(d, ".claude/rules/node/b.md") === bBefore, out(leftB));
+
+        writeFileSync(wsA, "# Rule A\n\nmy merge in progress\n");
+        const kept = apply(kit, d);
+        check("workspace: an existing copy is kept, not overwritten, and the report says so", kept.status === 1 && readFileSync(wsA, "utf8") === "# Rule A\n\nmy merge in progress\n" && /workspace copy kept \(written \d{4}-\d{2}-\d{2}\)/.test(kept.stdout.split("Edited without base:")[0]) && /workspace copy kept/.test(kept.stdout.split("Edited without base:")[1]), out(kept));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        const conflicting = RULE_A.replace("Keep things", "Keep project things");
+        writeFileSync(d.abs(".claude/rules/a.md"), conflicting);
+        persist(d);
+        apply(kit, d);
+        const ws = workspace(kit, d, "rules/a.md");
+        const merged = "# Rule A\n\nKeep both things\n=======\n\nsmall.\n";
+        writeFileSync(ws, merged);
+
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things v2"));
+        kit.commit("kit moves a again");
+        const recBefore = read(d, ".claude/kit-delivery.json");
+        const backupsBefore = backups(kit).length;
+        const stale = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved is refused when the kit moved since the copy was written, nothing written", stale.status === 1 && /kit moved/.test(stale.stdout) && read(d, ".claude/rules/a.md") === conflicting && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === backupsBefore && existsSync(ws), out(stale));
+
+        rmSync(`${ws}.kit`);
+        const noSidecar = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved is refused when the .kit sidecar is missing, nothing written", noSidecar.status === 1 && /\.kit/.test(noSidecar.stdout) && read(d, ".claude/rules/a.md") === conflicting && backups(kit).length === backupsBefore, out(noSidecar));
+
+        writeFileSync(`${ws}.kit`, readBlobText(kit, BLOB_A));
+        const ok = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: a setext-style ======= line does not block --resolved", ok.status === 0 && read(d, ".claude/rules/a.md") === merged, out(ok));
+        check("workspace: a consumed workspace copy and its sidecar are removed, empty directories pruned", !existsSync(ws) && !existsSync(`${ws}.kit`) && !existsSync(join(kit.dir, "tmp", "project-sync-merge", basename(d.project), "rules")) && existsSync(join(kit.dir, "tmp", "project-sync-merge", basename(d.project))), out(ok));
+      }
+
+      {
+        const kit = makeKit();
+        const same = [deliverAll(kit), deliverAll(kit)];
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        for (const [n, d] of same.entries()) {
+          writeFileSync(d.abs(".claude/rules/a.md"), RULE_A.replace("Keep things", `Keep project ${n} things`));
+          persist(d);
+        }
+        const first = apply(kit, same[0]);
+        const wsPath = workspace(kit, same[0], "rules/a.md");
+        const owner = JSON.parse(readFileSync(join(kit.dir, "tmp", "project-sync-merge", "p", "project.json"), "utf8"));
+        const wsBefore = readFileSync(wsPath, "utf8");
+        const projectBefore = read(same[1], ".claude/rules/a.md");
+        const backupsBefore = backups(kit).length;
+        const second = apply(kit, same[1]);
+        const resolvedOther = apply(kit, same[1], ["--resolved", BLOB_A]);
+        check("workspace: project.json records the project that owns the folder", first.status === 1 && owner.projectDir === same[0].project, JSON.stringify(owner) + out(first));
+        check(
+          "workspace: a second project of the same name is refused by --apply and --resolved before any write",
+          second.status === 1 && second.stdout.includes("REFUSED") && /project\.json/.test(second.stdout) && resolvedOther.status === 1 && resolvedOther.stdout.includes("REFUSED") && readFileSync(wsPath, "utf8") === wsBefore && read(same[1], ".claude/rules/a.md") === projectBefore && backups(kit).length === backupsBefore,
+          out(second) + out(resolvedOther),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        writeFileSync(d.abs(".claude/rules/a.md"), RULE_A.replace("Keep things", "Keep project things"));
+        writeFileSync(d.abs(".claude/settings.json"), "{ not json");
+        persist(d);
+        const run = apply(kit, d);
+        check("workspace: a refusal from settings.json leaves no workspace copy behind", run.status === 1 && run.stdout.includes("REFUSED") && !existsSync(join(kit.dir, "tmp", "project-sync-merge")), out(run));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        const conflicting = RULE_A.replace("Keep things", "Keep project things");
+        writeFileSync(d.abs(".claude/rules/a.md"), conflicting);
+        persist(d);
+        apply(kit, d);
+        const ws = workspace(kit, d, "rules/a.md");
+        check("workspace: a conflict also gets a .project sidecar with the project bytes", readFileSync(`${ws}.project`, "utf8") === conflicting);
+
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things v2"));
+        kit.commit("kit moves a again");
+        const moved = apply(kit, d);
+        check("workspace: a kept copy built on older kit text is reported stale, not as a place to merge", moved.status === 1 && /stale \(kit moved\) — delete the copy and its \.kit and \.project sidecars, then re-run --apply/.test(moved.stdout) && !/merge in .*rules\/a\.md/.test(moved.stdout.split("Edited without base:")[0]), out(moved));
+
+        const changed = conflicting + "edited after the copy\n";
+        writeFileSync(d.abs(".claude/rules/a.md"), changed);
+        writeFileSync(`${ws}.kit`, readBlobText(kit, BLOB_A));
+        writeFileSync(ws, "# Rule A\n\nmerged\n");
+        const recBefore = read(d, ".claude/kit-delivery.json");
+        const backupsBefore = backups(kit).length;
+        const stale = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved is refused when the project file changed since the copy, nothing written", stale.status === 1 && /project file changed/.test(stale.stdout) && read(d, ".claude/rules/a.md") === changed && read(d, ".claude/kit-delivery.json") === recBefore && backups(kit).length === backupsBefore, out(stale));
+        rmSync(`${ws}.project`);
+        const noProject = apply(kit, d, ["--resolved", BLOB_A]);
+        check("workspace: --resolved is refused when the .project sidecar is missing", noProject.status === 1 && /\.project/.test(noProject.stdout) && read(d, ".claude/rules/a.md") === changed, out(noProject));
+      }
+
+      for (const [label, settle] of [["recorded equal to HEAD", (kit, d) => readBlobText(kit, BLOB_A)], ["replaced from the recorded base", () => RULE_A]]) {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        writeFileSync(d.abs(".claude/rules/a.md"), RULE_A.replace("Keep things", "Keep project things"));
+        persist(d);
+        apply(kit, d);
+        const ws = workspace(kit, d, "rules/a.md");
+        const existed = existsSync(ws) && existsSync(`${ws}.kit`) && existsSync(`${ws}.project`);
+        writeFileSync(d.abs(".claude/rules/a.md"), settle(kit, d));
+        const run = apply(kit, d);
+        check(`workspace: a path the run settles (${label}) loses its workspace copy and sidecars`, existed && run.status === 0 && !existsSync(ws) && !existsSync(`${ws}.kit`) && !existsSync(`${ws}.project`) && !existsSync(join(kit.dir, "tmp", "project-sync-merge", "p", "rules")), out(run));
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+        kit.commit("kit edits a");
+        const crlf = RULE_A.replace(/\n/g, "\r\n").replace("Keep things", "Keep CRLF things");
+        writeFileSync(d.abs(".claude/rules/a.md"), crlf);
+        persist(d);
+        const run = apply(kit, d);
+        const text = readFileSync(workspace(kit, d, "rules/a.md"), "utf8");
+        check("workspace: a CRLF conflict keeps CRLF, markers included", run.status === 1 && text.includes("<<<<<<< project\r\n") && !/(^|[^\r])\n/.test(text), JSON.stringify(text));
       }
 
       {
@@ -780,6 +1093,157 @@ try {
         persist(d2);
         const gone = apply(kit2, d2);
         check("apply: a rename whose old copy the project deleted drops the old key", gone.status === 0 && !(BLOB_B in readRec(d2.project).files), out(gone));
+        const again = apply(kit2, d2);
+        const status2 = tool(kit2.dir, ["--status", d2.project]);
+        check(
+          "apply: the next run does not re-add a renamed file whose old copy the project deleted, and it is not owed",
+          again.status === 0 && !existsSync(d2.abs(".claude/rules/node/c.md")) && /^owed: none$/m.test(status2.stdout),
+          out(again) + out(status2),
+        );
+      }
+
+      {
+        const BLOB_C = "stacks/node/rules/c.md";
+        const RULE_B = "# Rule B\n\nline one\nline two\nline three\n";
+        const setup = (projectText, kitText) => {
+          const kit = makeKit();
+          kit.write("project/stacks/node/rules/b.md", RULE_B);
+          kit.commit("b with lines");
+          const d = deliverAll(kit);
+          kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
+          kit.commit("rename b to c");
+          kit.write("project/stacks/node/rules/c.md", kitText);
+          kit.commit("edit c");
+          writeFileSync(d.abs(".claude/rules/node/b.md"), projectText);
+          writeFileSync(d.abs(".claude/CLAUDE.md"), "# P\n\n## Rules\n\n| Rule file | Covers |\n| --- | --- |\n| `.claude/rules/node/b.md` | B |\n");
+          persist(d);
+          return { kit, d };
+        };
+        const projectText = RULE_B.replace("line one", "line one, project wording");
+        const { kit, d } = setup(projectText, `${RULE_B}kit addition\n`);
+        const claudeBefore = read(d, ".claude/CLAUDE.md");
+        const ws = workspace(kit, d, "rules/node/c.md");
+        const first = apply(kit, d);
+        const rec1 = readRec(d.project);
+        check(
+          "rename-edited: --apply owes it, leaves both project paths alone and keeps the old key",
+          first.status === 1 && /^Still owed:\n(?:\s+- .+\n)*\s+- stacks\/node\/rules\/c\.md — renamed from stacks\/node\/rules\/b\.md/m.test(first.stdout) && read(d, ".claude/rules/node/b.md") === projectText && !existsSync(d.abs(".claude/rules/node/c.md")) && rec1.files[BLOB_B] === d.rec.files[BLOB_B] && !(BLOB_C in rec1.files) && rec1.delivered.commit === kit.git("rev-parse", "HEAD").trim(),
+          out(first) + JSON.stringify(rec1),
+        );
+        check(
+          "rename-edited: the workspace at the new path holds the clean merge, with .kit = kit HEAD and .project = the old-path copy",
+          existsSync(ws) && readFileSync(ws, "utf8") === `${projectText}kit addition\n` && readFileSync(`${ws}.kit`, "utf8") === `${RULE_B}kit addition\n` && readFileSync(`${ws}.project`, "utf8") === projectText,
+          existsSync(ws) ? JSON.stringify(readFileSync(ws, "utf8")) : "no workspace",
+        );
+        const second = apply(kit, d);
+        check(
+          "rename-edited: after delivered advanced, a plain re-run still links it — nothing added at the new path, still owed",
+          second.status === 1 && !existsSync(d.abs(".claude/rules/node/c.md")) && read(d, ".claude/rules/node/b.md") === projectText && /stacks\/node\/rules\/c\.md — renamed from/.test(second.stdout),
+          out(second),
+        );
+        const status = tool(kit.dir, ["--status", d.project]);
+        check("rename-edited: --status owes the new path too", /^owed:\n(?:\s+- .+\n)*\s+- stacks\/node\/rules\/c\.md$/m.test(status.stdout), out(status));
+        const dry = tool(kit.dir, [d.project]);
+        check("rename-edited: the dry run reports it under renamed-edited", /^renamed-edited:\n\s+- \.claude\/rules\/node\/c\.md \(stacks\/node\/rules\/c\.md\)/m.test(dry.stdout), dry.stdout);
+
+        const merged = `${projectText}kit addition\nowner touch\n`;
+        mkdirSync(dirname(ws), { recursive: true });
+        writeFileSync(ws, merged);
+        const resolved = apply(kit, d, ["--resolved", BLOB_C]);
+        const rec2 = readRec(d.project);
+        const backup = backupOf(resolved) ?? "";
+        check(
+          "rename-edited: --resolved writes the new path, removes the old, records the new key at HEAD and drops the old",
+          resolved.status === 0 && read(d, ".claude/rules/node/c.md") === merged && !existsSync(d.abs(".claude/rules/node/b.md")) && rec2.files[BLOB_C] === headBlob(kit, BLOB_C) && !(BLOB_B in rec2.files) && !existsSync(ws) && !existsSync(`${ws}.kit`) && !existsSync(`${ws}.project`),
+          out(resolved) + JSON.stringify(rec2),
+        );
+        check(
+          "rename-edited: the backup holds the old copy and lists the new path as added; the Rules table row moves",
+          existsSync(join(backup, ".claude/rules/node/b.md")) && readFileSync(join(backup, ".claude/rules/node/b.md"), "utf8") === projectText && JSON.parse(readFileSync(join(backup, "added.json"), "utf8")).includes(".claude/rules/node/c.md") && read(d, ".claude/CLAUDE.md").includes("`.claude/rules/node/c.md`") && !read(d, ".claude/CLAUDE.md").includes("rules/node/b.md"),
+          backup + read(d, ".claude/CLAUDE.md"),
+        );
+        const after = apply(kit, d);
+        check("rename-edited: the next run owes nothing", after.status === 0 && /^Still owed: none$/m.test(after.stdout), out(after));
+        const restored = tool(kit.dir, ["--restore", backup]);
+        const rec3 = readRec(d.project);
+        check(
+          "rename-edited: --restore puts the old copy, the old key and the Rules table back and removes the new path",
+          restored.status === 0 && read(d, ".claude/rules/node/b.md") === projectText && !existsSync(d.abs(".claude/rules/node/c.md")) && rec3.files[BLOB_B] === d.rec.files[BLOB_B] && !(BLOB_C in rec3.files) && read(d, ".claude/CLAUDE.md") === claudeBefore,
+          out(restored) + JSON.stringify(rec3),
+        );
+
+        const clash = setup(RULE_B.replace("line one", "line one, project"), RULE_B.replace("line one", "line one, kit"));
+        const clashRun = apply(clash.kit, clash.d);
+        const clashWs = workspace(clash.kit, clash.d, "rules/node/c.md");
+        const markers = existsSync(clashWs) ? readFileSync(clashWs, "utf8") : "";
+        const refused = apply(clash.kit, clash.d, ["--resolved", BLOB_C]);
+        check(
+          "rename-edited: a conflicting merge leaves markers in the workspace, and --resolved is refused while they stay",
+          clashRun.status === 1 && /^<<<<<<< project$/m.test(markers) && markers.includes("line one, kit") && refused.status === 1 && /conflict marker/.test(refused.stdout) && !existsSync(clash.d.abs(".claude/rules/node/c.md")),
+          out(clashRun) + out(refused) + markers,
+        );
+      }
+
+      {
+        const kit = makeKit();
+        kit.write("project/shared/agents/blob.bin", Buffer.from([0xff, 0xfe, 0x00, 0x01]));
+        kit.commit("add a binary");
+        const d = deliverAll(kit);
+        kit.write("project/shared/agents/blob.bin", Buffer.from([0xff, 0x00, 0x02]));
+        kit.commit("change the binary");
+        writeFileSync(d.abs(".claude/agents/blob.bin"), Buffer.from([0xff, 0x00, 0x03]));
+        persist(d);
+        const run = apply(kit, d);
+        const status = tool(kit.dir, ["--status", d.project]);
+        check(
+          "owed parity: an edited binary is still owed after --apply (exit 1), as --status says",
+          run.status === 1 && /^Still owed:\n\s+- shared\/agents\/blob\.bin — edited binary — replace by hand or add to skip$/m.test(run.stdout) && /^owed:\n\s+- shared\/agents\/blob\.bin$/m.test(status.stdout),
+          out(run) + out(status),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        kit.write(".gitignore", "*~\n");
+        kit.commit("ignore backups");
+        const d = deliverAll(kit);
+        kit.write("project/shared/rules/a.md~", "editor backup\n");
+        persist(d);
+        const run = apply(kit, d);
+        check("catalog from HEAD: an ignored file under project/ is not delivered and --apply does not crash", run.status === 0 && run.stderr === "" && !existsSync(d.abs(".claude/rules/a.md~")), out(run));
+        kit.write("project/shared/rules/untracked.md", "# Untracked\n\nNot committed.\n");
+        kit.write("project/shared/rules/a.md", "# Rule A\n\nDirty purpose.\n");
+        const names = catalogOf(kit);
+        check(
+          "catalog from HEAD: ignored and untracked files are not catalogued; a purpose comes from HEAD, not the working tree",
+          !names.entries.some((e) => e.kit.endsWith("a.md~") || e.kit.endsWith("untracked.md")) && names.entries.find((e) => e.kit === BLOB_A)?.purpose === "Keep things small.",
+          JSON.stringify(names.entries.map((e) => [e.kit, e.purpose])),
+        );
+      }
+
+      {
+        const kit = makeKit();
+        const d = deliverAll(kit);
+        writeFileSync(d.abs(".claude/CLAUDE.md"), "# P\n\n## Rules\n\n| Rule file | Covers |\n| --- | --- |\n");
+        const filler = " Second sentence that pads the purpose well past the cut-off length for a row, so the blurb has to be cut short.";
+        const rules = {
+          paren: ["Techniques for driving a browser (Node toolchains, e.g. Playwright + a dev server).", "Techniques for driving a browser (Node toolchains, e.g. Playwright + a dev server)."],
+          eg: ["Use a tool, e.g. Playwright, for checks.", "Use a tool, e.g. Playwright, for checks."],
+          etc: ["Covers lint, format etc. and the rest of it.", "Covers lint, format etc. and the rest of it."],
+          inner: ["Gates (see one. Two) live in build-verification.md here.", "Gates (see one. Two) live in build-verification.md here."],
+        };
+        for (const [name, [first]] of Object.entries(rules)) kit.write(`project/shared/rules/${name}.md`, `# ${name}\n\n${first}${filler}\n`);
+        kit.write("project/shared/rules/whole.md", `# whole\n\n${"no sentence end at all ".repeat(8)}\n`);
+        kit.commit("rules with long purposes");
+        persist(d);
+        const run = apply(kit, d);
+        const after = read(d, ".claude/CLAUDE.md");
+        const rowOf = (name) => after.split("\n").find((line) => line.startsWith(`| \`.claude/rules/${name}.md\``)) ?? "";
+        check(
+          "rules table: the blurb cuts at a sentence end — never at e.g./etc. or inside parentheses; no sentence end keeps it whole",
+          run.status === 0 && Object.entries(rules).every(([name, [, expected]]) => rowOf(name) === `| \`.claude/rules/${name}.md\` | ${expected} |`) && rowOf("whole") === `| \`.claude/rules/whole.md\` | ${"no sentence end at all ".repeat(8).trim()} |`,
+          after,
+        );
       }
 
       {
@@ -1085,7 +1549,7 @@ try {
         const d = deliverPersisted(kit);
         const claude = "# P\n\n## Rules\n\n| Rule file | Covers |\n| --- | --- |\n| `.claude/rules/a.md` | Keep things small. |\n| `.claude/rules/node/b.md` | Node specifics. |\n\n## After\n\ntext\n";
         writeFileSync(d.abs(".claude/CLAUDE.md"), claude);
-        kit.write("project/shared/rules/new.md", `# New\n\n${"A long first sentence that keeps going. ".repeat(1)}${"filler ".repeat(30)}\n`);
+        kit.write("project/shared/rules/new.md", `# New\n\nA long first sentence that keeps going. ${"Filler ".repeat(30)}\n`);
         kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
         kit.write("project/shared/rules/a.md", "# Rule A\n\nrevised\n");
         kit.commit("add new, rename b to c, revise a");
@@ -1317,10 +1781,9 @@ try {
       const lone = makeKit(empty);
       const none = tool(lone.dir, ["--all"]);
       check("--all with no recorded project beside the kit says so and exits 0", none.status === 0 && /no project/i.test(none.stdout), out(none));
-      const bad = makeProject("charlie", "{ nope", family);
+      makeProject("charlie", "{ nope", family);
       const badAll = tool(kit.dir, ["--status", "--all"]);
       check("--all: one project with an invalid record is REFUSED, the others still print, exit 1", badAll.status === 1 && badAll.stdout.includes("REFUSED") && badAll.stdout.includes("== alpha ==") && badAll.stdout.includes("== bravo =="), out(badAll));
-      void bad;
     }
 
     {
@@ -1361,7 +1824,6 @@ try {
       writeFileSync(join(late.project, ".claude", "kit-delivery.json"), JSON.stringify(validRecord({ tiers: TIERS }), null, 2));
       const lateRun = tool(kit.dir, ["--record-bases", "--at", first, late.project]);
       check("record-bases --at: a present file the commit lacks gets no entry and is named", lateRun.status === 0 && /not in .+:\n\s+- shared\/rules\/late\.md/.test(lateRun.stdout) && !("shared/rules/late.md" in recordOf(late.project).files), out(lateRun));
-      void d;
     }
 
     {
@@ -1393,6 +1855,34 @@ try {
       writeFileSync(d.abs(".claude/rules/a.md"), "# Rule A\n\nedited since\n");
       const rerun = tool(kit.dir, ["--record-bases", d.project]);
       check("record-bases: a rerun drops the entry of a file edited since the last run", rerun.status === 0 && !("shared/rules/a.md" in recordOf(d.project).files) && /edited, no entry:\n(?:\s+- .+\n)*\s+- shared\/rules\/a\.md/.test(rerun.stdout), out(rerun));
+    }
+    {
+      const kit = makeKit();
+      const first = headOf(kit);
+      kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: v2\n---\n");
+      kit.write("project/domains/web/rules/w.md", "# W\n\nKeeps the web tier in the kit once s1 moves out.\n");
+      kit.commit("s1 v2");
+      mkdirSync(join(kit.dir, "project", "shared", "skills"), { recursive: true });
+      kit.git("mv", "project/domains/web/skills/s1", "project/shared/skills/s1");
+      kit.commit("move s1 to shared");
+      const d = seed(kit, undefined, "p", { commit: first, recordFiles: false });
+      mkdirSync(d.abs(".claude/skills/s1/references"), { recursive: true });
+      writeFileSync(d.abs(".claude/skills/s1/SKILL.md"), kitMod.readBlob(kit.dir, kitMod.blobAt(kit.dir, first, "domains/web/skills/s1/SKILL.md")));
+      writeFileSync(d.abs(".claude/skills/s1/references/r.md"), kitMod.readBlob(kit.dir, kitMod.blobAt(kit.dir, first, "domains/web/skills/s1/references/r.md")));
+      writeFileSync(d.abs(".claude/rules/node/b.md"), kitMod.readBlob(kit.dir, kitMod.blobAt(kit.dir, first, "shared/rules/a.md")));
+      writeFileSync(join(d.project, ".claude", "kit-delivery.json"), JSON.stringify(validRecord({ tiers: TIERS }), null, 2));
+      const run = tool(kit.dir, ["--record-bases", d.project]);
+      const rec = recordOf(d.project);
+      check(
+        "record-bases without --at: bytes another kit path once held are not a base for this path",
+        run.status === 0 && !("stacks/node/rules/b.md" in rec.files) && /^edited, no entry:\n(?:\s+- .+\n)*\s+- stacks\/node\/rules\/b\.md$/m.test(run.stdout),
+        out(run) + JSON.stringify(rec),
+      );
+      check(
+        "record-bases without --at: a path's own history is followed across a kit rename",
+        rec.files["shared/skills/s1/SKILL.md"] === kitMod.blobAt(kit.dir, first, "domains/web/skills/s1/SKILL.md") && rec.files["shared/skills/s1/references/r.md"] === kitMod.blobAt(kit.dir, "HEAD", "shared/skills/s1/references/r.md"),
+        JSON.stringify(rec.files),
+      );
     }
 
     {

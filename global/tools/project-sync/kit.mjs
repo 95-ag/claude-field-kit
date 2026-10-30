@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
 import { execFileSync } from "child_process";
-import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { Refusal } from "./report.mjs";
@@ -46,10 +45,22 @@ function historyRaw(kit) {
   });
 }
 
-export function everBlobs(kit) {
+// Every blob a kit path has held, following it back through renames (newest commit first, as `git log --follow`).
+export function pathHistoryBlobs(kit, kitPath) {
   const blobs = new Set();
-  for (const { before, after } of historyRaw(kit)) {
-    for (const oid of [before, after]) if (!NULL_OID.test(oid)) blobs.add(oid);
+  let name = `project/${kitPath}`;
+  for (const commit of renameLog(kit)) {
+    let renamedFrom = null;
+    for (const line of commit.split("\n")) {
+      if (!line.startsWith(":")) continue;
+      const [meta, from, to] = line.split("\t");
+      const [, , before, after, status] = meta.split(" ");
+      const now = to ?? from;
+      if (now !== name) continue;
+      for (const oid of [before, after]) if (!NULL_OID.test(oid)) blobs.add(oid);
+      if (status.startsWith("R")) renamedFrom = from;
+    }
+    if (renamedFrom) name = renamedFrom;
   }
   return blobs;
 }
@@ -58,7 +69,16 @@ export function everBlobs(kit) {
 let cache = null;
 
 export function cacheKit(kit) {
-  cache = kit === null ? null : { kit, catalog: null, everPaths: null };
+  cache = kit === null ? null : { kit, catalog: null, everPaths: null, renameLog: null };
+}
+
+function renameLog(kit) {
+  if (cache?.kit !== kit) return readRenameLog(kit);
+  return (cache.renameLog ??= readRenameLog(kit));
+}
+
+function readRenameLog(kit) {
+  return gitText(kit, ["log", "-M", "--format=%x00", "--raw", "--no-abbrev", "-r", "HEAD", "--", "project/"]).split("\0").slice(1);
 }
 
 export function everPaths(kit) {
@@ -110,6 +130,13 @@ export function renamesSince(kit, commit) {
   return renames;
 }
 
+// Where a path the kit removed now lives, read from the commit before its removal rather than from `delivered`, so a
+// rename stays linked for as long as the record still holds the old path.
+export function renamedTo(kit, kitPath) {
+  const removedIn = gitText(kit, ["log", "-1", "--format=%H", "--no-renames", "--diff-filter=D", "HEAD", "--", `project/${kitPath}`]).trim();
+  return removedIn ? (renamesSince(kit, `${removedIn}^`).get(kitPath) ?? null) : null;
+}
+
 export function assertDeliverable(kit) {
   let dirty;
   try {
@@ -149,17 +176,6 @@ export function targetFor(kitPath) {
   const inside = tail.join("/");
   if (type === "rules") return split.name ? `.claude/rules/${split.name}/${inside}` : `.claude/rules/${inside}`;
   return `.claude/${type}/${inside}`;
-}
-
-function filesUnder(dir) {
-  const found = [];
-  for (const name of readdirSync(dir).sort()) {
-    if (name.startsWith(".")) continue;
-    const abs = join(dir, name);
-    if (statSync(abs).isDirectory()) found.push(...filesUnder(abs).map((f) => `${name}/${f}`));
-    else found.push(name);
-  }
-  return found;
 }
 
 function frontmatterDescription(text) {
@@ -209,19 +225,29 @@ function firstParagraphAfterHeading(text) {
 }
 
 export function purposeOf(kit, kitPath) {
-  const split = splitBucket(kitPath);
-  const type = split?.rest[0];
-  const abs = join(kit, "project", kitPath);
-  const file = type === "skills" ? join(abs, "SKILL.md") : abs;
-  if (!existsSync(file)) return "";
-  const text = readFileSync(file, "utf8");
+  const type = splitBucket(kitPath)?.rest[0];
+  const blob = blobAt(kit, "HEAD", type === "skills" ? `${kitPath}/SKILL.md` : kitPath);
+  if (blob === null) return "";
+  const text = readBlob(kit, blob).toString("utf8");
   if (type === "skills") return frontmatterDescription(text) ?? "";
   if (type === "rules") return firstParagraphAfterHeading(text);
   return frontmatterDescription(text) ?? firstCommentLine(text);
 }
 
-function listDirs(dir) {
-  return existsSync(dir) ? readdirSync(dir).filter((n) => statSync(join(dir, n)).isDirectory()).sort() : [];
+// The catalog is HEAD's tree, never the working tree: an ignored or untracked file has no blob to deliver or record.
+function trackedFiles(kit) {
+  let raw;
+  try {
+    raw = git(kit, ["ls-tree", "-r", "-z", "--name-only", "HEAD", "--", "project/"], { stdio: ["ignore", "pipe", "ignore"] }).toString("utf8");
+  } catch {
+    throw new Refusal(`${kit} is not a git checkout of the kit with a HEAD commit`);
+  }
+  return raw
+    .split("\0")
+    .filter(Boolean)
+    .map((path) => path.replace(/^project\//, ""))
+    .filter((path) => !path.split("/").some((part) => part.startsWith(".")))
+    .sort();
 }
 
 export function catalog(kit) {
@@ -234,27 +260,23 @@ export function fileTarget(entry, file) {
 }
 
 function readCatalog(kit) {
-  const project = join(kit, "project");
-  const tiers = {
-    domains: listDirs(join(project, "domains")),
-    stacks: listDirs(join(project, "stacks")),
-    repos: listDirs(join(project, "repos")),
-  };
+  const files = trackedFiles(kit);
+  const tierNames = (kind) => [...new Set(files.filter((f) => f.startsWith(`${kind}/`) && f.split("/").length > 2).map((f) => f.split("/")[1]))].sort();
+  const tiers = { domains: tierNames("domains"), stacks: tierNames("stacks"), repos: tierNames("repos") };
   const buckets = ["shared", ...Object.entries(tiers).flatMap(([kind, names]) => names.map((n) => `${kind}/${n}`))];
   const entries = [];
   for (const bucket of buckets) {
     for (const type of TYPES) {
-      const typeDir = join(project, bucket, type);
-      if (!existsSync(typeDir)) continue;
+      const prefix = `${bucket}/${type}/`;
+      const inType = files.filter((f) => f.startsWith(prefix));
       if (type === "skills") {
-        for (const name of listDirs(typeDir)) {
-          const kitPath = `${bucket}/skills/${name}`;
-          const files = filesUnder(join(typeDir, name)).map((f) => `${kitPath}/${f}`);
-          entries.push({ kit: kitPath, bucket, type, target: `.claude/skills/${name}`, files, purpose: purposeOf(kit, kitPath) });
+        const names = [...new Set(inType.map((f) => f.slice(prefix.length).split("/")).filter((parts) => parts.length > 1).map((parts) => parts[0]))].sort();
+        for (const name of names) {
+          const kitPath = `${prefix}${name}`;
+          entries.push({ kit: kitPath, bucket, type, target: `.claude/skills/${name}`, files: inType.filter((f) => f.startsWith(`${kitPath}/`)), purpose: purposeOf(kit, kitPath) });
         }
       } else {
-        for (const f of filesUnder(typeDir)) {
-          const kitPath = `${bucket}/${type}/${f}`;
+        for (const kitPath of inType) {
           const target = targetFor(kitPath);
           if (target === null) continue;
           entries.push({ kit: kitPath, bucket, type, target, files: [kitPath], purpose: purposeOf(kit, kitPath) });

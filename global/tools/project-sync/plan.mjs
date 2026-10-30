@@ -1,7 +1,8 @@
 import { execFileSync } from "child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync } from "fs";
 import { basename, join } from "path";
-import { blobAt, blobOf, catalog, fileTarget, readBlob, renamesSince, targetFor } from "./kit.mjs";
+import { blobAt, blobOf, catalog, fileTarget, readBlob, renamedTo, renamesSince, targetFor } from "./kit.mjs";
+import { Refusal } from "./report.mjs";
 
 const HEX_OID = /^[0-9a-f]{40}$/;
 const SKILL_DIR = /^(?:shared|(?:domains|stacks|repos)\/[^/]+)\/skills\/[^/]+(?=\/)/;
@@ -65,9 +66,11 @@ function walkFiles(dir) {
 function renameLinks(kit, rec) {
   const links = new Map();
   const since = rec.delivered?.commit;
-  if (!since || !commitExists(kit, since)) return links;
-  for (const [from, to] of renamesSince(kit, since)) {
-    if (rec.files[from] !== undefined && rec.files[to] === undefined && blobAt(kit, "HEAD", from) === null && targetFor(from) !== null) links.set(to, from);
+  const sinceDelivered = since && commitExists(kit, since) ? renamesSince(kit, since) : new Map();
+  for (const from of Object.keys(rec.files)) {
+    if (targetFor(from) === null || blobAt(kit, "HEAD", from) !== null) continue;
+    const to = sinceDelivered.get(from) ?? renamedTo(kit, from);
+    if (to && rec.files[to] === undefined && !links.has(to)) links.set(to, from);
   }
   return links;
 }
@@ -103,14 +106,16 @@ function classifyActive(ctx, { unit, kit: kitPath, target, head }) {
     const old = sameTarget ? here : inspect(projectDir, oldTarget);
     if (old.state === "symlink") return note("symlink", oldKit, oldTarget), item;
     if (old.state === "other") return note("project-only", oldKit, oldTarget, "not a regular file"), item;
-    if (old.state === "missing") return note("removed-by-project", oldKit, oldTarget, `renamed to ${kitPath}`), item;
+    // the record moves to the new path, so the next run reads it as removed by the project, never as not yet delivered
+    if (old.state === "missing") return item.notes.push({ kind: "removed-by-project", kit: oldKit, target: oldTarget, detail: `renamed to ${kitPath}`, renamedTo: kitPath }), item;
     const clean = [{ kind: "replace", kit: kitPath, target }, ...(sameTarget ? [] : [{ kind: "remove", kit: oldKit, target: oldTarget }])];
     if (sameTarget && blobOf(old.bytes) === head) {
       item.actions.push({ kind: "record", kit: kitPath, target });
     } else if (blobOf(old.bytes) === recorded) {
       item.actions.push(...clean);
     } else {
-      note("retired-edited", oldKit, oldTarget, `renamed to ${kitPath} — the project's edits are not merged across paths; merge by hand`);
+      if (isBinary(old.bytes) || isBinary(readBlob(kit, head))) note("binary-edited", kitPath, target, `renamed from ${oldKit}; the project's copy is ${oldTarget}`);
+      else item.notes.push({ kind: "renamed-edited", kit: kitPath, target, from: oldKit, fromTarget: oldTarget, base: blobExists(kit, recorded) ? recorded : null, detail: `renamed from ${oldKit}; the project's edited copy is ${oldTarget}` });
       markEdited(oldTarget, old.bytes, clean);
     }
     return item;
@@ -172,7 +177,8 @@ function stagedCopyMatches(kit, projectDir, item) {
   return existsSync(staged) && readFileSync(staged).equals(item.editedBytes);
 }
 
-export function planProject(kit, projectDir, rec) {
+// `takeKit` names held skills (kit paths under project/) the owner chose to replace with the kit version
+export function planProject(kit, projectDir, rec, { takeKit = [] } = {}) {
   const cat = catalog(kit);
   const activeBuckets = new Set(["shared", ...rec.tiers.domains.map((d) => `domains/${d}`), ...rec.tiers.stacks.map((s) => `stacks/${s}`), ...(rec.tiers.repo ? [`repos/${rec.tiers.repo}`] : [])]);
   const isActive = (kitPath) => activeBuckets.has(bucketOf(kitPath)) && !isSkipped(kitPath, rec.skip);
@@ -244,6 +250,7 @@ export function planProject(kit, projectDir, rec) {
 
   const actions = [];
   const held = [];
+  const taken = [];
   const units = new Map();
   for (const item of items) {
     if (item.unit === null) {
@@ -260,11 +267,17 @@ export function planProject(kit, projectDir, rec) {
     const edited = group.filter((i) => i.edited);
     if (edited.every((i) => stagedCopyMatches(kit, projectDir, i))) {
       actions.push(...group.flatMap((i) => (i.edited ? i.forcedActions : i.actions)));
+    } else if (takeKit.includes(unit)) {
+      actions.push(...group.flatMap((i) => (i.edited ? i.forcedActions : i.actions)));
+      taken.push({ skill: unit, files: edited.map((i) => i.kit) });
     } else {
       held.push({ skill: unit, target: `.claude/skills/${unit.split("/").pop()}`, files: edited.map((i) => i.kit) });
     }
   }
-  return { actions, held, notes };
+  for (const kitPath of takeKit) {
+    if (!taken.some((t) => t.skill === kitPath)) throw new Refusal(`--take-kit ${kitPath}: ${kitPath} is not held in this run — only a skill held for a project edit can be taken from the kit`);
+  }
+  return { actions, held, taken, notes };
 }
 
 function lstatOrNull(path) {

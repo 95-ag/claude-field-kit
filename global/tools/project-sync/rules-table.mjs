@@ -70,10 +70,28 @@ export function updateRulesTable(claudeMd, added, removed) {
   return { text: out.join("\n"), changed, unmatched, missingTable: false };
 }
 
+const ABBREVIATION = /(?:^|[\s(])(?:e\.g|i\.e|etc|vs)\.$/i;
+
+// A sentence ends at . ! or ? before a capital or the end, outside parentheses and not after a common abbreviation.
+function firstSentence(text) {
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === "(") depth++;
+    else if (char === ")") depth = Math.max(0, depth - 1);
+    else if (depth === 0 && ".!?".includes(char)) {
+      const rest = text.slice(i + 1);
+      if (rest && !/^\s+[A-Z]/.test(rest)) continue;
+      if (char === "." && ABBREVIATION.test(text.slice(0, i + 1))) continue;
+      return text.slice(0, i + 1);
+    }
+  }
+  return null;
+}
+
 function blurb(purpose) {
   if (purpose.length <= MAX_PURPOSE) return purpose;
-  const firstSentence = purpose.match(/^.*?[.!?](?=\s|$)/);
-  return firstSentence ? firstSentence[0] : purpose;
+  return firstSentence(purpose) ?? purpose;
 }
 
 const isRule = (action) => action.target.startsWith(RULES_PREFIX) && action.target.endsWith(".md");

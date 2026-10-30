@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from "fs";
 import { basename, dirname, join } from "path";
-import { blobAt, blobOf, catalog, commitsSince, everBlobs, everPaths, fileTarget } from "./kit.mjs";
+import { blobAt, blobOf, catalog, commitsSince, everPaths, fileTarget, pathHistoryBlobs } from "./kit.mjs";
 import { Refusal } from "./report.mjs";
 
 const isStringList = (v) => Array.isArray(v) && v.every((x) => typeof x === "string");
@@ -105,10 +105,10 @@ export function status(kit, projectDir, rec = readRecord(projectDir)) {
   return { delivered: rec.delivered, behind, owed };
 }
 
-// Adopt's writer of `files`. Without `at`, a present file is recorded only when its bytes are a past kit version;
+// Adopt's writer of `files`. Without `at`, a present file is recorded only when its bytes are a past version of that
+// same kit path (renames followed) — bytes another path once held are no base for it;
 // with `at`, the owner has confirmed the project was fully delivered at that commit, so every present file is.
 export function planBases(kit, projectDir, rec, at = null) {
-  const known = at ? null : everBlobs(kit);
   const files = { ...rec.files };
   const summary = { recorded: [], edited: [], absent: [], notAtCommit: [] };
   for (const entry of activeEntries(catalog(kit), rec)) {
@@ -116,7 +116,7 @@ export function planBases(kit, projectDir, rec, at = null) {
       const abs = join(projectDir, fileTarget(entry, file));
       const stat = lstatSync(abs, { throwIfNoEntry: false });
       const blob = !stat ? null : !stat.isFile() ? null : at ? blobAt(kit, at, file) : blobOf(readFileSync(abs));
-      const usable = blob && (at || known.has(blob));
+      const usable = blob && (at || pathHistoryBlobs(kit, file).has(blob));
       if (usable) {
         files[file] = blob;
         summary.recorded.push(file);
