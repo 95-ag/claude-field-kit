@@ -1,6 +1,6 @@
-# Pause on Human Authentication
+# Authentication and Credentials
 
-Automation never impersonates a human through an identity or liveness challenge. Pause and return control to the user for manual completion, then resume.
+Automation never impersonates a human through an identity or liveness challenge, and never exposes or commits the credentials it handles. At a challenge, pause and return control to the user for manual completion, then resume.
 
 ## Pause points
 
@@ -15,11 +15,11 @@ Automation never impersonates a human through an identity or liveness challenge.
 
 ## Credential handling
 
-- Credential material (tokens, cookie jars, `.env` files, API keys, session files, certificates, secrets) is never staged or committed.
-- Secret-handling requirements are defined in the git rules → Never commit and enforced by the `file-protect` hook,
-  which refuses secret material on both channels: writing it through the file tools, and reading it through `Read`
-  or `Grep` so it never reaches the transcript. Naming the file is what it catches — a recursive search that
-  happens to cross one, or a shell command that reads it, is not covered.
+- Never stage or commit credential material — the git rules → Never commit, plus tokens, API keys, session files and certificates, which that list does not name.
+- The `file-protect` hook refuses secret material on both channels:
+  - writing it through the file tools;
+  - reading it through `Read` or `Grep`, so it never reaches the transcript.
+- `file-protect` catches a named file only — a recursive search that crosses one, or a shell command that reads it, is not covered.
 - Read credentials from environment variables, a secret manager, or an ignored local store.
 - Never inline credentials in source code, configuration files, logs, command arguments, prompts, plans, documentation, screenshots, or generated artifacts.
 - Never print, echo, or expose credential values in terminal output, reports, or error messages.
