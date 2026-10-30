@@ -46,7 +46,7 @@ global/              # applies to every Claude environment
 ├── shared/          #   all environments (rules, hooks, skills, agents, CLAUDE.md)
 ├── windows/         #   Windows-desktop specifics (e.g. MSYS/WSL path rules)
 ├── wsl/             #   WSL specifics
-└── tools/           #   delivery + check engines — global-sync.mjs, skill-reference-check.mjs
+└── tools/           #   delivery + check engines — global-sync.mjs, project-sync.mjs, skill-reference-check.mjs
 
 project/             # copied into a new project's .claude/, composed per project:
 ├── shared/          #   universal — every project
@@ -58,6 +58,8 @@ incoming/            # staging (local-only, gitignored) — captured by asset TY
 ├── rules/ · skills/ · agents/ · hooks/   # auto-captured by the asset-capture hook
 ├── notes/                                # hand-staged rough items (lessons, deferred global edits, ideas, hook bugs)
 └── plugins/                              # plugin refs
+
+tests/               # tool harnesses — run with node
 ```
 
 ## Assets
@@ -111,7 +113,7 @@ domain-scoped):
 - [The maintenance loop](#the-maintenance-loop) — capture → review → promote
 - [Promotion & sync](#promotion--sync) — what promotes, and how it's delivered
 - [Review gate](#review-gate) — the per-item preview before promoting
-- [Project bootstrap](#project-bootstrap) — seeding a new project's `.claude/`
+- [Project bootstrap](#project-bootstrap) — seeding a new project's `.claude/`, or adopting one
 - [Authoring conventions](#authoring-conventions)
 - [Hook conventions](#hook-conventions)
 
@@ -185,6 +187,15 @@ Delivery:
 - **Global tier** — the `global-sync` tool (`global/tools/global-sync.mjs`, via the `global-sync` skill)
   composes `global/shared` + the env overlay and delivers it to each `~/.claude` (Windows + WSL),
   transforming `hooks.json` into that env's `settings.json` (WSL-wrapped on Windows, bare `node` on WSL).
+- **Project tier** — the `project-sync` tool (`global/tools/project-sync.mjs`, via the owner-run `project-sync`
+  skill) delivers `project/` updates to projects already set up.
+  - Each project's `.claude/kit-delivery.json` records its tiers, its opt-outs (`skip`) and the kit version of
+    every file it holds — that version is the file's merge base.
+  - An untouched file is replaced; an edited rule, hook or agent is 3-way merged against its base, with no
+    per-merge preview; a conflict is left untouched and hand-merged.
+  - An edited skill is replaced only when an identical copy is staged in `incoming/`; otherwise the owner drops
+    the edit or keeps the project's version.
+  - Every run backs up first; `--restore` puts the files back and removes what the run added.
 - **Plans + memory** — the global `plans-memory-sync` hook (SessionStart + SessionEnd) unions
   `~/.claude/plans/` and auto-memory between the Windows and WSL homes (newest-wins, never-delete; memory
   project-keys remapped per env). Runtime continuity, not asset promotion.
@@ -210,8 +221,10 @@ Promoted assets run **handsfree** across every session, so nothing lands without
   report before acting.
 
 ### Project bootstrap
-A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks). The actionable,
-discovery-driven procedure lives in `project/shared/BOOTSTRAP.md` — this section is the conceptual model.
+A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks) by the owner-run
+`project-bootstrap` skill: it asks about the project, shows tiers and files pre-selected for correction, writes
+the record and calls `project-sync` for the copy. A project composed by hand is **adopted** instead — record only.
+The skill holds the procedure — this section is the conceptual model.
 What you fill, and the rule for each (detail lives in each template):
 
 - **`CLAUDE.md`** (from `CLAUDE.template.md`) — repo-specific facts only: identity, stack, commands,
@@ -261,8 +274,8 @@ minimal other context loaded.
   a rule's actual content.
 - **Split by what must load together** — keep unrelated concerns in separate files, and stack/domain
   specifics out of the shared core, so a reader loads only what applies.
-- Template files (skeletons copied into a project and filled) use the `.template.md` suffix; the bootstrap
-  procedure (`project/shared/BOOTSTRAP.md`) drops the suffix when seeding a project.
+- Template files (skeletons copied into a project and filled) use the `.template.md` suffix; the
+  `project-bootstrap` skill drops the suffix when seeding a project.
 - **Keep an auto-loaded doc lean** — under ~200 lines; split a longer one by sub-topic. (This
   README is read on demand, not auto-loaded, so it may run longer.)
 - **The frontmatter `description` fails invisibly.**
@@ -358,9 +371,10 @@ for which event + matcher each hook binds to.
 - **Wiring (global):** the `global-sync` tool transforms `global/shared/hooks.json` into each env's
   `~/.claude/settings.json` `hooks` (smart-merge preserves user-owned entries); commands use absolute
   `~/.claude/hooks/` paths.
-- **Wiring (per-project):** the bootstrap procedure deep-merges `project/shared/hooks.json` + each active
-  domain/stack `hooks.json` into the project's `.claude/settings.json`; PreToolUse/PostToolUse arrays
-  concatenate; `"//"` keys dropped.
+- **Wiring (per-project):** `project-sync` composes `project/shared/hooks.json` + each active domain/stack
+  `hooks.json` (PreToolUse/PostToolUse arrays concatenate; `"//"` keys and skipped scripts dropped) and merges
+  it into the project's `.claude/settings.json` the way `global-sync` does — kit-delivered entries replaced,
+  every other entry and non-`hooks` key kept.
 - **Cross-shell:** command/commit hooks bind `"matcher": "Bash|PowerShell"`; file hooks bind
   `Write|Edit|MultiEdit|NotebookEdit`; content-reading guards bind `Read|Grep`. `bash-write-adapter` binds
   `Bash|PowerShell` on **both** PreToolUse and PostToolUse — the pre half records the state the post half
