@@ -5,12 +5,13 @@
 
 ### Hard Gates (STOP — bound to the trigger moment)
 
-Non-negotiable stops. The numbered sections below expand each one.
+Non-negotiable stops. The numbered sections below expand most of them.
 - **Status question** ("what's next", "where are we", "status?") → answer and STOP. Never start work off a status question.
 - **Non-trivial task** (3+ steps / architectural) → plan mode FIRST. No execution without an explicit "do / start / implement X".
 - **Before the FIRST file write** → plan is user-approved AND `tasks.md` exists (with the plan path). No edit before both are true.
 - **Before ANY index mutation** (`git add` / `rm` / `commit` / `restore --staged`) → propose the cluster + exact message and WAIT for approval. Never stage first.
 - **"Complete"** = verification done AND explicit user sign-off in chat. A build pass is one form of verification — necessary, never the whole bar or a substitute for sign-off.
+- **An instruction or approval** → covers only what it names; never widen it by inference. Moving one gate ("propose the commits at the end") leaves every other gate and open decision with the user.
 
 ### 0. Status Questions Don't Start Tasks
 

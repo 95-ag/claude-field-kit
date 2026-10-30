@@ -36,7 +36,8 @@ Two or more sessions sharing one working tree. Staging mechanics are `git.md` â†
   - A session reads clean between its own commits while still mid-task, still holding files open and
     still owning the scripts you were about to edit.
 - Check for live processes, not just the tree, before calling a file set free.
-- Re-check immediately before the edit, not when the agreement was made.
+- Re-check immediately before the edit, or the tool run that changes shared state, not when the
+  agreement was made.
 
 ### Coordinating
 
@@ -57,6 +58,8 @@ Two or more sessions sharing one working tree. Staging mechanics are `git.md` â†
   server hot-reloads, so the number describes a tree mid-edit. Say so and withhold the figure rather than
   attributing it; prefer a quantity that does not depend on the other session's state.
 - Attribute a red gate by reading the error, not by assuming it is yours.
+- Attribute a change by comparing file modification times with the times of your own actions, not by its
+  diff â€” a peer's restructuring reads exactly like a clobber until the times are checked.
 - Run the gate scoped to your own files first.
 - **A generator that writes in place is an edit.** Running one during another session's capture breaks
   the same rule as typing â€” regenerate into a scratch directory, or wait.
