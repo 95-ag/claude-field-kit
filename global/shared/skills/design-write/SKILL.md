@@ -72,15 +72,16 @@ and Update are the everyday path; Realign is a fallback.
   the first draft. The discipline a rewrite would later enforce is applied up front, so the doc is born
   compliant and needs no rewrite.
 - Pull substance only from what the user points you at — the existing UI/components, an approved
-  direction, their notes. If a section has no decided content, leave a one-line `TODO:` and call it out
-  — never invent tokens, components, or design rules.
+  direction, their notes. If a section has no decided content, leave a one-line `TODO:` and list it under
+  Questions — never invent tokens, components, or design rules.
 
 **Update — keep it compliant** (everyday maintenance)
 - Every post-authoring change goes through here. Smallest viable edit: one bullet before a paragraph,
   one section before its neighbors. Match the surrounding section's terminology and its category's
   writing mode (`design-writing-contract.md` → Section-Type Writing Modes).
-- New content is contract-compliant by construction (component = name → 1-line identity → 3–5 semantic
-  bullets → optional YAML; tokens in `{token.name}` resolved-value form; bullets ≤ 2 visual lines).
+- New content is contract-compliant by construction (component = name → 1-line identity → semantic
+  bullets → optional YAML; tokens in `{token.name}` resolved-value form; lengths per
+  `design-writing-contract.md` → Compression Targets).
 - Cross-layer edits (a YAML-Registry token + its prose reference) are in scope when they touch ≤ 2
   canonical sections — one manifest entry per layer. Use `edit-patterns.md`; keep cross-references intact
   (`cross-reference-rules.md`). Disciplined updates are what keep drift from ever building up.
@@ -130,7 +131,9 @@ says "none"** — an omitted section and a forgotten one look the same.
    batch, what was written for that review.
 2. **Manifest** — one line per change, factual, no rationale prose; every `FLAGGED`, `NOTED`,
    `PLACEHOLDER` or `MIRRORS` entry the references call for lands here — including a retired token's
-   consumer (`edit-patterns.md` → Remove a section or component) and each duplicate group, once:
+   consumer (`edit-patterns.md` → Remove a section or component) and each duplicate group, once.
+
+*Example:* — under the caveat in `design-writing-contract.md` → Token Conventions.
 
 ```
 ADDED: token `surface-interactive` to YAML Registry → colors
@@ -160,8 +163,8 @@ source — keep the quoted text verbatim, or list each as `MIRRORS:` with file a
 has the same trap: a state label a comment cites must survive as the row key.
 
 3. **Check results** — the remediation list for failed checks, and every count a check requires:
-   zeros, pairs checked, blocks parsed, hits by class, and both boundary sweeps (`validation-heuristics.md`;
-   `edit-patterns.md` → Change a boundary).
+   zeros, pairs checked, blocks parsed, hits by class, both boundary sweeps, and each figure stripped
+   until its code lands (`validation-heuristics.md`; `edit-patterns.md` → Change a boundary).
 4. **Questions** — every `TODO:` left while authoring, and each decision only the user can make, with a
    recommendation (Behavioral Defaults → Ask whether the change is visual or behavioural).
 

@@ -167,8 +167,8 @@ instrument for making the codebase visible enough to author DESIGN.md from it.
 
 **Item-list source:** code discovery — files, component signatures, CSS patterns, repeated markup.
 
-This mode is a **specified seam** in the current skill; the static-HTML adapter procedure is deferred
-— see `stack-adapters.md` → Static-HTML adapter contract. The React/Next discovery path follows the
+On static HTML this mode is EXERCISED in one shakedown — `stack-adapters.md` → Static-HTML adapter
+contract; (f) Code/token discovery. The React/Next discovery path follows the
 same logic: discover → render provisionally → surface for user confirmation.
 
 ### Discovery heuristics

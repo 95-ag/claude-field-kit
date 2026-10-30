@@ -67,7 +67,7 @@ layout constants.
 ```
 RulerStop = {
   px: string      // breakpoint floor as string: "0", "640", "768", "1024", "1280", "1536"
-  device: string  // human device label: "Mobile", "Tablet", "Laptop", "Desktop", "Wide"
+  device: string  // human device label, per spine-domain-technical.md → Responsive Behavior → ZONE_BARS
   token: string   // breakpoint token name: "base", "sm", "md", "lg", "xl", "2xl"
   used: boolean   // true = project uses this breakpoint (sunken/deep level);
                   // false = part of the scale but unused (raised level)

@@ -5,7 +5,7 @@ boundary, and whether a project must have it. Use this to decide *what shape* a 
 `spec-writing-contract.md` to decide *how it reads*. This reference is **self-contained** — it does not depend
 on any repo-side doc.
 
-DESIGN.md is deliberately absent — it is owned by `design-update` / `design-rewrite`, never by this skill.
+DESIGN.md is deliberately absent — it is owned by `design-write`, never by this skill.
 Design-scoped technical conventions (z-index, layout shell, font smoothing, code highlighting) also belong
 in DESIGN.md — never park them in ARCHITECTURE's technical decisions.
 

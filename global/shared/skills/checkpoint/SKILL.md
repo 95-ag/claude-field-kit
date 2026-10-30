@@ -26,19 +26,27 @@ A dispatched subagent stops and reports back instead of writing.
 
 ## Procedure
 
-Read the three work docs first and match the voice they already have, then update:
+Read the three work docs first and match the voice and section names they already have, then update:
 
-1. **`session.md`** — update each section in template order: `## Phase` (current state) → `## Next` →
-   `## Blockers` → `## Decisions locked` (add any newly locked one) → `## Deferred` → `## Done` (prepend the
-   latest milestone, newest first). ISO-datestamp Done / Decisions / Deferred entries. Prune `## Phase` and
-   `## Done` per **Pruning**; re-check every `## Blockers` and `## Deferred` entry per **Stale open items**.
-2. **`tasks.md`** — flip completed checkboxes to `[x]`; move finished clusters to `## Done`; keep `## Now`
-   (clusters + their `plan: <path>`), `## Open decisions`, and `## Backlog` accurate; durable deferrals stay
-   in Backlog, never under Now. Prune `## Now` and `## Done` per **Pruning** — in `## Done`, drop only the
-   items of plans that are **fully complete**, keeping the current plan's done sub-tasks. Re-check
-   `## Backlog` per **Stale open items**.
-3. **`lessons.md`** — append any new correction/lesson (lead with the rule, 2–3 lines). To prune, **surface the
-   candidates for the user's call** — promote to a rule file / relocate / keep / drop — never silently delete.
+1. **`session.md`**
+   - Update each section in this order (default names): `## Phase` (current state) → `## Next` → `## Blockers` →
+     `## Decisions locked` (add any newly locked one) → `## Deferred` → `## Done`.
+   - Prepend the latest milestone to `## Done`, newest first.
+   - Datestamp Done / Decisions / Deferred entries (ISO `YYYY-MM-DD`).
+   - Prune `## Phase` and `## Done` per **Pruning**.
+   - Re-check every `## Blockers` and `## Deferred` entry per **Stale open items**.
+2. **`tasks.md`**
+   - Flip completed checkboxes to `[x]`; move finished clusters to `## Done`.
+   - Keep `## Now` (clusters + their `plan: <path>`), `## Open decisions` and `## Backlog` accurate; durable
+     deferrals stay in Backlog, never under Now.
+   - Datestamp Done and Backlog entries (ISO `YYYY-MM-DD`); a Now entry carries none.
+   - Prune `## Now` and `## Done` per **Pruning** — in `## Done`, drop only the items of plans that are
+     **fully complete**, keeping the current plan's done sub-tasks.
+   - Re-check `## Backlog` per **Stale open items**.
+3. **`lessons.md`**
+   - Append any new correction/lesson (lead with the rule, 2–3 lines).
+   - To prune, **surface the candidates for the user's call** — promote to a rule file / relocate / keep /
+     drop — never silently delete.
 
 ## Pruning — the live sections too, not only `## Done`
 
@@ -50,7 +58,7 @@ Read the three work docs first and match the voice they already have, then updat
   droppable; a constraint is not.
 - Account for every line of a cut block — moved into `## Done` / `## Decisions locked`, or dropped on
   purpose. A section-level check misses a dropped line.
-- A standing reference every session needs is not phase state; a durable deferral is not `## Now`.
+- A standing reference every session needs is not phase state.
 - Where both docs carry a round, `session.md` owns the record and `tasks.md` keeps the checklist.
 
 ## Stale open items
@@ -60,13 +68,12 @@ dead one keeps reading as live work.
 
 - Verify each against the tree before restating it — grep its consumers or read the file. Drop what has
   landed and say so, never silently.
-- A new deferred entry names the file, the line and a quote. If it cannot, it is not ready to defer.
+- A new deferred entry names its subject — the file, the line, and a quote where one applies. An entry only
+  its author could act on is not ready to defer.
 - When a fix lands, grep `## Blockers`, `## Deferred` and `## Backlog` for the entries it closed.
 
 ## Guarantees
 
 - Idempotent — re-running just re-checkpoints the current state; no duplication.
-- A dispatched subagent refuses and reports back, never writes.
 - No fabrication — record only what actually happened; if a task isn't verified+signed-off, it is not "Done".
-- Never silent-deletes a lesson — pruning lessons is always the user's call.
-- Doc-only — never commits, never edits code/plans/memory.
+- Doc-only — never commits.

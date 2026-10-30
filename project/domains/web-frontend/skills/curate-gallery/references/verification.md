@@ -211,7 +211,7 @@ Run the full toolchain before marking the gallery done:
 Static HTML: no build step — run a static linter or validator and a DOM duplicate-id check in the
 browser.
 
-*Static-HTML per-specimen render-check (EXERCISED):*
+*Static-HTML per-specimen render-check (EXERCISED in the Inventory shakedown):*
 whole-page dup-id is not enough — check each `.ds-frame` actually paints content. Three signals per
 specimen: **bad** (empty / zero-height box), **thin** (rendered height below a min threshold),
 **variantsIdentical** (two variants with identical computed render — a dead-variant / dead-CSS tell). This
@@ -240,14 +240,14 @@ rebuild must not be able to read it.
 
 ---
 
-## Gate 4 — Dual-stack proof
+## Stack-proof status
 
 The skill claims to be stack-agnostic. Proof requires at least two adapters VERIFIED against real
 projects:
 
 | Stack | Modes run | Status |
 |---|---|---|
-| **React/Next** | Build, Sync | EXERCISED — Inventory unrun on this stack |
+| **React/Next** | Build, Sync | EXERCISED — Inventory SPECIFIED on this stack |
 | **Static-HTML** | Inventory (shakedown) | EXERCISED — adapter shape built + render-checked; awaits a static-HTML project with a forward-written DESIGN.md (see `stack-adapters.md` → Static-HTML pinned structure) |
 
 No row is VERIFIED yet, so this proof is open. The static-HTML

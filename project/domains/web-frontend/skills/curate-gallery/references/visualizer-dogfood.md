@@ -108,7 +108,7 @@ These are exceptions, not a general license. Call them out explicitly in code co
 Visualizers read live `var(--token)` values via inline styles for their display surfaces:
 swatch backgrounds, bar widths, border-radius values. The mechanism for setting
 `style="background: var(--token)"` differs by stack (React inline-style object syntax vs
-HTML `style` attribute). See `stack-adapters.md → Live CSS-variable resolution seam`.
+HTML `style` attribute).
 
 ---
 

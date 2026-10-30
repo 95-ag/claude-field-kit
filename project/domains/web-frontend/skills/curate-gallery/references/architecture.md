@@ -20,7 +20,7 @@ boundary. This layer is what makes the gallery a gallery regardless of tech stac
 **Adapters (stack-specific)** — the six seams that vary per framework: (a) make a dev-only route,
 (b) render a component live, (c) run build-time transforms, (d) flip themes, (e) exclude from
 production, (f) discover components/tokens in code. See `stack-adapters.md` for the React/Next adapter
-(EXERCISED) and the static-HTML adapter contract (EXERCISED).
+and the static-HTML adapter contract; each one's maturity and limit → `verification.md` → Stack-proof status.
 
 The spine is stable. Adapters change per project. Do not bake adapter specifics into the spine files.
 

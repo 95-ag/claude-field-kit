@@ -70,7 +70,7 @@ When deciding whether a YAML block, role table, or rule should be hoisted to a g
 
 Paragraphs SHOULD:
 
-* remain under 5 visual lines
+* stay within the paragraph length (→ Compression Targets)
 * communicate one primary idea
 * appear mainly in philosophy, composition, or imagery sections
 
@@ -123,9 +123,9 @@ The document MUST optimize for vertical scan speed.
 
 Targets:
 
-* paragraphs ≤ 5 visual lines
-* bullets ≤ 2 visual lines
-* components ≤ 6 bullets before YAML/spec
+* **paragraph length** — ≤ 5 visual lines
+* **bullet length** — ≤ 2 visual lines
+* **component bullets** — ≤ 6 before YAML/spec
 * most sections SHOULD remain readable within one screen height
 * a reason attached to a requirement ≤ one clause (see Two-Layer Document Model)
 * no provenance shape anywhere in a canonical section (see Prose Anti-Patterns)
@@ -154,7 +154,7 @@ Semantic tokens SHOULD appear in prose when:
 * they represent identity-bearing primitives
 * they map to shared design vocabulary
 
-Preferred format:
+*Example:* the preferred format — names and values adapt per project; the shape is fixed:
 
 ```md
 radius `{radius.sm}` (4px)
@@ -323,7 +323,7 @@ Technical prose SHOULD favor compressed semantic clusters over decomposed specif
 
 Closely related implementation details SHOULD be merged into compact semantic clusters rather than separated into mechanically isolated bullets.
 
-**But cluster only low-information attributes.** When a single concept carries high information — several facts that each need their own explanation — split it into multiple bullets or nested sub-bullets rather than cramming one overloaded bullet. The trigger is visual length: once a bullet exceeds ~2 visual lines, split it. Clustering related facts and splitting loaded ones serve the same goal — bounded reading load — applied to opposite inputs.
+**But cluster only low-information attributes.** When a single concept carries high information — several facts that each need their own explanation — split it into multiple bullets or nested sub-bullets rather than cramming one overloaded bullet. The trigger is visual length: once a bullet exceeds the bullet length (→ Compression Targets), split it. Clustering related facts and splitting loaded ones serve the same goal — bounded reading load — applied to opposite inputs.
 
 Preferred (cluster — low-info attributes):
 - Background `{surface-tag}`, text `{colors.on-surface}`, type `tag-chip`, rounded `{radius.sm}` (4px).
@@ -423,7 +423,7 @@ Every reusable component section MUST contain:
 
 1. component name
 2. 1-line identity statement
-3. 3–5 semantic bullets
+3. semantic bullets, within the component bullets limit (→ Compression Targets)
 
 Component bullets SHOULD collectively communicate:
 
@@ -447,7 +447,7 @@ Preferred:
 Used for the primary home CTA, project navigation, and contact actions.
 ```
 
-Preferred component format:
+*Example:* the preferred component format, under the Token Conventions caveat:
 
 ```md
 ### `button-primary`
@@ -463,7 +463,7 @@ Primary committed action using tonal contrast rather than elevation.
 Components MUST NOT:
 
 * begin with YAML
-* exceed 6 bullets before implementation detail
+* exceed the component bullets limit before implementation detail (→ Compression Targets)
 * rely entirely on implementation specs for understanding
 
 ### Contextual Usage Rules
@@ -631,9 +631,7 @@ Preferred:
 
 Avoid:
 
-* bullets longer than 2 visual lines
-* paragraphs longer than 5 visual lines
-* more than 6 bullets before implementation details
+* breaking a Compression Target — bullet length, paragraph length or component bullets (→ Compression Targets)
 * mixing editorial and technical prose styles within the same local section
 
 ---

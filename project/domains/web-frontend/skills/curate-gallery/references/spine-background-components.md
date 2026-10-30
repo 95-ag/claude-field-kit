@@ -150,7 +150,7 @@ page-level `DemoViewOnly`. Full rule → `scaffold-guards.md` → click-guards.
 
 **P2 — Visual alignment:** components are real (own styling); variant-grid layout + labels use project
 spacing + code/caption tokens; input labels use the project's form/label token; Specimen names use the
-project's heading treatment (Full-page header rule). No token resolution beyond layout.
+project's heading treatment (`architecture.md` → Page hierarchy & headings). No token resolution beyond layout.
 
 **P3 — Actual inputs:** the UI components + their **sub-groups, read from DESIGN.md → Components → UI**
 (the sub-taxonomy is a general vocabulary — Controls/Actions · Inputs · Links · Display · Feedback/Status

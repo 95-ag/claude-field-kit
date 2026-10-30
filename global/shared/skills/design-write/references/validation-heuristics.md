@@ -6,7 +6,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Structural
 
-- Canonical top-level ordering preserved: `YAML Registry → Overview → Foundations → [Semantic Systems] → [Background] → Components → Domain Components → Interaction Rules → Accessibility Rules → Cross-Cutting Rules → Technical Conventions → Iteration Notes`. Bracketed entries are optional.
+- Canonical top-level ordering preserved (`design-writing-contract.md` → Canonical Spine).
 - All spine sections required by the contract — and by any project-specific schema — are present. (Project-specific required Domain Components, e.g. a portfolio's `Project Detail` / `About Layouts`, come from the project's own schema, not this generic check.)
 - No heading deeper than H4.
 - No duplicate section titles within the same parent.

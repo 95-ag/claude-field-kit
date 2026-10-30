@@ -36,6 +36,8 @@ Before implementing the toggle:
 
 ## React/Next adapter (EXERCISED)
 
+> **Status: EXERCISED** in Build and Sync; Inventory is SPECIFIED on this stack (`verification.md` → Stack-proof status).
+
 Exercised against a project using App Router, next-themes, Tailwind CSS v4, MDX via next-mdx-remote +
 rehype-shiki, Biome and release-allowlist deployment.
 
@@ -191,7 +193,7 @@ Classification is provisional and user-confirmed — see `modes.md` for the full
 > vague a target to verify the fidelity gates against. The per-primitive and visualizer HTML expressions
 > are built out on that project.
 
-### Static-HTML pinned structure (EXERCISED)
+### Static-HTML pinned structure
 
 The static-HTML gallery is the **layout pin** for this stack — the equal-authority sibling of the
 React/Next tree in `architecture.md`, selected by the same stack detection. Same concept pins (catalog
@@ -223,7 +225,7 @@ same gallery (the same sections, specimen frames, visualizers, noindex, dev-only
 | imported real components | copied markup (monolith) OR included partials (multi-file) |
 | `public/<route>/samples/` | copied assets + CSS-shape stand-ins |
 
-**Specimen marker (EXERCISED).** Give each specimen a
+**Specimen marker.** Give each specimen a
 machine-readable descriptor comment so the gallery is scannable and (optionally) publishable to a
 claude.ai/design project:
 `<!-- @specimen group="Components·UI" name="card" variants=".tc/.fam-card/.ev-card/.cc" status="live|posed|dead" -->`.

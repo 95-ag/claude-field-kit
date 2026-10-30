@@ -25,22 +25,23 @@ starting it.
 
 1. Locate `.claude/work/tasks.md` in the current project. If it's genuinely absent and the project uses the
    convention, create it matching the shape of its sibling work docs; otherwise ask where the task should go.
-2. Phrase the task as one **flat** checkbox item in the house format:
-   `- [ ] **<short title>** — <what + why>`, wrapped to the file's width. *Flat* means no cluster nesting,
-   not one physical line. (Cluster grouping + a `plan: <path>` header are set at plan-time, not by this skill.)
+2. Phrase the task as one **flat** checkbox item in the file's existing entry shape — by default
+   `- [ ] **<short title>** — <what + why>`, wrapped to the file's width.
+   - *Flat* means no cluster nesting, not one physical line.
+   - Cluster grouping and a `plan: <path>` header are set at plan-time, not by this skill.
    - **A Backlog add is a deferral, so it names its subject** — the file, the line, and a quote where one
-     applies. An entry only its author could act on is not ready to queue.
-   - **Datestamp a Backlog add** (ISO `YYYY-MM-DD`): it is a deferred entry, and the date is what makes
-     staleness checkable later. A Now add carries none.
+     applies. An entry only its author could act on is not ready to defer.
+   - **Datestamp a Backlog add** (ISO `YYYY-MM-DD`); a Now entry carries none.
+   - The date is what makes staleness checkable later.
 3. Place it:
    - **Now / active** section when the user marks it current or next.
    - **Backlog** (default) when it's a deferral / later item.
    - Match the project's actual section names if they differ; create a `## Backlog` section only if none fits.
-4. Dedup: if a near-identical item already exists, point at it instead of adding a duplicate.
+4. Dedup: if an open item already has the same subject (file and line) or the same title, point at it
+   instead of adding a duplicate.
 
 ## Scope / boundaries
 
 - Touches `.claude/work/tasks.md` only — never code, plans, or other work docs.
-- Records only; does NOT start, plan, or check off the task.
 - Distinct from the `asset-capture` hook (auto-queues *harvest* tasks) and `/checkpoint` (reconciles all work
   docs). `/task` is the on-demand, user-driven single-task add.

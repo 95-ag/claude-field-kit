@@ -29,8 +29,8 @@ Manifest entries: MOVED (source → destination), RENAMED (heading only), PLACEH
 **Purpose:** Apply the contract's formatting rules to prose, bullets, and YAML.
 
 What changes:
-- Prose walls broken into bullets or compressed to ≤ 5 lines.
-- Bullets exceeding 2 visual lines compressed.
+- Prose walls broken into bullets, and prose and bullets compressed to `design-writing-contract.md` →
+  Compression Targets.
 - Components reordered to: identity statement → semantic bullets → YAML spec.
 - YAML blocks that duplicate prose removed (prose preserved, YAML removed).
 - Semantically fragmented bullets merged into compact clusters.
@@ -53,10 +53,10 @@ Section rewrite changes presentation and organization within the section. It doe
 Scope: user specifies target section(s). If whole-doc, process top-level sections one at a time and list each in the manifest.
 
 What changes:
-- Section content rewritten to match writing mode for its category (see contract § Section-Type Writing Modes).
+- Section content rewritten to match writing mode for its category (`design-writing-contract.md` → Section-Type Writing Modes).
 - Anti-patterns removed.
-- Component sections brought to: name → 1-line identity → 3–5 semantic bullets → optional YAML.
-- **Doc-first applied** — code references (paths, symbols, framework classes, wiring) rephrased as conceptual behavior, per contract § Doc-First. A one-shot audit under-counts; re-audit after the pass.
+- Component sections brought to: name → 1-line identity → semantic bullets → optional YAML.
+- **Doc-first applied** — code references (paths, symbols, framework classes, wiring) rephrased as conceptual behavior, per `design-writing-contract.md` → Doc-First — No Code References. A one-shot audit under-counts; re-audit after the pass.
 - **Intros lead with the design concept** — every moved or new section intro checked against a sibling intro; implementation paths and self-justifying placement stripped.
 
 What does NOT change:
@@ -98,8 +98,6 @@ Manifest entries: UNIFIED (old → new, count).
 
 ---
 
----
-
 ## 6. Architectural Migration Pass
 
 **Purpose:** Restructure an existing document into the two-layer model and new canonical spine. One-time use per architectural transition — distinct from the ordinary Migration / Reorganization Pass.
@@ -112,7 +110,7 @@ What changes:
 - Sections reclassified as Domain Components are relocated to `# Domain Components`, placed between `# Components` and `# Interaction Rules`.
 
 What does NOT change:
-- Token names and values — preserved verbatim (Tokens Are Sacred still applies).
+- Token names (`safety-rules.md` → Shared rules (all modes)) and values — preserved verbatim.
 - Content that cannot be cleanly mapped is flagged, never silently deleted.
 
 Carve-out: the Section-Preserving Migrations default is suspended for this pass. Cross-section restructuring is the entire point. This suspension applies to this pass only.
@@ -131,8 +129,7 @@ This pass runs alone. It MUST NOT be combined with other passes.
 constraints buried inside it.
 
 The contract bans residue (`design-writing-contract.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
-only ever accumulates. In one recorded sweep, ten of seventeen hits were load-bearing — which is why this
-pass sorts before it deletes.
+only ever accumulates. Many hits are load-bearing, so this pass sorts before it deletes.
 
 Scope: document-wide. The shapes to sweep for and the two-class sort live in `validation-heuristics.md`
 → Residue, because every mode needs them; this pass applies them across the whole doc rather than only

@@ -60,8 +60,7 @@ is the operational form of the Scope Guardrail — render decided intent, never 
 **Pre-approved batch.** A user who has settled every value already, with one review scheduled at the end,
 can instruct you to skip the section-by-section confirmation; that instruction overrides the rule above.
 Proceed, then report what was written for that review. It changes *when* the content is confirmed, never
-*whether* — the Scope Guardrail still holds, and anything the brief does not decide is still flagged
-rather than originated.
+*whether* — anything the brief does not decide is still flagged, never originated (→ Scope Guardrail).
 
 ## Two Modes
 
@@ -76,8 +75,8 @@ state and the request — not from a separate sub-skill.
 - Write in that archetype's tier/mode from the first draft. A good first write needs no later rewrite,
   so get the structure and voice right now rather than dumping prose to clean up later.
 - Pull substance only from sources the user pointed you at (approved plan, code, their notes). If a
-  required section has no decided content, leave a one-line `TODO:` marker and call it out — never
-  invent the content.
+  required section has no decided content, leave a one-line `TODO:` marker and list it under Questions —
+  never invent the content.
 
 **Maintenance** — the doc exists and is being edited, aligned, restyled, or restructured.
 - Default to the **smallest viable edit**: one bullet before a paragraph, one paragraph before a
@@ -90,7 +89,7 @@ state and the request — not from a separate sub-skill.
   named path (see the writing contract). Apply them to the sections you're already editing.
 - Larger restructures (reordering sections, splitting a wall of prose across a whole doc, a full
   restyle pass) are in scope here too — just announce the shape of the change before making it, and
-  never drop content silently. Flag anything you remove.
+  never drop content silently (→ Behavioral Defaults).
 
 ## Scope Guardrail
 
@@ -101,7 +100,7 @@ state and the request — not from a separate sub-skill.
 - **Visuals defer outward.** When a spec doc needs to reference how something looks, cross-reference
   DESIGN.md by named path — do not restate tokens, pixels, or component internals inline.
 - If a request mixes substance and form ("write the product strategy and format it"), do the form and
-  flag the substance you'd need them to decide.
+  list the substance they need to decide under Questions.
 
 ## Output Format
 
@@ -124,7 +123,9 @@ RELINKED: "§7.4" → "PRODUCT.md → Page Specifications → Project Detail" (3
 NOTED: nearby prose wall in "About" not in scope — left as-is, recommend a restyle pass
 ```
 
-3. **Check results** — the Alignment drift list, and any check that failed.
+3. **Check results** — run the Validation Checklist (`spec-writing-contract.md` → Validation Checklist)
+   before reporting, in either mode; list each item that failed, and the Alignment drift list when that
+   procedure ran.
 4. **Questions** — every `TODO:` left while authoring, and each decision only the user can make, with a
    recommendation (Behavioral Defaults → A product change often needs a design change behind it).
 
@@ -141,7 +142,7 @@ NOTED: nearby prose wall in "About" not in scope — left as-is, recommend a res
   entry whether it alters something DESIGN.md describes: a named section, component, affordance, or state.
   If so, recommend `design-write` and name the entry. The Scope Guardrail owns the boundary; this is the
   prompt that makes you notice it was crossed.
-- **No silent deletion** — flag anything you remove so the user can audit it.
+- **No silent deletion** — record every removal as a `REMOVED` manifest line so the user can audit it.
 
 ## Alignment Procedure (optional)
 

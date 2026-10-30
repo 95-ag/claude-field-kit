@@ -80,7 +80,7 @@ When a stable-vocabulary term is renamed (e.g., "tonal depth" → "tonal layerin
 4. Check sibling docs if named by the user.
 5. Manifest: `UNIFIED: "old term" → "new term" (N occurrences in DESIGN.md, M in sibling docs)`
 
-Note: whole-doc terminology sweeps are better handled by the rewriter's Terminology Consistency Pass.
+Note: whole-doc terminology sweeps are better handled by Realign's Terminology Consistency Pass (`rewrite-passes.md`).
 
 ---
 
@@ -151,5 +151,6 @@ before the pass finishes, and reports both.
    never restate it as current fact.
 
 **Sequencing.** The doc is written before the code, so a figure the new boundary needs cannot exist yet:
-strip the figure, log it, and restore it once the code lands. Any other order states something false in
-the interim.
+strip the figure (a `REMOVED` manifest line — this pattern names the strip as routine), report its
+restore under Check results, and restore it once the code lands. Any other order states something false
+in the interim.

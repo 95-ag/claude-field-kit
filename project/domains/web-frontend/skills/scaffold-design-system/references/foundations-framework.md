@@ -21,10 +21,7 @@ the failure surfaces late, at a `var()` that resolves to nothing.
   `@theme static`.
 - **One mechanism, not two.** A token in a namespace the framework does not know behaves identically
   to an unreferenced token in a known one: both are dropped by plain `@theme`, both survive under
-  `static`. Unknown namespaces are *utility-less*, never separately *discarded* — an earlier reading
-  named namespace-discarding as a second mechanism and was wrong: it was measured while plain
-  `@theme` was still the baseline and never re-run once `static` was adopted (`verification.md` →
-  Re-run every finding established before a foundational decision changed).
+  `static`. Unknown namespaces are *utility-less*, never separately *discarded*.
 - **Splitting theme tokens from plain `:root` variables is a readability choice, not a compiler
   constraint.** Either block works for either group. Keep the split to show which tokens participate
   in utility generation, and justify it as legibility — never as forced by the framework.

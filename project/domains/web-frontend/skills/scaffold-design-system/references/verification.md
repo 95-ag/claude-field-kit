@@ -18,12 +18,14 @@ never a substitute for an earlier one, and none of them run after staging.
 
 | Gate | What it is | What it proves |
 |---|---|---|
-| **0 — authoring self-review** | Re-read every emitted file against its spec entry and every rule that governs it from outside | The output says what the doc says; nothing was invented, nothing restated twice |
-| **1 — cold-regeneration diff** | Regenerate in a fresh context and diff against the baseline | What the author's own context supplied silently, rather than the instructions |
+| **0 — parity review** | A reviewer with no conversation context, dispatched after emission, reads every emitted file against its spec entry and every rule that governs it from outside | The output says what the doc says; nothing was invented, nothing restated twice |
+| **1 — cold-regeneration diff** | A dispatched agent given only the instructions regenerates; diff its output against the baseline | What the author's own context supplied silently, rather than the instructions |
 | **2 — build** | The repo's gate: typecheck, lint, production build | The code compiles and satisfies the repo's static rules |
 | **3 — render** | Mount, render, drive, watch the first client frame | Anything visual, and the defect classes gates 0–2 are structurally blind to |
 | **4 — human sign-off** | The user confirms, **per visual layer** | The output is what was wanted — the only gate that can judge that |
 
+- **With no reviewer available for gate 0, run it yourself and say so in the report** — never call that a
+  fresh-eyes pass.
 - **Gate 1 applies wherever a baseline exists** — validating the skill against a hand-built pass, or
   re-running an Align on code that was already correct. With no baseline it is skipped, and the skip
   is stated.
@@ -148,7 +150,7 @@ unedited (`foundations-boundaries.md` → A published contract names its mount p
 - **A format-only command is the wrong command.** Formatting is a subset of what a modern toolchain
   auto-fixes; import organization in particular sits outside it, so formatter-then-linter produces
   exactly the error wall the rule above exists to prevent. Read the repo's build-verification rule
-  for which command covers both, and run that one. *Observed on Biome 2:* `format --write` does not
+  for which command covers both, and run that one. *Example:* on Biome 2, `format --write` does not
   apply `organizeImports`; `check --write` applies both.
 - **The fix pass is not the gate.** Run the verifying pass afterwards, unfixed, and read its result.
 - **Tear the probe harness down before gate 2**, since it lives inside the repo and the linter will
@@ -164,9 +166,7 @@ unedited (`foundations-boundaries.md` → A published contract names its mount p
 
 ## Two method rules that govern every finding
 
-These apply to every finding this skill records, not only to the layer that produced them. Each one
-was paid for: both framework findings this skill's references were built from named a **false
-mechanism** first, and both were reasoned to rather than measured.
+These apply to every finding this skill records, not only to the layer that produced them.
 
 ### Re-run every finding established before a foundational decision changed
 

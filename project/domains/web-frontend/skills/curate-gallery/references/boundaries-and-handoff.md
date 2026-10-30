@@ -21,7 +21,7 @@ Updating the gallery's own sections and visualizers to reflect new tokens or com
 
 Certain components cannot be meaningfully demoed without a small hook in the production component itself. This is the **only permitted exception** to the read-only rule.
 
-**When it applies:** a component that is `position:fixed`, page-coupled (DOM-scraping, route-reading, scroll-tracking), or breakpoint-gated cannot be demoed live in a bounded frame without some affordance. The gallery cannot fake this from outside. See `hard-to-demo.md` for the techniques.
+**When it applies:** a component that is `position:fixed`, page-coupled (DOM-scraping, route-reading, scroll-tracking), breakpoint-gated, or carries hard side-effects (focus-trap, scroll-lock, route/resize/escape handlers) cannot be demoed live in a bounded frame without some affordance. The gallery cannot fake this from outside. See `hard-to-demo.md` for the techniques.
 
 **Gate — it binds the gallery.** The carve-out is an exception to *the gallery's* read-only rule, so the per-case gate is the gallery's: it surfaces the need, proposes the minimal change, and waits for **explicit per-case user agreement**. It never adds a production touch-point unilaterally.
 
@@ -33,16 +33,16 @@ Certain components cannot be meaningfully demoed without a small hook in the pro
 Both are required. The trigger is the occasion, the pattern is the mechanism; bounding by mechanism alone would licence any prop. A fragment private to a page is the one case outside both conditions — it is exported, not copied (`scaffold-design-system/references/component-set.md` → Demo affordances). A novel affordance, or one of these two patterns on a component matching no trigger, still needs per-case agreement. Procedure — which pattern applies, how each touch-point is named and recorded — is
 `scaffold-design-system/references/component-set.md` → Demo affordances.
 
-**Constraint:** keep every touch-point minimal. Prefer a **prop** (the simplest possible hook) or a **presentational sub-component extraction** (splitting the presentational panel out of a side-effecting wrapper) over logic changes to the production component. The production callers always omit the demo prop; the sub-component is wrapped by the real component for production use.
+**Constraint:** keep every touch-point minimal — one of the two patterns, never a logic change to the production component. The production callers always omit the demo prop; the sub-component is wrapped by the real component for production use.
 
 **The two patterns:**
 
-| Pattern | When to use | How (mechanism) |
+| Pattern | What it is | How (mechanism) |
 |---|---|---|
-| **Demo-affordance prop** | A fixed/page-coupled component that needs live rendering — e.g. a section-progress nav or a scroll-to-top button. | See `hard-to-demo.md` |
-| **Presentational sub-component extraction** | A component with hard side-effects (focus-trap, scroll-lock, route/resize/escape handlers) where a prop alone can't neutralize them — e.g. a mobile nav. | See `hard-to-demo.md` |
+| **Demo-affordance prop** | One input the component lacks in a bounded frame, supplied by a prop production callers omit | See `hard-to-demo.md` |
+| **Presentational sub-component extraction** | The pure visual panel split out of its side-effecting wrapper | See `hard-to-demo.md` |
 
-Example: three verified touch-points are `demoSections` on the section-progress nav (demo-affordance prop), `forceVisible` on the scroll-to-top button (demo-affordance prop), and `MobileNavPanel` extracted from the mobile nav (presentational extraction). These are named as the known reference implementations; the patterns generalize to any project.
+Example: three touch-points in use are `demoSections` on the section-progress nav (demo-affordance prop), `forceVisible` on the scroll-to-top button (demo-affordance prop), and `MobileNavPanel` extracted from the mobile nav (presentational extraction). These are named as the known reference implementations; the patterns generalize to any project.
 
 ---
 
