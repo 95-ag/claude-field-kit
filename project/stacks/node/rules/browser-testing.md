@@ -39,6 +39,10 @@ lives in `web-frontend/visual-verification.md` → Render-backed verification.
   performance is not representative.
 - Run it 2–3× and report the median; the score varies run to run, and total blocking time is the usual mover.
 - Localhost has no CDN or network latency, so it reads high — state that measurement context with the number.
+- Under WSL, set Chrome's profile dir yourself when `chrome-launcher` (used by Lighthouse) starts a Linux Chrome:
+  `lighthouse <url> --chrome-flags="--user-data-dir=/tmp/lh-chrome"`.
+  - Why: it detects WSL, assumes a Windows Chrome and passes a Windows-format profile path, which a Linux Chrome
+    creates as a literal `C:\Users\…\lighthouse.<rand>` directory in the cwd on every run.
 
 ## Synchronization
 
