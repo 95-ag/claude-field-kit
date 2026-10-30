@@ -30,6 +30,9 @@ with little change.
   scannability.
 - **No duplication — state a rule once, cross-reference it.** Even within a multi-file asset (a skill's
   `SKILL.md` + `references/`), put the rule in one canonical file and reference it from the others.
+  - The aim is that no rule can change in one place and not another. Overlapping topics are not duplication,
+    and a pointer that costs more to load than the drift it prevents is the wrong fix — restate the rule where
+    it is used, and keep both copies level.
 - **Never cite a work file as a source.** `lessons.md`, `session.md` and `tasks.md` are gitignored and
   pruned, so a pointer into one dangles once the entry is promoted or cut. Carry the rule in the asset, or
   cross-reference the rule it was promoted into. Naming one as a target, as `checkpoint` does, is not citing it.
@@ -50,8 +53,11 @@ with little change.
 - **Multi-mode asset → mode-neutral checks.** If a skill has modes, write its validation/check doc neutral by
   default, tag the genuinely mode-specific checks, and run validation in every mode — a check framed for one
   mode silently skips the others.
+- **A rule moved or changed in one file is done only when its surroundings agree** — every mode that needs it
+  loads its file, its wording is rewritten for its new readers, and every file it depends on or constrains matches.
 - **Clear, crisp, clean** — the smallest content that fully conveys the rule. Condense the wording; never drop
   a rule's actual content.
+  - Write the rule, not the case for it: keep the one *why* a reader needs and drop the story and evidence.
 - **Split by what must load together** — keep unrelated concerns in separate files, and stack/domain
   specifics out of the shared core, so a reader loads only what applies.
 - **Keep an auto-loaded doc lean** — under ~200 lines; split a longer one by sub-topic.
@@ -61,8 +67,9 @@ with little change.
   - Measure the *folded* string.
   - Re-wrap with hyphen-breaking off: a break inside `spec-write` folds back as `spec- write` — valid YAML,
     wrong text.
-- **Audit a gate's own examples.** Every example in a constraint must itself conform to it — a wrong example
-  licenses exactly what the rule forbids and reads as sanctioned (worse than a missing one).
+- **Audit a gate's own examples and checks.** Every example or check in a constraint must itself conform to it —
+  a wrong one licenses what the rule forbids or condemns what it allows, and reads as sanctioned (worse than a
+  missing one).
 - **Verify behavior, not just that it compiles.** A green build or consistency check proves a skill loads,
   not that it behaves.
   - When a change alters behavior, dry-run it on a real input before sign-off.
