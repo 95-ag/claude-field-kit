@@ -2,7 +2,7 @@
 
 The gallery spine (modes, dogfooding, handoff) is stack-neutral. Six concrete mechanics vary by stack —
 these are the **adapter seams**. This reference defines the seams, gives the React/Next adapter
-concretely, and specifies the static-HTML adapter contract. All other references defer stack-specific
+concretely, and routes to the static-HTML adapter contract in `stack-adapter-static-html.md`. All other references defer stack-specific
 wiring here; do not repeat adapter detail elsewhere.
 
 ---
@@ -52,12 +52,9 @@ must NOT be named after Next.js reserved filenames: `layout`, `page`, `loading`,
 `template`, `route`, `default`. Next.js treats any file with one of these names as a framework
 convention (route layout, error boundary, etc.) regardless of where it sits in the app directory — a
 section file named `layout.tsx` inside `src/app/design-system/sections/` will be silently adopted as
-the route layout and break the build. Suffix section/module files to avoid the collision:
-`layout-section.tsx`, `error-display.tsx`, etc.
+the route layout and break the build. Suffix section/module files to avoid the collision.
 
-Example: name section modules `*-section.tsx` (e.g. `layout-section.tsx`), never a
-reserved Next.js filename (`layout`/`page`/`loading`/`error`/`not-found`/`template`/`route`/`default`)
-— a reserved name is silently adopted as the route file and breaks the build.
+Example: `layout-section.tsx`, `error-display.tsx`.
 
 ### (b) Live render
 
@@ -68,6 +65,17 @@ viewport — required for any fixed-position chrome demo.
 
 See `scaffold-chrome-theme.md` for the full `ChromeFrame` contract and `scaffold-guards.md` for
 `DemoViewOnly` and `InertDemo`.
+
+**Rendering mechanics the kit files defer here** (static-HTML column → `stack-adapter-static-html.md` → (b) Live render):
+
+| Mechanic | React/Next |
+|---|---|
+| Inline style (live `var()` binding, frame `height`) | A style object: `style={{ background: "var(--token)", height: 240 }}` — a bare number is px |
+| SVG markup | JSX attribute names — `strokeWidth`, `className`, `viewBox` |
+| Portal (`SuppressionTip`) | `createPortal(node, document.body)` from `react-dom`, in a client component, after mount |
+| Theme hook (`ThemeShot`, `ThemeVideo`) | the theme library's hook — with next-themes, `useTheme().resolvedTheme`, `undefined` until mounted |
+| Motion hook (`ThemeVideo`) | the project's motion library hook — with framer-motion, `useReducedMotion()`; with none, `matchMedia("(prefers-reduced-motion: reduce)")` read after mount |
+| Static image | `import img from "./file.png"` yields `StaticImageData` (carries intrinsic size); a public-path string needs explicit dimensions |
 
 ### (c) Build-time transforms
 
@@ -89,9 +97,8 @@ See `hard-to-demo.md` → Build-time-transform-dependent components, for detail.
 next-themes persists the active theme in `localStorage`. To flip themes in the gallery:
 
 - Render the project's real `InlineThemeSelector` (or equivalent) in the gallery header.
-- For automated verification: set `localStorage.setItem('theme', 'light' | 'dark')` then reload.
-- Confirm the flip worked by diffing the two captured screenshots — identical sizes mean the theme did
-  not actually change.
+- For automated verification: set `localStorage.setItem('theme', 'light' | 'dark')` via eval, then reload.
+  Confirming the flip is the gate in `verification.md` → Theme flip.
 
 Do NOT force `data-theme` on individual frames. JS-theme components (`useTheme`, animated layers,
 the selector itself) read global state; scoping `data-theme` per frame breaks them.
@@ -182,147 +189,16 @@ For Inventory mode (messy/no doc, code exists):
 
 Classification is provisional and user-confirmed — see `modes.md` for the full Inventory procedure.
 
----
+### Gate 2 commands
 
-## Static-HTML adapter contract (EXERCISED)
-
-> **Status: EXERCISED.** The adapter shape below was built and render-checked in one Inventory shakedown
-> — treat the file tree and substrate mapping as concrete. It stays EXERCISED
-> (not VERIFIED) until **a static-HTML project with a forward-written DESIGN.md** adopts the skill: a
-> reverse-engineered doc full of documented debt (dead CSS, no spacing scale, off-token colors) is too
-> vague a target to verify the fidelity gates against. The per-primitive and visualizer HTML expressions
-> are built out on that project.
-
-### Static-HTML pinned structure
-
-The static-HTML gallery is the **layout pin** for this stack — the equal-authority sibling of the
-React/Next tree in `architecture.md`, selected by the same stack detection. Same concept pins (catalog
-primitives, 9 visualizer roles, the section spine, build order); different substrate. The "kits" do not
-disappear — they change from component files to **CSS classes + a small JS shim**. Reproduce these files
-with these names:
-
-```
-design-system/
-├── index.html            ← page shell + every section block   (≈ page.tsx + sections/*.tsx)
-├── gallery.css           ← gallery chrome: .ds-* catalog + visualizer classes
-│                            (≈ gallery.css + scaffold-kit + visualizer-kit)
-├── gallery.js            ← click-guard + copied-handler stubs    (≈ click-guards capture-phase logic)
-└── <site-styles>.css     ← the project's REAL CSS, linked live (verbatim copy when the source has no
-                             separate stylesheet — e.g. inline <style> in a monolith)
-   + copied static assets (backgrounds/images the real CSS references) and CSS-shape stand-ins
-```
-
-**Output-parity map** — every React pinned piece has a static-HTML equivalent, so both adapters emit the
-same gallery (the same sections, specimen frames, visualizers, noindex, dev-only banner) in different clothes:
-
-| React/Next pinned piece | Static-HTML equivalent |
-|---|---|
-| `page.tsx` (metadata, header, mounts sections) | `index.html` — noindex `<meta>`, header, section blocks |
-| `gallery.css` (route-scoped dev rules) | `gallery.css` (chrome only) |
-| `scaffold-kit/*.tsx` (GallerySection/Specimen/Card/ChromeFrame/guards) | `.ds-section` / `.ds-specimen` / `.ds-frame` / `.ds-chrome-frame` classes + `gallery.js` stubs |
-| `visualizer-kit/*.tsx` (9 visualizers) | `.ds-swatch-grid` / `.ds-type-row` / `.ds-bar-scale` / `.ds-shape-row` / `.ds-depth-grid` / `.ds-motion-*` classes |
-| `sections/*.tsx` (token data + composition) | section `<section>` blocks inline, values as `var(--token)` |
-| imported real components | copied markup (monolith) OR included partials (multi-file) |
-| `public/<route>/samples/` | copied assets + CSS-shape stand-ins |
-
-**Specimen marker.** Give each specimen a
-machine-readable descriptor comment so the gallery is scannable and (optionally) publishable to a
-claude.ai/design project:
-`<!-- @specimen group="Components·UI" name="card" variants=".tc/.fam-card/.ev-card/.cc" status="live|posed|dead" -->`.
-`group` reuses the bucket-prefixed section vocabulary.
-
-**Split trigger.** The React tree is in `architecture.md` and the static-HTML tree is in this file's
-Pinned structure section; keep it that way while one of them stays a single table. When BOTH need full
-treatment (tree + route-file and stylesheet contents from `page-and-css.md` + primitive expressions),
-split by stack into symmetric siblings — `architecture.md` (neutral spine + router) plus one file per
-stack, named for it — so a builder loads only its stack's layout pin. **Those per-stack files do not
-exist yet**; this names the shape the split should take, not a path to follow today. Not asymmetric (React-in-main,
-HTML-in-adapter) — that scatters one concept across two docs.
-
-### (a) Dev-only route
-
-Create a separate HTML file or subdirectory (e.g. `design-system/index.html`) alongside the project
-files. It is reachable by opening the file in a browser or via a local dev server (e.g. `live-server`,
-`python -m http.server`). No framework routing — the gallery is just another file.
-
-### (b) Live render
-
-**Component-build contract — reference vs rebuild.** The split is stack-agnostic; only the "call" verb
-changes with the production reuse boundary:
-
-- **Reusable component with a real reuse boundary** → reference it, never rebuild. "Reference" = the
-  stack's instantiation verb: React `import`, web-component mount, templated-static `include`/partial,
-  or (CSS-component projects) apply the canonical class to canonical markup.
-- **Single-file monolith with no reuse boundary** → nothing to call; **copy the
-  canonical markup verbatim + link the same CSS**. The gallery is doing Inventory here, not referencing
-  a system — which is why a monolith's specimens are hand-copied markup, not imports.
-- **Foundations / tokens** (any stack) → never referenced; always a **visualizer specimen** consuming
-  `var(--token)`. A token is a value, not a callable unit.
-- **Domain / page compositions** → reference if extracted into a boundary; else copy canonical markup inline.
-
-Map production's reuse boundaries (`rules/web-frontend/component-structure.md` taxonomy: portable
-ui/layout/icons → shell → domain): reference exactly what production reuses; visualize foundations; copy
-inline page sections. Include the same CSS file(s) so tokens and styles are live; theme-adaptive specimens
-apply the project's theme class/attribute to their wrapper.
-
-**Posed, not live (static-HTML).** The gallery does not run the site's own `<script>`, so anything the JS
-reveals or drives is hidden/blank at rest. Audit **every** JS-driven reveal/toggle pattern — not just the
-obvious one — and force each visible inside `.ds-frame`:
-
-- Scroll-reveal (`.sr`, `.tl-row` → `.in`): `.ds-frame .sr { opacity:1 !important; transform:none !important }`.
-- Any OTHER JS-toggled hidden state has its own class — e.g. `.fam-member` starts `opacity:0` and only
-  reveals when JS adds `.photo-visible`. Missing that one override leaves the whole grid rendered but
-  invisible. There is no single universal reveal class — grep the source for `opacity:0` / `max-height:0` / `.classList.add` and cover each.
-- Stub JS handlers for copied `onclick` attributes (`toggleFam`/`toggleEvent`/`submitRSVP`/`closeNav`) in
-  `gallery.js` so copied markup doesn't throw. Countdown / scroll-progress are posed with sample values,
-  explicitly labeled.
-
-### (c) Build-time transforms
-
-Raw static HTML has no build pipeline by definition — there are no build-time transforms to replicate.
-If the project uses a static site generator or preprocessor, define the seam at that boundary. For a
-pure HTML project, specimen markup is hand-authored or copy-pasted from the rendered project.
-
-### (d) Theme flip
-
-Toggle a class or attribute on a top-level element (e.g. `document.documentElement.classList.toggle('dark')`
-or `data-theme`). A dedicated toggle button in the gallery header applies this. No reload needed when
-CSS custom properties handle theming — the browser re-evaluates the cascade immediately.
-
-### (e) Production exclusion
-
-There is no build step to gate on. Exclusion is a deployment/placement concern:
-
-- **Deploy-ignore file** — add the gallery path to `.vercelignore`, `netlify.toml` exclude, or
-  equivalent. The deploy pipeline skips the path.
-- **Non-published folder** — place the gallery under a folder that the deploy config explicitly
-  excludes or that is outside the published root.
-- **Copy/deploy allowlist** — the deploy script copies only an explicit allowlist; omit the gallery.
-- **No deploy pipeline** — if the project is shipped by handing over files, no tool can enforce
-  exclusion. Surface this explicitly and offer: (i) place in an ignored/clearly-marked directory,
-  (ii) delete before handoff. Document the chosen approach in the gallery header.
-
-Because there is no build step, there is no "dev vs prod" binary — the gallery is simply present or
-absent in whatever files are delivered. Make the chosen approach explicit rather than assuming any
-tooling enforces it.
-
-### (f) Code/token discovery
-
-For a single-file or monolith HTML project (the expected shape):
-
-- **Components:** scan for **repeated markup/class clusters** — the same structural block appearing
-  in multiple places is a reusable candidate. One-off page-flow blocks are domain/inline. Use the
-  repetition count as the primary signal (threshold: 2+ occurrences = candidate).
-- **Tokens:** look for CSS custom properties in `<style>` blocks or linked stylesheets. Repeated
-  hard-coded values with no custom property are a signal to define a token — surface as a concern,
-  not an auto-fix.
-
-Classification is provisional and user-confirmed — see `modes.md` for the Inventory procedure.
+The project's own lint, typecheck and build scripts — with the exercised toolchain, `biome check`,
+`tsc --noEmit` and `next build`. Read the script names from `package.json`; never invent one.
 
 ---
 
 ## Cross-links
 
+- Static-HTML adapter → `stack-adapter-static-html.md`
 - Scaffold-kit mechanics — ChromeFrame + ThemeShot/ThemeVideo → `scaffold-chrome-theme.md`; click-guards
   → `scaffold-guards.md`
 - Demo patterns that interact with seam (b) and (c) → `hard-to-demo.md`

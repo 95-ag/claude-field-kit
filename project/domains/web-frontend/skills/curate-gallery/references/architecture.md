@@ -5,7 +5,7 @@ generic↔instance split, data-binding rules and `ds-{slug}` id namespacing. Wha
 stylesheet must CONTAIN is owned by `page-and-css.md`; this file owns the tree they sit in.
 
 Stack-specific seams (route creation, dev-only exclusion, theme flip, component discovery) are adapter
-concerns — see `stack-adapters.md`.
+concerns — see `stack-adapters.md` and `stack-adapter-static-html.md`.
 
 ---
 
@@ -20,7 +20,7 @@ boundary. This layer is what makes the gallery a gallery regardless of tech stac
 **Adapters (stack-specific)** — the six seams that vary per framework: (a) make a dev-only route,
 (b) render a component live, (c) run build-time transforms, (d) flip themes, (e) exclude from
 production, (f) discover components/tokens in code. See `stack-adapters.md` for the React/Next adapter
-and the static-HTML adapter contract; each one's maturity and limit → `verification.md` → Stack-proof status.
+and `stack-adapter-static-html.md` for the static-HTML adapter contract; each one's maturity and limit → `verification.md` → Stack-proof status.
 
 The spine is stable. Adapters change per project. Do not bake adapter specifics into the spine files.
 
@@ -33,7 +33,7 @@ The gallery produces exactly this directory tree. Names are law — reproduce th
 ```
 <gallery-route>/
 ├── page.tsx                   ← thin route: metadata, imports 5 section exports, mounts rail + header
-├── gallery.css                ← dev-only rules: ThemeShot swap + .ds-reading reading-mode scope
+├── gallery.css                ← dev-only rules: ThemeShot swap + any scoped-override mirror
 │
 ├── scaffold-kit/              ← GENERIC — zero project/schema assumptions
 │   ├── catalog.tsx            ← GallerySection · SpecimenGroup · Specimen · Card
@@ -56,34 +56,27 @@ The gallery produces exactly this directory tree. Names are law — reproduce th
 │   (9 visualizer files + 1 index.ts = 10 files exactly)
 │
 └── sections/                  ← PER-PROJECT instance: token data + kit composition
-    ├── foundations.tsx        ← FoundationsSections() — 10 GallerySections (colors through iconography)
+    ├── foundations.tsx        ← FoundationsSections() — one GallerySection per Foundations sub-section
     ├── background.tsx         ← BackgroundSection() — 1 GallerySection
-    ├── components.tsx         ← ComponentsSections() — 3 GallerySections (shell · ui · document)
-    ├── domain.tsx             ← DomainSections() — 5 GallerySections
-    └── technical.tsx          ← TechnicalSections() — 2 GallerySections (responsive · z-index)
+    ├── components.tsx         ← ComponentsSections() — one per Components sub-group (Shell · UI · Document)
+    ├── domain.tsx             ← DomainSections() — one per Domain Components sub-section
+    └── technical.tsx          ← TechnicalSections() — Responsive Behavior · Z-Index Scale
     (5 section files exactly)
 
 public/<gallery-route>/        ← dev-only static assets (not shipped to production)
-├── background-ascii-light.png ← ThemeShot light (AsciiField capture)
-├── background-ascii-dark.png  ← ThemeShot dark (AsciiField capture)
-├── meteor-light.mp4           ← ThemeVideo light clip
-├── meteor-dark.mp4            ← ThemeVideo dark clip
-├── meteor-light-poster.jpg    ← ThemeVideo still, light (pre-hydration + reduced-motion fallback)
-├── meteor-dark-poster.jpg     ← ThemeVideo still, dark
-└── samples/                   ← neutral project-agnostic sample assets for specimen demos
-    ├── figure.svg             ← Figure specimen
-    ├── diagram.svg            ← Diagram specimen
-    ├── panel-a.svg            ← DiagramRow panel A
-    ├── panel-b.svg            ← DiagramRow panel B
-    ├── logo-a.svg             ← overlaid-component logo set
-    ├── logo-b.svg
-    ├── avatar-a.svg           ← overlaid-component avatar set
-    └── avatar-b.svg
+├── <layer>-light.png · -dark.png          ← ThemeShot pair, per captured background layer
+├── <layer>-light.mp4 · -dark.mp4          ← ThemeVideo pair, per animated layer
+├── <layer>-light-poster.jpg · -dark-poster.jpg  ← ThemeVideo stills (pre-hydration + reduced-motion fallback)
+└── samples/                   ← neutral project-agnostic sample assets, one per specimen that needs one
 ```
+
+The `public/` names are the project's; only the light/dark pairing is fixed. Example:
+`background-ascii-light.png` for a captured ASCII layer, `meteor-dark.mp4` and its poster for an animated
+one, `figure.svg` · `panel-a.svg` · `logo-a.svg` · `avatar-a.svg` under `samples/`.
 
 **Count summary:** scaffold-kit = 4 files (no index.ts); visualizer-kit = 9 component files + 1 index.ts;
 sections/ = 5 files; gallery h2 sections = one per DESIGN.md sub-section, however many that is
-(`modes.md` → Coverage derivation).
+(`build-coverage.md` → Coverage derivation).
 
 Avoid framework-reserved filenames for section/kit modules — see `stack-adapters.md`.
 
@@ -159,14 +152,6 @@ and can never collide. See `scaffold-kit.md` for the `GallerySection` pseudocode
 
 ---
 
-## `page.tsx` template
-
-Owned by `page-and-css.md` → `page.tsx` template — the annotated import order, the structure to reproduce,
-and the key invariants. Stated there and only there. This file owns where the route file sits in the tree
-(§ Pinned file/folder structure), not what goes in it.
-
----
-
 ## Page hierarchy & headings
 
 The gallery page has one heading hierarchy; never skip levels:
@@ -188,14 +173,6 @@ display weight).
 
 ---
 
-## `gallery.css` contents
-
-Owned by `page-and-css.md` → `gallery.css` requirements — the three rule blocks, the example, and the
-maintenance rule for the one block that holds copied values. Stated there and only there: two copies of a
-palette drift.
-
----
-
 ## Theme-based single view
 
 Each component renders once on the page at the current theme, with a real theme toggle in the header.
@@ -214,14 +191,16 @@ updates everything together.
 
 ## Cross-references
 
+- What `page.tsx` and `gallery.css` contain → `page-and-css.md`, stated there only; this file owns where
+  they sit in the tree
 - Adapter seams (route creation, theme flip, production exclusion, code discovery) → `stack-adapters.md`
 - Scaffold primitive pseudocode — `GallerySection` / `SpecimenGroup` → `scaffold-kit.md`; `Specimen` /
   `Card` → `scaffold-specimen.md`; `ChromeFrame` / theme-media → `scaffold-chrome-theme.md`;
   click-guards → `scaffold-guards.md`
 - Visualizer pseudocode → the per-visualizer `visualizer-*.md` files (shared contract and generic
   fallbacks in `visualizer-kit.md`); dogfooding gate → `visualizer-dogfood.md`
-- Ordered section template (which visualizer per sub-section, prose vs box) → the four `spine-*.md` files; shared
+- Ordered section template (which visualizer per sub-section, prose vs box) → the `spine-*.md` files; shared
   contract, pins and full order → `section-spine.md`
 - Mode derivation (Build/Inventory/Sync/Bootstrap) and item-list source per mode → `modes.md`
-- Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components, TOC rail) → `hard-to-demo.md`
-- Render-backed verification + gates → `verification.md`
+- Demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components) → `hard-to-demo.md`; TOC rail → `demo-placement-and-media.md`
+- Gate 0 parity review → `parity-review.md`; render-backed verification + gates → `verification.md`

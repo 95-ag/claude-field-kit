@@ -15,7 +15,7 @@ every token binding and structural rule here applies to any project using this s
 example. A consuming project substitutes its own equivalent for each role. **The structure — DOM layout,
 element order, class roles — is what is fixed and must be reproduced faithfully; the names adapt.**
 
-Also cross-links: `architecture.md` (file/folder pinning), `hard-to-demo.md` (live-vs-screenshot, click-
+Also cross-links: `architecture.md` (file/folder pinning), `demo-placement-and-media.md` (live-vs-screenshot, click-
 guard usage), the four `spine-*.md` files (which catalog primitives each spine section uses).
 
 ---

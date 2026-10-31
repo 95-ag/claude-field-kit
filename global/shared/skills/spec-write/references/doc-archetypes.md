@@ -24,10 +24,10 @@ in DESIGN.md — never park them in ARCHITECTURE's technical decisions.
 - **Mandatory** in every project: a product doc and an implementation-plan doc. Canonical names may vary
   (`PRODUCT.md` vs `PROJECT.md`; `IMPLEMENTATION-PLAN.md` vs a build-flow file) — match whatever the
   project already uses; don't rename an existing file as a side effect of an edit.
-- **Optional** docs (Architecture, Schema, other) appear only when the concern grows substantial. Until
-  then their content folds into the product doc — stack-only architecture → product doc; a small/simple
-  schema → product doc. Never create a near-empty doc to "complete the set"; split a section out once it
-  earns its own file.
+- **Optional** docs (Architecture, Schema, other) earn their own file when their content in the product
+  doc passes the scan target (`spec-writing-contract.md` → Formatting). Until then it folds into the
+  product doc — stack-only architecture, a schema under the target. Never create a near-empty doc to
+  "complete the set".
 - Other prose docs (a glossary, an API guide, a migration guide) follow the same house style, taking the
   tier closest to their purpose.
 
@@ -74,7 +74,7 @@ so a fresh doc starts in the right shape, and each skeleton covers everything th
 - **Cross-cutting product rules** — constraints spanning surfaces (min supported width, accessibility
   intent, what the product deliberately does *not* do).
 
-Voice: present-tense declarative, design-agnostic, reasoning kept for non-obvious decisions.
+Voice: Tier-1 (`spec-writing-contract.md` → The Two-Tier Voice).
 
 ### Implementation-plan doc (procedural)
 - **Implementation rules** — what to read first, what not to do (invent requirements, over-engineer), what
@@ -84,7 +84,7 @@ Voice: present-tense declarative, design-agnostic, reasoning kept for non-obviou
 - **Rollout sequence** — the order things ship / are enabled (when the project has one).
 - **Gates summary** (optional) — a quick table of always-required checks.
 
-Voice: procedural. Goals read Tier-1-clear; steps/gates read Tier-2-terse. Forward-looking tense is fine.
+Voice: procedural (`spec-writing-contract.md` → The Two-Tier Voice).
 
 ### Architecture doc (Tier-2)
 - **Header / ownership note** — what this doc owns; cross-refs product (requirements), SCHEMA (entities),
@@ -96,7 +96,7 @@ Voice: procedural. Goals read Tier-1-clear; steps/gates read Tier-2-terse. Forwa
 - **Security** — auth, secrets handling, trust boundaries.
 - **Technical decisions** — non-obvious choices + brief rationale (a decision log).
 
-Voice: Tier-2 terse; a technical decision may carry one or two lines of rationale.
+Voice: Tier-2 (`spec-writing-contract.md` → The Two-Tier Voice); a technical decision may carry one or two lines of rationale.
 
 ### Schema doc (Tier-2)
 - **Header / ownership note** — what this doc owns; that it wins over the product doc on data/content fields.
@@ -105,16 +105,15 @@ Voice: Tier-2 terse; a technical decision may carry one or two lines of rational
 - **Content / frontmatter schema** — per content type: a field table + validation rules (build-fail vs build-warn).
 - **Validation rules** — cross-field/structural rules not tied to a single table.
 - **API contracts** (when the project has them) — request/response shapes, status/error conventions.
-- **Storage / directory conventions** — where data and content live; naming; slug derivation.
+- **Storage / directory conventions** — where data and content live; naming; how identifiers are
+  derived (e.g. a slug from a filename).
 
-Voice: terse, specific, affirmative prohibitions ("never add a `slug` field"). No reasoning padding.
+Voice: Tier-2 (`spec-writing-contract.md` → The Two-Tier Voice).
 
 ---
 
 ## Cross-Reference Resolution
 
-- Every cross-doc reference is a named path: `TARGET.md → Section → Subsection`.
-- A path must resolve to a real heading in the target doc. When you author or edit, verify each path you
-  write still points at an existing heading — headings move, paths must move with them.
-- When a doc you're editing references a heading you're renaming, update the back-references in the same
-  pass, and list each one in the manifest.
+Cross-doc references are named paths that resolve to a real heading (`spec-writing-contract.md` →
+Structure). When a doc you're editing references a heading you're renaming, update the back-references in
+the same pass, and list each one in the manifest.

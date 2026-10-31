@@ -9,7 +9,7 @@ Seven pass types. Run one per invocation unless explicitly combined.
 **Purpose:** Reorganize section hierarchy and ordering without altering prose content.
 
 What changes:
-- Top-level and subsection order aligned to `design-writing-contract.md` → Canonical Spine (Canonical ordering, Subsection order).
+- Top-level and subsection order aligned to `canonical-structure.md` → Canonical Spine (Canonical ordering, Subsection order).
 - Orphaned subsections relocated to correct parent.
 - Heading levels normalized (no deeper than H4).
 - Duplicate section titles resolved.
@@ -53,10 +53,10 @@ Section rewrite changes presentation and organization within the section. It doe
 Scope: user specifies target section(s). If whole-doc, process top-level sections one at a time and list each in the manifest.
 
 What changes:
-- Section content rewritten to match writing mode for its category (`design-writing-contract.md` → Section-Type Writing Modes).
+- Section content rewritten to match writing mode for its category (`section-writing-modes.md` → Section-Type Writing Modes).
 - Anti-patterns removed.
 - Component sections brought to: name → 1-line identity → semantic bullets → optional YAML.
-- **Doc-first applied** — code references (paths, symbols, framework classes, wiring) rephrased as conceptual behavior, per `design-writing-contract.md` → Doc-First — No Code References. A one-shot audit under-counts; re-audit after the pass.
+- **Doc-first applied** — code references (paths, symbols, framework classes, wiring) rephrased as conceptual behavior, per `prose-rules.md` → Doc-First — No Code References. A one-shot audit under-counts; re-audit after the pass.
 - **Intros lead with the design concept** — every moved or new section intro checked against a sibling intro; implementation paths and self-justifying placement stripped.
 
 What does NOT change:
@@ -105,7 +105,7 @@ Manifest entries: UNIFIED (old → new, count).
 Scope: document-wide. Operates across all section boundaries simultaneously.
 
 What changes:
-- Globally reusable canonical tokens extracted into a top-of-document YAML Registry (see *Canonical Does Not Mean Centralized* in the contract).
+- Globally reusable canonical tokens extracted into a top-of-document YAML Registry (`design-writing-contract.md` → Canonical Does Not Mean Centralized).
 - Sections relocated to new spine positions per an approved migration mapping table.
 - Sections reclassified as Domain Components are relocated to `# Domain Components`, placed between `# Components` and `# Interaction Rules`.
 
@@ -128,7 +128,7 @@ This pass runs alone. It MUST NOT be combined with other passes.
 **Purpose:** Clear accumulated decision-history out of canonical sections without destroying the
 constraints buried inside it.
 
-The contract bans residue (`design-writing-contract.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
+The contract bans residue (`anti-patterns.md` → Prose Anti-Patterns) but nothing sweeps for it, so it
 only ever accumulates. Many hits are load-bearing, so this pass sorts before it deletes.
 
 Scope: document-wide. The shapes to sweep for and the two-class sort live in `validation-heuristics.md`

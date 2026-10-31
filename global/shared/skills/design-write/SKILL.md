@@ -29,14 +29,21 @@ stop; do not fill the gap with invention.
 
 ## Setup
 
-Always read first:
+Always read first — the universal DESIGN.md contract; everything you write or edit complies:
 
-1. `references/design-writing-contract.md` — the universal DESIGN.md contract: two-layer model, canonical
-   spine, formatting rules, anti-patterns, section writing modes. Everything you write or edit complies.
+1. `references/design-writing-contract.md` — purpose, two-layer model, locality, formatting and compression
+   targets.
+2. `references/token-and-yaml-rules.md`, `references/prose-rules.md`,
+   `references/component-and-validation-rules.md`, `references/anti-patterns.md`.
+3. `references/canonical-structure.md` (spine and section policies) and `references/section-writing-modes.md`.
+4. `references/project-schema.md` — how a project pins its instance, and the structural rules every DESIGN.md keeps.
+
+Read `references/product-type-extensions.md` when DESIGN.md or the brief names a product type (portfolio,
+SaaS, docs site).
 
 Then read what the mode needs:
 
-- **Authoring** → the contract's Canonical Structure Model + Section-Type Writing Modes are your skeleton; then `references/safety-rules.md`, `references/validation-heuristics.md`.
+- **Authoring** → `canonical-structure.md` + `section-writing-modes.md` are your skeleton; then `references/safety-rules.md`, `references/validation-heuristics.md`.
 - **Update** → `references/edit-patterns.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
 - **Realign** (recovery) → `references/rewrite-passes.md`, `references/cross-reference-rules.md`, `references/safety-rules.md`, `references/validation-heuristics.md`.
 
@@ -67,8 +74,8 @@ One skill, three modes. Pick from the doc's state and the request — not a sepa
 and Update are the everyday path; Realign is a fallback.
 
 **Authoring — write it right the first time** (primary)
-- Build from the contract's Canonical Spine, and write each section in its mode from the Section-Type
-  Writing Modes — correct structure, compression targets, two-layer model, and zero anti-patterns from
+- Build from `canonical-structure.md` → Canonical Spine, and write each section in its mode from
+  `section-writing-modes.md` — correct structure, compression targets, two-layer model, and zero anti-patterns from
   the first draft. The discipline a rewrite would later enforce is applied up front, so the doc is born
   compliant and needs no rewrite.
 - Pull substance only from what the user points you at — the existing UI/components, an approved
@@ -78,7 +85,7 @@ and Update are the everyday path; Realign is a fallback.
 **Update — keep it compliant** (everyday maintenance)
 - Every post-authoring change goes through here. Smallest viable edit: one bullet before a paragraph,
   one section before its neighbors. Match the surrounding section's terminology and its category's
-  writing mode (`design-writing-contract.md` → Section-Type Writing Modes).
+  writing mode (`section-writing-modes.md` → Section-Type Writing Modes).
 - New content is contract-compliant by construction (component = name → 1-line identity → semantic
   bullets → optional YAML; tokens in `{token.name}` resolved-value form; lengths per
   `design-writing-contract.md` → Compression Targets).
@@ -96,13 +103,10 @@ and Update are the everyday path; Realign is a fallback.
 
 ## Scope Guardrail
 
-- **Form, not substance.** Render decided visual intent; never originate it.
 - **Never touch non-design spec docs.** PRODUCT / ARCHITECTURE / SCHEMA / IMPLEMENTATION-PLAN belong to
   `spec-write` — recommend it and stop.
 - **Write-first, update-always, realign-rarely.** Reach for Realign only on real accumulated drift, not
   as routine cleanup.
-- **Lossless.** Every paragraph, bullet, token, and table row appears in the output or is accounted for
-  in the manifest. No silent deletion — flag anything you'd remove.
 
 ## Conflict Resolution
 
@@ -126,14 +130,14 @@ content.
 Every run ends in one report with four sections, in this order. **A section with nothing to report
 says "none"** — an omitted section and a forgotten one look the same.
 
-1. **Changed blocks** — only what changed, unless the doc is short enough that full is clearer. For a
-   full authoring, the complete doc plus a short summary of the structure used; for a pre-approved
-   batch, what was written for that review.
+1. **Changed blocks** — only what changed, unless the doc is 60 lines or fewer, in which case show it in
+   full. For a full authoring, the complete doc plus a short summary of the structure used; for a
+   pre-approved batch, what was written for that review.
 2. **Manifest** — one line per change, factual, no rationale prose; every `FLAGGED`, `NOTED`,
    `PLACEHOLDER` or `MIRRORS` entry the references call for lands here — including a retired token's
    consumer (`edit-patterns.md` → Remove a section or component) and each duplicate group, once.
 
-*Example:* — under the caveat in `design-writing-contract.md` → Token Conventions.
+*Example:* — under the caveat in `token-and-yaml-rules.md` → Token Conventions.
 
 ```
 ADDED: token `surface-interactive` to YAML Registry → colors
@@ -170,22 +174,18 @@ has the same trap: a state label a comment cites must survive as the row key.
 
 ## Behavioral Defaults
 
-- **Minimal-diff in updates** — every changed line is a line someone must review.
-- **Preserve local voice** — don't "improve" prose you weren't asked to touch; report it as `NOTED`.
-- **Never invent** — no new tokens/components/rules; flag structural gaps rather than filling them.
-- **Flag, don't delete** — duplicates and obsolete content stay until the user confirms removal.
-- **One pass at a time** — a Realign segments the manifest by pass (`--- PASS: name ---`).
-- **Design identifiers are load-bearing** — token names, component names, semantic-role names,
-  domain-component names, and stable terminology should not change without explicit instruction or a
-  confirmed terminology migration. Before adding a token, confirm name, value, and role.
+Minimal-diff updates, lossless realigns, never originating, flagging rather than deleting, one pass at a
+time and sacred design identifiers are stated once, in `references/safety-rules.md`, which loads in every
+mode.
+
 - **Ask whether the change is visual or behavioural** — at the end of a run, ask for each changed entry
   whether it alters only how something looks, or also what it does: described behaviour, scope, or a named
   surface. A behavioural change hands off to `spec-write` — recommend it and name the entry. The Scope
   Guardrail owns the boundary; this is the prompt that makes you notice it was crossed.
 - **Doc-first, templated, referenceable** — DESIGN.md describes what/why, never how the code wires it;
   names tokens by role; and emits the project schema's full structure so sibling docs can bind to its
-  heading anchors (`design-writing-contract.md` → Doc-First, Token Naming Conventions, Referenceable Contract
-  Surface). Heading anchors are load-bearing.
+  heading anchors (`prose-rules.md` → Doc-First; `token-and-yaml-rules.md` → Token Naming Conventions;
+  `project-schema.md` → Referenceable Contract Surface). Heading anchors are load-bearing.
 
 ## Validation
 
@@ -193,5 +193,5 @@ Before reporting any work done — Authoring, Update, or Realign — run `refere
 Most checks are mode-agnostic (structure, two-layer model, doc-first, naming, anti-patterns, template, tokens,
 terminology); the transform-only checks (losslessness, manifest completeness) apply to the modes that file
 tags, and Realign's judgment heuristics are in `references/rewrite-passes.md`. Failed checks go to the
-report's Check results (Output Format). For a high-stakes realign, have a separate subagent verify
-losslessness and ordering so the author isn't grading their own work.
+report's Check results (Output Format). When a realign changes more than 3 canonical spine sections, have
+a separate subagent verify losslessness and ordering so the author isn't grading their own work.

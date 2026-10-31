@@ -68,10 +68,8 @@ The same skill handles both first-time authoring and ongoing maintenance. Pick t
 state and the request — not from a separate sub-skill.
 
 **Authoring** — the doc is absent or being built fresh.
-- Start from the archetype's required structure in `references/doc-archetypes.md`. Each archetype
-  assigns a voice: Tier 1 (product docs — design-agnostic, reasoning-rich), Tier 2 (companion docs —
-  terse, specific), or procedural (the implementation-plan doc). Read that voice's definition in
-  `references/spec-writing-contract.md` before the first draft.
+- Start from the archetype's required structure in `references/doc-archetypes.md`, and read the voice
+  its Mode column assigns (`spec-writing-contract.md` → The Two-Tier Voice) before the first draft.
 - Write in that archetype's tier/mode from the first draft. A good first write needs no later rewrite,
   so get the structure and voice right now rather than dumping prose to clean up later.
 - Pull substance only from sources the user pointed you at (approved plan, code, their notes). If a
@@ -79,17 +77,17 @@ state and the request — not from a separate sub-skill.
   never invent the content.
 
 **Maintenance** — the doc exists and is being edited, aligned, restyled, or restructured.
-- Default to the **smallest viable edit**: one bullet before a paragraph, one paragraph before a
-  section, one section before its neighbors.
+- Default to the **smallest viable edit** — every changed line is one someone must review: one bullet
+  before a paragraph, one paragraph before a section, one section before its neighbors.
 - Match the surrounding section's terminology and the doc's voice
   (`spec-writing-contract.md` → The Two-Tier Voice). Do not rephrase prose that wasn't part of the
-  request.
-- On any doc you touch, two cleanups are always in scope because they are the house style, not
-  opportunistic churn: strip `## N.` heading numbers, and convert every `§N` cross-reference to a
-  named path (see the writing contract). Apply them to the sections you're already editing.
-- Larger restructures (reordering sections, splitting a wall of prose across a whole doc, a full
-  restyle pass) are in scope here too — just announce the shape of the change before making it, and
-  never drop content silently (→ Behavioral Defaults).
+  request — report it as `NOTED`.
+- On any doc you touch, the heading-number and `§`-reference cleanups (`spec-writing-contract.md` →
+  Structure) are always in scope because they are the house style, not opportunistic churn. Apply them
+  to the sections you're already editing.
+- Larger restructures — any change that moves, merges or splits a section, or rewrites more than one
+  section — are in scope here too; announce the shape of the change before making it, and never drop
+  content silently (→ Behavioral Defaults).
 
 ## Scope Guardrail
 
@@ -107,12 +105,14 @@ state and the request — not from a separate sub-skill.
 Every run ends in one report with four sections, in this order — the same shape as `design-write`'s.
 **A section with nothing to report says "none"** — an omitted section and a forgotten one look the same.
 
-1. **Changed blocks** — only what changed, unless the doc is short enough that full is clearer. For a
-   full authoring, the complete doc plus a short summary of the structure used; for a pre-approved
-   batch, what was written for that review.
+1. **Changed blocks** — only what changed, unless the doc is 60 lines or fewer, in which case show it in
+   full. For a full authoring, the complete doc plus a short summary of the structure used; for a
+   pre-approved batch, what was written for that review.
 2. **Manifest** — one line per change, factual, no rationale prose. Labels: `ADDED` · `UPDATED` ·
    `RESTYLED` · `STRIPPED` · `RELINKED` · `REMOVED` (every removal) · `FLAGGED` (awaiting the user's
-   confirmation) · `NOTED` (seen, out of scope):
+   confirmation) · `NOTED` (seen, out of scope).
+
+*Example:*
 
 ```
 ADDED: "Page Specifications → Project Detail → Overview" — new subsection
@@ -131,13 +131,9 @@ NOTED: nearby prose wall in "About" not in scope — left as-is, recommend a res
 
 ## Behavioral Defaults
 
-- **Minimal-diff posture** in maintenance — every line changed is a line someone must review.
-- **Preserve local voice** — don't "improve" prose you weren't asked to touch; report it as `NOTED`.
-- **Bullets over walls** — one idea per bullet, complete sentences, grouped semantically. See the
-  contract's bullet rules.
-- **Boundaries are load-bearing** — keep each doc in its lane (product = what/why, plan = build
-  order/gates, architecture = system structure, schema = information structure). Drift across docs is a
-  defect, not a style choice.
+- **Bullets over walls** — `spec-writing-contract.md` → Formatting.
+- **Boundaries are load-bearing** — keep each doc in its lane (`doc-archetypes.md` → Ownership
+  Boundaries).
 - **A product change often needs a design change behind it** — at the end of a run, ask for each changed
   entry whether it alters something DESIGN.md describes: a named section, component, affordance, or state.
   If so, recommend `design-write` and name the entry. The Scope Guardrail owns the boundary; this is the
@@ -163,8 +159,9 @@ bidirectional drift pass instead of editing blind:
    - **Then check the referenced content, not just the heading** — the target heading can still exist
      while the bullet, row or rule the reference pointed at has been removed. The pointer resolves and
      means nothing. Repoint it at whatever owns the fact now, or drop it if the fact is gone.
-4. **Fresh-eyes pass** — for a high-stakes alignment, have a separate subagent verify both directions
-   and the boundaries, so the author isn't grading their own work.
+4. **Fresh-eyes pass** — when the alignment changes more than 3 sections, have a separate subagent verify
+   both directions and the boundaries, so the author isn't grading their own work.
 
-Present the drift list for approval before editing when the changes are non-trivial — the user owns
-which direction wins when code and doc disagree.
+Present the drift list for approval before editing when any drift item changes what the doc claims — the
+user owns which direction wins when code and doc disagree. Mechanical fixes (a broken named path, a typo) go
+straight in.

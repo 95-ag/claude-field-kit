@@ -84,8 +84,8 @@ domain sections, orchestration notes) render as `.prose-content` — no wrapper 
 is invisible on its own; its demo borders + fills *throwaway scaffolding cells* purely to make the
 primitive's structure visible (a Stack's gap, a Grid's columns). This is the ONLY place demo-scaffolding
 boxes are allowed, and it does NOT license boxes elsewhere — prose, token rows, and component specimens
-stay unboxed. (This was the prior "random borders" failure: the cell-visibility need got generalized into
-gratuitous boxes. The per-primitive recipes in `spine-foundations-visual.md` → Layout prevent it.)
+stay unboxed. The per-primitive recipes in `spine-foundations-visual.md` → Layout keep the cell-visibility
+need from spreading into gratuitous boxes.
 
 ### Documented bare-px exceptions
 

@@ -39,9 +39,9 @@ This is a cross-reference-heavy operation. Read `references/cross-reference-rule
 ## Add a new component section
 
 1. Identify the correct location within the `# Components` section (alphabetical, or by category if the section is grouped).
-2. Create the component using the contract-defined format (`design-writing-contract.md` → Component Writing Contract).
+2. Create the component using the contract-defined format (`component-and-validation-rules.md` → Component Writing Contract).
 3. Confirm contextual usage examples are included.
-4. Shared interaction-state baselines belong in `# Interaction Rules`. A component section references them and carries only the interaction content `design-writing-contract.md` → Interaction Rules Policy permits.
+4. Shared interaction-state baselines belong in `# Interaction Rules`. A component section references them and carries only the interaction content `canonical-structure.md` → Interaction Rules Policy permits.
 5. Manifest: `ADDED: component \`component-name\` to Components`
 
 ---
@@ -88,7 +88,7 @@ Note: whole-doc terminology sweeps are better handled by Realign's Terminology C
 
 1. Confirm the component already has: name, identity statement, semantic bullets.
 2. Place the YAML block after the bullets, not before or between them.
-3. Carry variants, states and structure — never a value the bullets already state (`design-writing-contract.md` → Component Writing Contract).
+3. Carry variants, states and structure — never a value the bullets already state (`component-and-validation-rules.md` → Component Writing Contract).
 4. Manifest: `ADDED: YAML spec block to \`component-name\``
 
 ---

@@ -44,7 +44,7 @@ below is the generic method; project values appear only as worked examples.
   component looks up registered art by slug). Everything else stays placeholder.
 - **Image-bearing domain components** (covers, hero / card media, overlay logos / avatars) → **sample
   assets**, theme-aware where the component exposes theme (logos/avatars fixed-color), via the asset rule
-  — same as Document. → `hard-to-demo.md` → Sample assets. A **grid of image/cover specimens** (e.g. every
+  — same as Document. → `demo-placement-and-media.md` → Sample assets. A **grid of image/cover specimens** (e.g. every
   registered cover) places each in a **`Card` well** (`scaffold-specimen.md` → Card → cover-grid usage) — never a
   hand-rolled box that re-implements Card's border/fill/aspect treatment.
 
@@ -78,13 +78,16 @@ DESIGN.md → Domain Components; the demo-data shape from the project's content 
 
 ## Bucket 5: Technical
 
+Responsive Behavior renders in this bucket, though DESIGN.md keeps it under Interaction Rules — its title
+and `mapsTo` name that parent.
+
 ### 20. Responsive Behavior
 
 ```
 id:      "responsive"
 title:   "Interaction · Responsive Behavior"
 mapsTo:  "Interaction Rules → Responsive Behavior"
-source:  "DESIGN.md → Responsive Behavior"
+source:  "DESIGN.md → Interaction Rules → Responsive Behavior"
 ```
 
 **P1 — Composition:** no `Specimen`/`SpecimenGroup` — a single `.prose-content` wrapper containing, IN

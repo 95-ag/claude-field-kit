@@ -83,7 +83,7 @@ token bindings for FRAME:
   --surface-deep   background (visible while image/video loads)
 ```
 
-When to use static media vs live render → `hard-to-demo.md` → Live vs. screenshot.
+When to use static media vs live render → `demo-placement-and-media.md` → Live vs. screenshot.
 Short rule: live by default; static only when live is technically infeasible (full-viewport
 WebGL, document-height DOM fields).
 

@@ -6,7 +6,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 ## Structural
 
-- Canonical top-level ordering preserved (`design-writing-contract.md` → Canonical Spine).
+- Canonical top-level ordering preserved (`canonical-structure.md` → Canonical Spine).
 - All spine sections required by the contract — and by any project-specific schema — are present. (Project-specific required Domain Components, e.g. a portfolio's `Project Detail` / `About Layouts`, come from the project's own schema, not this generic check.)
 - No heading deeper than H4.
 - No duplicate section titles within the same parent.
@@ -14,7 +14,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Two-Layer Model
 
 - Top-of-document YAML Registry present and contains globally reusable canonical tokens (color tokens, typography tokens, spacing/radius/motion/breakpoint/z-index scales, focus-ring spec) — color and typography values may be defined in Foundations instead (`design-writing-contract.md` → Two-Layer Document Model).
-- No token *value* is restated outside its one home. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`design-writing-contract.md` → Token Conventions).
+- No token *value* is restated outside its one home. Token *names* may be referenced freely, and a name carrying its resolved value is a reference, not a duplication (`component-and-validation-rules.md` → Validation Rules).
 - A color or typography value defined in a Foundations table is a sanctioned home, not a two-layer violation (`design-writing-contract.md` → Two-Layer Document Model). Flag only a value defined in both layers; its owner is set there too.
 - Local structural-spec YAML inline (component spec blocks, per-elevation specs, grid specs, semantic-systems mappings) is permitted — this is not a two-layer violation.
 - No single monolithic YAML superblock — the registry collects globally reusable tokens, not every YAML block in the document.
@@ -27,8 +27,8 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 ## Interaction Rules
 
 - Shared interaction baselines are consolidated under `# Interaction Rules`. Flag a baseline restated in more than one location.
-- Flag behavior no baseline covers that two or more components each carry locally — it is a baseline (`design-writing-contract.md` → Interaction Rules Policy).
-- Component-local interaction content the contract permits (`design-writing-contract.md` → Interaction Rules Policy) may live with the component. Do not flag it as a duplication violation.
+- Flag behavior no baseline covers that two or more components each carry locally — it is a baseline (`canonical-structure.md` → Interaction Rules Policy).
+- Component-local interaction content the contract permits (`canonical-structure.md` → Interaction Rules Policy) may live with the component. Do not flag it as a duplication violation.
 
 ## Domain Components
 
@@ -41,7 +41,7 @@ Run before reporting any DESIGN.md work done — **Authoring, Update, or Realign
 
 - The `# Technical Conventions` section contains only implementation policy (rendering, MDX, build/runtime, performance UX, animation-rendering constraints).
 - Token registries, component specs, and behavioral rules appearing inside Technical Conventions are misplaced — flag for relocation.
-- The `Z-Index Scale` subsection is the one sanctioned exception — it names tokens without their values (`design-writing-contract.md` → Technical Conventions Policy).
+- The `Z-Index Scale` subsection is the one sanctioned exception — it names tokens without their values (`canonical-structure.md` → Technical Conventions Policy).
 
 ## Compression
 
@@ -58,7 +58,7 @@ Update, a miss the edit did not introduce follows `safety-rules.md` → Update p
   where the rule belongs rather than only that it repeats. A duplicate one of the scoped checks above
   also catches (Two-Layer Model, Semantic Systems, Interaction Rules) is the same group, owned where that
   check places it. Identity vocabulary is exempt
-  (`design-writing-contract.md` → Redundancy Rules).
+  (`prose-rules.md` → Redundancy Rules).
 
 ## Tokens & Terminology
 
@@ -71,10 +71,10 @@ Update, a miss the edit did not introduce follows `safety-rules.md` → Update p
 
 ## Doc-First, Anti-Patterns & Template
 
-- **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `design-writing-contract.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
-- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `design-writing-contract.md` → Prose Anti-Patterns).
-- **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `design-writing-contract.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
-- **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `design-writing-contract.md` → Foundations Template) — confirm before filing under `# Components`.
+- **Doc-first** — no banned code references (file paths, code symbols, import/package names, raw framework utility classes, wiring prose); design-token selectors and deliberately-chosen tool names are allowed. Per `prose-rules.md` → Doc-First. A one-shot audit under-counts — re-audit after fixing.
+- **Anti-patterns** — no decision-history or iteration narration in canonical sections (per `anti-patterns.md` → Prose Anti-Patterns).
+- **Unlocated evidence claims** — no sentence asserts that a measurement, an option set, or a prior decision exists without naming its location or stating the fact inline (per `anti-patterns.md` → Prose Anti-Patterns). Greppable shape: "is recorded", "is documented", "was measured", "we decided".
+- **Classification** — a base style/rendering layer is a Foundations concern, not a Component (per `canonical-structure.md` → Foundations Template) — confirm before filing under `# Components`.
 - **Template completeness** — every subsection the Project-Specific Schema requires is present.
 - **Anchor resolution** — every heading anchor sibling rules/docs reference resolves to a real heading.
 - **A label that code or a sibling doc cites is load-bearing like a heading.** Rewording it breaks the
@@ -88,8 +88,8 @@ Update, a miss the edit did not introduce follows `safety-rules.md` → Update p
 
 The ban on decision-history in canonical sections is a rule about what may be written; this is the check that it has not accumulated anyway. Residue only ever grows, so sweep rather than assume.
 
-- Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `design-writing-contract.md` → Prose Anti-Patterns.
-- **Sweep the compact provenance shapes too** — a date, an attribution, a before/after pair, a supersession clause. The narration shapes above all miss them, because they tell no story. Sweep `Known Gaps` as well; the shapes and the one exception are defined in `design-writing-contract.md` → Prose Anti-Patterns.
+- Sweep for these shapes: "we renamed", "chose A over B", "previously", "used to", "no longer", "was removed", and self-justifying absence ("isn't a component, so no file"). Per `anti-patterns.md` → Prose Anti-Patterns.
+- **Sweep the compact provenance shapes too** — a date, an attribution, a before/after pair, a supersession clause. The narration shapes above all miss them, because they tell no story. Sweep `Known Gaps` as well; the shapes and the one exception are defined in `anti-patterns.md` → Prose Anti-Patterns.
 - **Sort every hit before touching it** — a keyword match is not a verdict:
 
 | Class | Test | Action |
@@ -174,7 +174,7 @@ rows while removing words, so a line count alone reports compression as growth.
 looking authoritative. The shape that breaks most often is a value opening on a quoted token, where the
 quote makes the mapping ambiguous.
 
-- **No inline `#` comments, in any block** (`design-writing-contract.md` → YAML Rules). This needs its own check
+- **No inline `#` comments, in any block** (`token-and-yaml-rules.md` → YAML Rules). This needs its own check
   because the ban is easy to break while converting prose to YAML, where the comment feels like the
   explanation being preserved.
 - Report the number of blocks parsed, not just the failures — an unparsed block and a passing one are

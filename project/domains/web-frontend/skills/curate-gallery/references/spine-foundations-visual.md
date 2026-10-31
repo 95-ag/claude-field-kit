@@ -27,8 +27,7 @@ padding from spacing (full rules → `visualizer-depth.md` → DepthGrid → P2)
 where **`className` is that level's actual treatment** translated from the doc (surface fill + border +
 blur). Count = the project's number of levels.
 
-Fidelity (translate each level's treatment exactly — these drifted before; verify against the project's
-real elevation tokens):
+Fidelity (translate each level's treatment exactly; verify against the project's real elevation tokens):
 - a **blur** level → floating surface + border + the blur filter; a **raised** level → elevated surface +
   border. Keep them distinct — don't swap.
 - a **sunken** level → deep surface + its border (bordered in the grid card, even if borderless when

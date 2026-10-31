@@ -14,7 +14,7 @@ bucket it is working through:
 **The section order and the bucket→section mapping are universal** — every project's spine follows
 its own DESIGN.md document order (same discipline, its own sub-sections and components). **The count
 is DESIGN.md's, never this file's:** the template is worked through one reference doc and yields 21
-sections for it, which is an example and not a target (`modes.md` → Coverage derivation). A project
+sections for it, which is an example and not a target (`build-coverage.md` → Coverage derivation). A project
 whose doc carries more or fewer sub-sections is not short of sections.
 
 Each section's content is specified in the **three layers** below, which is what keeps the universal
@@ -78,8 +78,8 @@ primitives are from `scaffold-kit/`; for their exact pseudocode see `scaffold-ki
 
 ## Cross-section pins (apply to EVERY section)
 
-These hold across every section. Prior rebuilds drifted on each, so the parity review
-(`verification.md` → Gate 0) checks them before the gallery is declared done.
+These hold across every section, and each is a known drift point, so the parity review
+(`parity-review.md` → Gate 0) checks them before the gallery is declared done.
 
 ### `source` points to REAL artifacts — never the gallery's own files
 
@@ -146,7 +146,7 @@ only variable is HOW descriptive, by usage location: **labels** (buttons, contro
 self-documenting (e.g. "Primary"); **content** (annotations, display blocks, prose samples) = more
 descriptive (says what it is / where used). **Sample images** follow the parallel rule — self-representative
 (read as their content kind) in DESIGN.md colors, color count scaling with the image area (see
-`hard-to-demo.md` → Sample assets).
+`demo-placement-and-media.md` → Sample assets).
 
 ---
 
@@ -178,8 +178,10 @@ descriptive (says what it is / where used). **Sample images** follow the paralle
 21  z-index        Technical · Z-Index Scale         Technical Conventions → Z-Index Scale
 ```
 
-Total for this reference doc: 21 sections — 10 Foundations + 1 Background + 3 Components + 5 Domain
-+ 2 Technical. A project's own total is whatever its DESIGN.md yields.
+Rows 15–19 are one project's Domain Components, shown as an example — a project's own are its
+Domain Components sub-sections, in DESIGN.md order, and the numbers after them shift. Total for this
+example: 21 sections — 10 Foundations + 1 Background + 3 Components + 5 Domain + 2 Technical. A
+project's own total is whatever its DESIGN.md yields.
 
 DESIGN.md sections with no gallery entry (describe rules, not visual specimens): Overview / Design
 Philosophy / Core Principles / Things to Avoid · Accessibility Rules · Cross-Cutting Constraints.
@@ -193,8 +195,8 @@ Philosophy / Core Principles / Things to Avoid · Accessibility Rules · Cross-C
 - Scaffold primitive pseudocode — `GallerySection`, `SpecimenGroup` → `scaffold-kit.md`; `Specimen`,
   `Card` → `scaffold-specimen.md`; `ChromeFrame`, `ThemeShot`, `ThemeVideo` →
   `scaffold-chrome-theme.md`; `DemoViewOnly`, `InertDemo` → `scaffold-guards.md`
-- Hard-to-demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components, sample assets,
-  `InlineThemeSelector` placement) → `hard-to-demo.md`
+- Hard-to-demo techniques (ChromeFrame, demo-prop, Shiki pipeline, overlaid components) → `hard-to-demo.md`;
+  sample assets and `InlineThemeSelector` placement → `demo-placement-and-media.md`
 - Pinned file/folder structure → `architecture.md`; `page.tsx` and `gallery.css` contents →
   `page-and-css.md`
-- Mode-decision flow and strict DESIGN.md → spine mapping → `modes.md`
+- Mode-decision flow → `modes.md`; strict DESIGN.md → spine mapping → `build-coverage.md`

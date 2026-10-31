@@ -2,7 +2,7 @@
 
 The two primitives every demo is built from, and the rule for kit pieces a project adds of its own.
 Section and group wrappers are in `scaffold-kit.md`. **How much text belongs on the page at all is
-not decided here** — that is `verification.md` → The gallery is a visual partner to the doc, not a
+not decided here** — that is `parity-review.md` → The gallery is a visual partner to the doc, not a
 second copy of it.
 
 **Token names below are examples from one project — the structure is what is fixed.** Stated in full
@@ -49,6 +49,7 @@ structure:
 
 field order (top to bottom): heading → source → description → children → spec
 spec is ALWAYS last — it annotates the demo that precedes it.
+```
 
 **Prefer the array for a multi-part LIST — a set of tokens or variants — not for multi-part prose.**
 The house convention is bullets, one concept per line, and a list of tokens is where that matters most:
@@ -57,10 +58,10 @@ The string form stays for a single-clause spec, and a `·`-separated token strin
 ("mono uppercase chip · surface-tag · radius-sm") is the house shape for the common case. Both forms
 share the same `mono-anchor` block, so the token binding and the field order do not change either way.
 
-**Read this as a formatting rule, never as a licence to say more.** It was written to stop long specs
-rendering badly and was then read as encouragement to write them: an array makes ten bullets look
+**Read this as a formatting rule, never as a licence to say more.** It exists to stop long specs
+rendering badly, never to encourage writing them: an array makes ten bullets look
 tidy, which is exactly how a specimen becomes a copy of its doc sub-section. How much belongs on the
-page at all is decided by `verification.md` → The gallery is a visual partner to the doc, not a second
+page at all is decided by `parity-review.md` → The gallery is a visual partner to the doc, not a second
 copy of it: phrases not sentences, about five spec items at most, and every line present because
 something must be seen.
 
@@ -76,6 +77,7 @@ natural + left-aligned. Multi-variant demos already sit in a `flex`/`grid` and n
 (the common case), which is the error-prone direction. The opt-out list (single controls) is short; the
 opt-in list (all wide demos) is not.
 
+```
 token bindings:
   --spacing-4xl    scroll-mt
   --spacing-md     gap between all fields
@@ -142,12 +144,11 @@ read them as drift.
 
 **`RuleList`-shaped pieces are the one to watch.** A component whose job is to render a list of rules is
 the mechanism restatement arrives through — it makes copying a doc sub-section look like using the kit,
-and a parity gate passes it because every bullet is true. One project reached 28 uses across five
-sections that way.
+and a parity gate passes it because every bullet is true.
 
 - **It earns its place only where the render cannot show the rule** — a prohibition, or behaviour
   unobservable on the page. That test, and the categories it resolves into, are in
-  `verification.md` → The gallery is a visual partner to the doc.
+  `parity-review.md` → The gallery is a visual partner to the doc.
 - **Where a specimen can demonstrate the rule instead, the specimen replaces the bullet** rather than
   sitting beside it.
 - Count its uses per section when reviewing. A rising count is the earliest signal the gallery is

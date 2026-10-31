@@ -110,7 +110,6 @@ Fixed:
 - **Full text-width.** Every plane — especially the back (top-left) and front (bottom-right) — stays wide
   enough to show its full text; the horizontal offset never shrinks a plane below text-width.
 - **Outer container has NO border / NO fill** — positioning only. Only the planes carry a treatment.
-  (Prior rebuilds wrongly bordered the wrapper.)
 - **Radius always `0px`** — fixed, NO dogfood (planes are structural, like DeviceRuler silhouettes).
 - **Geometry** (gallery layout constants — size to the text band, don't undersize): `PLANE_H` = each
   plane's uniform `min-height` (its 3-line text band + padding); `dy` ≈ that text band so the next plane

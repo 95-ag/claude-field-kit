@@ -22,7 +22,7 @@ the project's design system so a human can see it. Three jobs:
 2. **Living reference** — see DESIGN.md rendered in the browser. `[standalone]` entries
    render live; `[inline]` ones are listed with their page location, never recreated; entries still pending
    design show a placeholder card.
-   Drift surfaces when the parity gate runs (`verification.md` → Gate 0) — it is a
+   Drift surfaces when the parity gate runs (`parity-review.md` → Gate 0) — it is a
    gate the skill performs, not a property the gallery has by existing. A gallery
    left unreviewed contradicts its doc while typechecking, linting and rendering clean.
 3. **Code-first discovery** — make a messy or undocumented codebase visible enough to
@@ -44,32 +44,10 @@ value by eye before it is decided (that is `design-tweak`).
 
 ## Mode-decision flow
 
-Run this at the start of every invocation:
-
-1. **Detect stack** → which adapter applies (React/Next, static-HTML, other). See
-   `references/stack-adapters.md`.
-2. **Detect DESIGN.md** — does it exist? Is it structurally healthy (correct bucket
-   structure, sub-sections populated)? A missing or skeletal doc pushes toward
-   Inventory or Bootstrap.
-3. **Detect code presence** — are components and tokens already in the codebase?
-4. **Pick mode** from the matrix:
-
-   | Mode | Situation | Item-list source |
-   |---|---|---|
-   | **Build** | Clean DESIGN.md + code exists | DESIGN.md sub-sections |
-   | **Inventory** | Messy/no doc, code exists | Code discovery |
-   | **Sync** | Both exist, drift has accumulated | DESIGN.md ↔ code cross-check |
-   | **Bootstrap** | Clean DESIGN.md, no code yet | DESIGN.md → scaffold hand-off |
-
-5. **Confirm dev-only vs shipped** with the user (default: dev-only). The exclusion
-   mechanism is adapter-specific — see `references/stack-adapters.md`.
-6. **Build or refresh** the gallery following the build order and pinned structure below.
-7. **On any mismatch** (doc says X, code does Y; component exists in code but not in
-   doc; token referenced but undefined): **inform only** — never auto-fix. See
-   Boundary + Handoff below.
-
-For the full procedure per mode, coverage derivation, and classification rules, read
-`references/modes.md`.
+Run `references/modes.md` → Mode-decision flow at the start of every invocation, before any gallery
+work. It detects the stack, DESIGN.md, code and an existing gallery, and picks one of four modes —
+**Build**, **Sync**, **Inventory** or **Bootstrap** — each with its own item-list source and procedure in
+the same file. On any mismatch the gallery informs only, never auto-fixes (Boundary + handoff below).
 
 ---
 
@@ -81,7 +59,7 @@ Fixed order; do not reorder:
 scaffold-kit  →  visualizer-kit  →  sections  →  page  →  parity review  →  sample-asset ask
 ```
 
-After `page`, run the **doc→gallery parity review** (`references/verification.md` → Gate 0) — by a
+After `page`, run the **doc→gallery parity review** (`references/parity-review.md` → Gate 0) — by a
 reviewer that did not make the edits, never as a self-review: walk
 every section against its DESIGN.md sub-section + the reference implementation and self-correct
 per-item drift (visualizer choice, token-data fidelity, item completeness, prose-vs-box, inline-vs-
@@ -91,7 +69,7 @@ does not guarantee per-section fidelity — this catches what slips through.
 **Sample-asset ask (last step):** specimens needing image/diagram/media samples get a placeholder + gap
 note during the build; once the gallery is built, present the needed-asset list and **ASK the user**
 (generate each via the project's asset system, or keep the placeholder) — never block the build.
-Detail → `references/hard-to-demo.md` → Sample assets.
+Detail → `references/demo-placement-and-media.md` → Sample assets.
 
 **Generic↔instance split:** `scaffold-kit/` and `visualizer-kit/` are project-agnostic
 and templated nearly verbatim across projects. `sections/` and `page.tsx` are the
@@ -104,12 +82,11 @@ per-project instance — they supply this project's token data and compose the k
 **Concept pins are stack-neutral; the file tree is per-stack.** What every gallery must contain regardless
 of stack — the catalog primitives, the 9 visualizer roles, the section spine, the build order — is
 universal law. The physical file/folder tree is the **layout pin**, selected by the same stack detection
-that picks the adapter (mode-decision step 1). Reproduce your stack's tree exactly.
+that picks the adapter (`modes.md` → Mode-decision flow, step 1). Reproduce your stack's tree exactly.
 
 - **React/Next (EXERCISED in Build and Sync; Inventory SPECIFIED)** — `architecture.md`, which holds the annotated tree and the
-  generic↔instance split. **The tree is stated there and only there**; a second copy here drifted from
-  it once already.
-- **Static-HTML (EXERCISED in one Inventory shakedown)** — `stack-adapters.md` → Static-HTML pinned structure (equal-authority
+  generic↔instance split. **The tree is stated there and only there**; a second copy drifts from it.
+- **Static-HTML (EXERCISED in one Inventory shakedown)** — `stack-adapter-static-html.md` → Static-HTML pinned structure (equal-authority
   sibling).
 - `page.tsx` and `gallery.css` contents → `page-and-css.md`.
 
@@ -134,16 +111,8 @@ require a minimal demo affordance in the production component. Permitted only wi
 user agreement, kept minimal (prefer a prop or a presentational sub-component extraction over logic
 changes). See `references/boundaries-and-handoff.md` for the carve-out rules and the two sanctioned patterns.
 
-**Inform-only handoff:** the gallery detects and reports — the user decides and confirms.
-
-| Mismatch detected | Fixer (invoke on user confirmation) |
-|---|---|
-| Doc out of line with intent/code | `design-write` |
-| Code out of line with doc | `scaffold-design-system` (align mode) |
-| Code missing | `scaffold-design-system` (fresh mode) |
-| Repeats in code but not extracted | Both — `scaffold-design-system` (extract) + `design-write` (document) |
-
-Full boundary rules, the carve-out, and handoff protocol: `references/boundaries-and-handoff.md`.
+**Inform-only handoff:** the gallery detects and reports — the user decides and confirms which fixer
+runs. The fixer per mismatch, the carve-out and the handoff protocol: `references/boundaries-and-handoff.md`.
 
 ---
 
@@ -153,7 +122,8 @@ Read each reference when the run enters that area — do not pre-load all of the
 
 | Reference | Read when… |
 |---|---|
-| `references/modes.md` | Deciding the mode (Build / Sync / Bootstrap / Inventory); deriving the item list and coverage per mode; classifying components; **discovering components and tokens in code** when no DESIGN.md exists yet |
+| `references/modes.md` | Deciding the mode (Build / Sync / Bootstrap / Inventory); each mode's procedure and item-list source; classifying components; **discovering components and tokens in code** when no DESIGN.md exists yet |
+| `references/build-coverage.md` | Build and Sync: deriving coverage from DESIGN.md, the strict spine mapping, what goes in or stays out, Domain sections, the real-component import rule |
 | `references/architecture.md` | The pinned file/folder tree, the generic↔instance split, data binding, `ds-{slug}` ids |
 | `references/page-and-css.md` | Writing the route file and the gallery stylesheet |
 | `references/section-spine.md` | The three-layer contract, the pins that apply to every section, the strict DESIGN.md→spine mapping, and the complete section order — **routes to the four `spine-*.md` bucket files** |
@@ -172,15 +142,18 @@ Read each reference when the run enters that area — do not pre-load all of the
 | `references/visualizer-motion.md` | DurationScale · EasingCurves |
 | `references/visualizer-layout.md` | ShapeRow · DeviceRuler · SpanTable |
 | `references/visualizer-dogfood.md` | The gate every visualizer must pass before its section is done |
-| `references/hard-to-demo.md` | A component that resists a bounded frame: fixed chrome, side-effects, breakpoint-gated, build-time transforms, **a component absolutely positioned in production within another's bounds**, **the TOC rail**, the theme selector, sample assets via the project's own generators, and live-vs-screenshot |
-| `references/verification.md` | **Gate 0 parity review** by a reviewer that did not make the edits; **the gallery is a visual partner to the doc, not a second copy of it**; item-level coverage; render and build gates |
+| `references/hard-to-demo.md` | A component that resists a bounded frame: fixed chrome, side-effects, breakpoint-gated, build-time transforms, **a component absolutely positioned in production within another's bounds** |
+| `references/demo-placement-and-media.md` | **The TOC rail**, the theme selector and which specimen takes which click guard; sample assets via the project's own generators; live-vs-screenshot |
+| `references/parity-review.md` | **Gate 0 parity review** by a reviewer that did not make the edits; **the gallery is a visual partner to the doc, not a second copy of it**; item-level coverage |
+| `references/verification.md` | The gate sequence; render and build gates; the maintainer self-test; stack-proof status |
 | `references/final-checks.md` | Finishing: the dogfood gate and the validation checklist |
 | `references/boundaries-and-handoff.md` | The read-only code-write boundary; the demo-affordance carve-out and its two patterns; **the fixer triad** and the inform-only handoff that dispatches `scaffold-design-system`; where this skill's authority ends and `design-write`'s begins |
-| `references/stack-adapters.md` | Any stack-specific seam: a dev-only route, rendering a component, theme flip, production exclusion |
+| `references/stack-adapters.md` | Any stack-specific seam: a dev-only route, rendering a component, theme flip, production exclusion — the seams and the React/Next adapter |
+| `references/stack-adapter-static-html.md` | The same seams on a static-HTML project: its pinned structure, output-parity map and each seam |
 
 ## Finishing a run
 
 Two lists close a run and neither is optional — **the dogfood gate** (the gallery obeys the design system
 it displays) and **the validation checklist** (every pinned requirement is present). Both are in
-`final-checks.md`, and they sit after the gates in `verification.md`, never instead of them. The run ends
+`final-checks.md`, and they sit after the gates in `parity-review.md` and `verification.md`, never instead of them. The run ends
 in **the run report** (`final-checks.md` → The run report), where every "report it" rule discharges.

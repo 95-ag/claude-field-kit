@@ -2,7 +2,7 @@
 
 The two lists a run finishes against: the gallery must obey the design system it displays, and every
 pinned requirement must be present; the run report closes the run. Both lists are **non-negotiable**,
-and neither is a substitute for the gates in `verification.md`, which this checklist points into.
+and neither is a substitute for the gates in `parity-review.md` and `verification.md`, which this checklist points into.
 
 ---
 
@@ -43,24 +43,26 @@ imports fail the build.
 
 ## Validation checklist
 
-Before handing off to the user, confirm all items pass:
+Before handing off to the user, confirm all items pass. Bootstrap ends at the hand-off and runs none of
+them; an item tagged *(Build, Sync)* needs a sound DESIGN.md and does not apply in Inventory.
 
 - [ ] Mode chosen matches the evidence (DESIGN.md state + code state)
 - [ ] Dev-only vs shipped confirmed with the user
 - [ ] Build order followed: `scaffold-kit → visualizer-kit → sections → page`
 - [ ] **Pinned structure reproduced exactly** — file names, folder names, and counts match
       (`references/architecture.md`)
-- [ ] **Every DESIGN.md sub-section present as an `<h2>`, in document order** — bucket-prefixed titles, `ds-{slug}` ids
+- [ ] *(Build, Sync)* **Every DESIGN.md sub-section present as an `<h2>`, in document order** — bucket-prefixed titles (Responsive Behavior's exception → `spine-domain-technical.md` → Bucket 5: Technical), `ds-{slug}` ids
       (order: `references/section-spine.md` → Appendix; per-section entries: the four `references/spine-*.md`)
-- [ ] **Dogfooding gate passes** — no raw hex, no typography overrides (no `text-sm`, `font-medium`,
+- [ ] **Dogfooding gate passes** — no raw hex outside `gallery.css`'s scoped-override mirror
+      (`page-and-css.md` → `gallery.css` requirements), no typography overrides (no `text-sm`, `font-medium`,
       `text-[--ink]` alongside a token class), no gratuitous boxes around prose, all visual details
       resolve from the project's own design-system tokens
 - [ ] **Real components imported** — every import path resolves; no hand-faked markup
 - [ ] **Sample assets handled** — every specimen needing an image/diagram/media sample has one or a
       placeholder + gap note; the needed-asset list was surfaced and the user asked (generate / placeholder)
-- [ ] **Doc→gallery parity review done** — every section (Build) or every changed section (Sync)
+- [ ] *(Build, Sync)* **Doc→gallery parity review done** — every section (Build) or every changed section (Sync)
       compared against its mapped DESIGN.md sub-section item by item, **by something that did not
-      make the edits**, covering every Gate 0 check (`references/verification.md` → Gate 0). Where no
+      make the edits**, covering every Gate 0 check (`references/parity-review.md` → Gate 0). Where no
       separate reviewer was available, that is stated rather than the gate being recorded as fully met.
 - [ ] **No invented affordance** — every rendered action, link, field and state traces to a rule in
       DESIGN.md or the product doc; sample data introduces no field the real schema lacks
@@ -80,12 +82,12 @@ forgotten one look the same.
 
 | Section | Carries | Stated in |
 |---|---|---|
-| **Gates** | each gate's result; whether Gate 0's reviewer was separate; each finding as confirmed by render or inferred from markup | `verification.md` → Gate 0; → Gate 1 |
+| **Gates** | each gate's result; whether Gate 0's reviewer was separate; each finding as confirmed by render or inferred from markup | `parity-review.md` → Gate 0; `verification.md` → Gate 1 |
 | **Mismatches** | each doc⇄code mismatch, in the inform-only finding shape | `boundaries-and-handoff.md` → Inform-only handoff |
 | **Design gaps** | each documented value the gallery cannot place, each fallback used for a missing token, and each content-schema shape a demo needs that the project lacks — open gaps for `design-write` | `section-spine.md` → The three layers; `visualizer-type.md` → P1 — Template (universal structure); `visualizer-kit.md` → Generic fallbacks; → Dogfood gate; `modes.md` → Evidence-based concerns |
 | **Classification concerns** | each candidate, missing tag or pending classification surfaced for the user | `modes.md` → Evidence-based concerns |
 | **Omitted pieces** | each cataloged piece substituted or omitted, with its stated reason | `modes.md` → Build mode |
-| **Gallery limits** | what the gallery cannot show, kept off the page | `verification.md` → The gallery is a visual partner to the doc, not a second copy of it |
+| **Gallery limits** | what the gallery cannot show, kept off the page | `parity-review.md` → The gallery is a visual partner to the doc, not a second copy of it |
 | **Local extensions** | each piece built in the project's `_kit/` beyond the pinned kit | `scaffold-specimen.md` → Local extensions, and the one to watch |
-| **Deploy** | a project with no deploy pipeline, stated, and the offer made | `stack-adapters.md` → Static-HTML adapter contract → (e) Production exclusion |
-| **Assets** | each placeholder, the needed-asset list, and the user's choice | `hard-to-demo.md` → Sample assets |
+| **Deploy** | a project with no deploy pipeline, stated, and the offer made | `stack-adapter-static-html.md` → Static-HTML adapter contract → (e) Production exclusion |
+| **Assets** | each placeholder, the needed-asset list, and the user's choice | `demo-placement-and-media.md` → Sample assets |

@@ -12,7 +12,7 @@ below are per-mode; Shared rules bind all three.
   paragraph, one paragraph before a section, one section before its neighbors. Editing content the
   request didn't mention is cleanup, not an update — stop and report it as `NOTED`.
 - **Preserve local wording.** Match the surrounding section's terminology and its category's writing
-  mode (`design-writing-contract.md` → Section-Type Writing Modes). Don't rephrase, compress, expand,
+  mode (`section-writing-modes.md` → Section-Type Writing Modes). Don't rephrase, compress, expand,
   or "improve" prose that wasn't part of the request, even if suboptimal.
 - **No opportunistic cleanup.** A contract violation near the edit (prose wall, wrong token format,
   heading too deep) is reported as `NOTED`, not fixed inline — unsolicited edits make diffs hard to
@@ -40,7 +40,7 @@ below are per-mode; Shared rules bind all three.
 - **One pass at a time.** A single invocation runs one defined pass unless the user explicitly requests a
   combined pass. Combined passes segment the manifest with `--- PASS: name ---` dividers so each set of
   changes is independently auditable. (Pass catalog: `rewrite-passes.md`.)
-- **Canonical-ordering preservation.** Reordering must comply with `design-writing-contract.md` → Canonical Spine —
+- **Canonical-ordering preservation.** Reordering must comply with `canonical-structure.md` → Canonical Spine —
   its Canonical ordering and Subsection order rules. Sections marked optional may be absent without violation. A
   reorder that places a section outside the spine is rejected — surface the conflict and ask.
 - **Section-preserving by default.** Prefer migrations that keep existing section boundaries. Merging two
@@ -64,13 +64,13 @@ whose reading list does not include the file pointed at — there the rule stand
     document actually has, and let the user choose.
 - **Empty placeholder headings are not violations.** A heading with no content is a placeholder — not an
   orphan, hierarchy violation, or merge candidate. Use `PLACEHOLDER` in the manifest; leave it in place.
-  Never invent content to fill it; its only fills are the ones `design-writing-contract.md` → Canonical Spine
+  Never invent content to fill it; its only fills are the ones `canonical-structure.md` → Canonical Spine
   allows for an empty required section — the Authoring `TODO:` line, or the user-confirmed line.
 - **Design identifiers are sacred.** Token, component, semantic-role, and domain-component names, and
   stable vocabulary, change only via explicit instruction or a user-confirmed terminology migration.
   Before *adding* a token, confirm name, resolved value, and role — names are load-bearing; a wrong one
   cascades across the registry and every reference.
-- **New content complies with the contract.** All added content follows `design-writing-contract.md`; the
+- **New content complies with the contract.** All added content follows the contract (`design-writing-contract.md` and the files it lists); the
   contract owns the format (component structure, token form, bullet limits) — it is not restated here.
 - **Cross-references are upkept.** Renaming a token, term, or heading means updating every reference in
   the doc — and in any sibling docs the user names — enumerated individually in the manifest, never a

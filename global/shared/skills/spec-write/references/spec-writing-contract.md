@@ -5,7 +5,7 @@ goal: **a person scanning cold and an agent retrieving a single section both und
 unambiguously.** That goal drives every rule below.
 
 This is the prose-doc writing contract — parallel to, but separate from, the DESIGN.md writing
-contract (`design-writing-contract.md`, owned by `design-write`). It governs PRODUCT/PROJECT, the
+contract (`design-writing-contract.md` and the files it lists, owned by `design-write`). It governs PRODUCT/PROJECT, the
 implementation-plan doc, ARCHITECTURE, SCHEMA, and similar prose docs — never DESIGN.md.
 
 ---
@@ -32,7 +32,8 @@ These docs are not all written the same way. Two tiers, picked by what the doc i
 - No reasoning padding. If a reader needs the *why*, it belongs in the Tier-1 doc, cross-referenced.
 
 The implementation-plan doc is **procedural** — a third mode, not a third tier. See
-`doc-archetypes.md` for its shape. It borrows Tier-2 terseness for steps and Tier-1 clarity for goals.
+`doc-archetypes.md` for its shape. It borrows Tier-2 terseness for steps and Tier-1 clarity for goals, and
+may be forward-looking.
 
 **Rule of thumb:** if a sentence explains a *reason*, it belongs in Tier 1. If it states a *rule*,
 Tier 2. A companion doc that starts explaining itself has drifted toward the product doc — move the
@@ -56,9 +57,8 @@ resolve to a real heading in the target doc — verify it before finishing.
 **Shallow hierarchy.** Prefer `H2 → H3 → H4`. Avoid deeper nesting and orphaned single-child
 subsections. If a section has one subsection, fold it up.
 
-**One concern per doc.** Each doc owns one lane (see `doc-archetypes.md` → ownership boundaries).
-Content that belongs to another doc is cross-referenced, not duplicated. Drift across docs — the same
-fact stated two ways in two files — is a defect.
+**One concern per doc.** Each doc owns one lane; content in another doc's lane is cross-referenced,
+never restated (`doc-archetypes.md` → Ownership Boundaries).
 
 ---
 
@@ -84,8 +84,9 @@ not become walls, restate adjacent bullets, or explain the obvious.
 required/optional grid — table, not repeated prose. Put any cross-cutting rule that governs the whole
 table as an intro line *before* it, not as a footnote after.
 
-**Scan target.** Most sections should be readable within one screen. If a section sprawls, it is
-probably carrying content that belongs in another doc or another tier.
+**Scan target.** Most sections should be 40 lines or fewer. A section over that is probably carrying
+content that belongs in another doc or another tier. Here and in every section count this skill uses, a
+section is an H2 and everything under it.
 
 ---
 

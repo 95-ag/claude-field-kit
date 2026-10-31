@@ -66,12 +66,12 @@ The gallery never authors DESIGN.md and never runs design-write or scaffold-desi
 
 | Mismatch | Suggested fixer (on user confirmation) |
 |---|---|
-| Doc is out of line with intent or code | **design-write** (update DESIGN.md) |
-| Code is out of line with the doc | **scaffold-design-system** in Align mode (bring code to match DESIGN.md) |
-| Code is missing (documented but not built) | **scaffold-design-system** in Fresh mode (create from spec) |
-| Repeats in code but not extracted as reusable | **both** — scaffold-design-system (extract) and design-write (document it) |
+| Doc is out of line with intent or code | **design-write** |
+| Code is out of line with the doc | **scaffold-design-system** in Align mode |
+| Code is missing (documented but not built) | **scaffold-design-system** in Fresh mode |
+| Repeats in code but not extracted as reusable | **design-write** (document the shared component), then **scaffold-design-system** in Fresh mode (create it); swapping the repeats for it is page composition, which neither skill touches — reported for the user |
 
-When "both" applies, surface both needs together. The user may confirm one, both, or neither.
+When a row names two fixers, surface both, in that order. The user may confirm one, both, or neither.
 
 ---
 

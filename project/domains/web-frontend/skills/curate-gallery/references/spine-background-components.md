@@ -193,7 +193,7 @@ own frame). Recipe by component KIND:
 
 **Sample assets** (figures, diagrams, media): source via the project's **asset system if it has one**
 (announce when generating), else a **simple borderless SVG** in DESIGN.md colors/type, **representative of
-the content kind** (figure = image, diagram = flow, chart = graph). Full rule → `hard-to-demo.md` → Sample
+the content kind** (figure = image, diagram = flow, chart = graph). Full rule → `demo-placement-and-media.md` → Sample
 assets.
 
 **Basic usage info (every specimen):** each `Specimen` carries a one-line usage `description` (general to
