@@ -9,6 +9,9 @@
  * --env   Target environment. Auto-detected from CLAUDE_PROJECT_DIR if omitted.
  * --root  Claude Field Kit repo root. Default: /home/ag-95/projects/claude-field-kit
  *
+ * Refuses before writing anything while skill-reference-check reports a dead pointer in global/shared/skills
+ * or the env overlay's skills/; a near-match is printed as `warn:` and does not refuse.
+ *
  * Stop before running if the user has not confirmed the sync.
  */
 import { createHash } from "crypto";
@@ -17,6 +20,8 @@ import {
   readdirSync, copyFileSync, unlinkSync, statSync,
 } from "fs";
 import { join, dirname, basename, relative } from "path";
+import { spawnSync } from "child_process";
+import { fileURLToPath } from "url";
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -360,8 +365,29 @@ function deliver(previousManifest) {
 }
 
 // ---------------------------------------------------------------------------
+// Reference hold
+// ---------------------------------------------------------------------------
+
+function referenceHold() {
+  const roots = [join(GLOBAL_SHARED, "skills"), join(GLOBAL_OVERLAY, "skills")].filter((root) => existsSync(root));
+  if (roots.length === 0) return;
+  const check = join(dirname(fileURLToPath(import.meta.url)), "skill-reference-check.mjs");
+  const result = spawnSync(process.execPath, [check, ...roots], { encoding: "utf8" });
+  if (result.status !== 0 || /^warn:/m.test(result.stdout)) process.stdout.write(result.stdout);
+  if (result.status === 0) return;
+  const reason = result.status === 1
+    ? "a skill pointer under global/ does not resolve — fix it in the kit and rerun"
+    : `skill-reference-check could not run (exit ${result.status}): ${(result.stderr ?? "").trim()}`;
+  process.stderr.write(`[global-sync] REFUSED: ${reason}\n`);
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+// Before drift routing, which writes incoming/ and clears the dirty flag: a refused sync must leave no trace.
+referenceHold();
 
 const oldManifest = loadManifest();
 

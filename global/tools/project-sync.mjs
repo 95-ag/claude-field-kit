@@ -37,11 +37,16 @@
  *
  * With project directories and no mode flag it prints the plan per project and writes nothing.
  *
+ * The dry run and every --apply form first run skill-reference-check over project/'s skill folders and refuse
+ * on a dead pointer; a near-match is printed as `warn:` and does not refuse.
+ *
  * Exit: 0 ok · 1 refused (printed as `REFUSED: …`) or, with --apply, something still owed (a conflict, a file
  * edited with no recorded base, a renamed file the project edited, an edited binary, a held skill) · 2 usage.
  */
-import { existsSync, realpathSync } from "fs";
-import { basename, resolve } from "path";
+import { spawnSync } from "child_process";
+import { existsSync, readdirSync, realpathSync } from "fs";
+import { basename, dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
 import { assertDeliverable, cacheKit, catalog, kitRoot, resolveAncestor } from "./project-sync/kit.mjs";
 import { applyPlan, previewEdits, restore, saveRecord } from "./project-sync/apply.mjs";
 import { planProject } from "./project-sync/plan.mjs";
@@ -134,8 +139,33 @@ function refuse(error) {
   refused = true;
 }
 
+/** `project/shared/skills` and every `project/<kind>/<name>/skills` that exists — discovered, so a new tier is covered. */
+function skillRoots(projectTier) {
+  const roots = [join(projectTier, "shared", "skills")];
+  for (const kind of ["domains", "stacks", "repos"]) {
+    const kindDir = join(projectTier, kind);
+    if (!existsSync(kindDir)) continue;
+    for (const name of readdirSync(kindDir)) roots.push(join(kindDir, name, "skills"));
+  }
+  return roots.filter((root) => existsSync(root));
+}
+
+// A skill delivered with a dead pointer reads as correct prose in the project, so the hold comes before any write.
+function assertPointersResolve(kitDir) {
+  const roots = skillRoots(join(kitDir, "project"));
+  if (roots.length === 0) return;
+  const check = join(dirname(fileURLToPath(import.meta.url)), "skill-reference-check.mjs");
+  const result = spawnSync(process.execPath, [check, ...roots], { encoding: "utf8" });
+  if (result.status !== 0 || /^warn:/m.test(result.stdout)) process.stdout.write(result.stdout);
+  if (result.status === 1) throw new Refusal("a skill pointer under project/ does not resolve — fix it in the kit and rerun");
+  if (result.status !== 0) {
+    throw new Refusal(`skill-reference-check could not run (exit ${result.status}): ${(result.stderr ?? "").trim()}`);
+  }
+}
+
 try {
   assertDeliverable(kit);
+  if (!wantStatus && !wantBases) assertPointersResolve(kit);
 } catch (error) {
   refuse(error);
   process.exit(1);

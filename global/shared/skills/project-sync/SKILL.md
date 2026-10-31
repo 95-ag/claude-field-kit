@@ -27,6 +27,9 @@ limit is that the harness runs against throwaway kits and projects only.
 - The owner has not said go for `--apply`. Steps 1–2 write nothing and need no go.
 - The tool prints `REFUSED: …` — report the reason as printed and stop.
   - Never work around it. A dirty `project/` or a `HEAD` off `main` is the owner's to fix.
+  - A skill pointer under `project/` that does not resolve refuses the dry run and every `--apply`: report the
+    `skill-reference-check` lines printed above it; fixing the pointer is a kit change, then rerun. `warn:`
+    lines do not refuse — report them for a read.
   - A missing record means `project-bootstrap` adopt.
   - Exception: the merge-workspace refusals of `--apply --resolved` — a stale copy (kit moved or project file
     changed), a missing sidecar, a marker left in the copy, or no copy. Step 6 gives each its remedy.

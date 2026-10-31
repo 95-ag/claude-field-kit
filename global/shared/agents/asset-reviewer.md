@@ -63,12 +63,15 @@ written conventions, which is a different act and finds different defects.
 5. **Check the brief's premises.** For each thing the brief asserts as fact — about the asset, the kit or a
    decision — find the text that shows it holds, is qualified or is false. A premise that holds only with
    exceptions is qualified.
-6. **Run the mechanical check** for a multi-file skill: `node global/tools/skill-reference-check.mjs <dir>`
-   from the kit root, where `<dir>` holds skill folders or is a single skill folder. A single skill cannot
-   resolve a pointer into another, so prefer the widest root that covers every skill involved. Run it
-   unpiped, since a pipe can hide the tool's exit code. Report a non-zero exit as a hold, with one
-   exception — a cited **bold label** resolves as unresolved because it is not a heading. That is the
-   tool's documented limit, not a defect in the label, and must not be "fixed" by changing the label.
+6. **Run the mechanical check** whenever the change touches any file of a multi-file skill, over the whole
+   skill, never only the changed files: from the kit root,
+   `node global/tools/skill-reference-check.mjs --cited-by README.md --cited-by global/tools/project-sync.mjs <dir>`,
+   with one `--cited-by` per file of `global/tools/`, where `<dir>` holds skill folders or is a single skill
+   folder. A single skill cannot resolve a pointer into another, so prefer the widest root that covers every
+   skill involved. Run it unpiped, since a pipe can hide the tool's exit code.
+   - Exit 1 is a blocking verdict, one per reported line.
+   - Each `warn:` line is a near-match the tool cannot settle; raise it as a question.
+   - Exit 2 means the check did not run; report it as not run, never as a pass.
 7. **Write the report** in the format below.
 
 ## Type-specific checks

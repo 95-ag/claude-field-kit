@@ -3,7 +3,7 @@
  * skill-reference-check — resolve every cross-reference in a multi-file skill, within and across skills.
  *
  * Usage:
- *   node skill-reference-check.mjs [<skills-dir> ...]
+ *   node skill-reference-check.mjs [--cited-by <file>]... [<skills-dir> ...]
  *
  * Each argument is a directory holding skill folders (<skills-dir>/<skill>/.../*.md), or a single skill
  * directory — one holding a SKILL.md — which is read as that one skill and says so.
@@ -14,22 +14,25 @@
  * another skill, so one reads as NO SUCH FILE there and resolves from the root above it.
  *
  * A split, a rename, or a moved section breaks a pointer silently, and the breakage reads as correct
- * prose — so this answers one question mechanically: does every `file.md` → Section pointer resolve?
- * An unresolved pointer is reported as DEAD (no such heading) or PARAPHRASE (a near-match, naming the
- * nearest real heading), because the two are triaged differently. Exit is non-zero when anything is
- * unresolved: a promotion hold, not a crash.
+ * prose — so this answers one question mechanically: does every `<file>.md` → Section pointer resolve?
+ * A pointer resolves to a heading or to a bullet's leading bold label (`- **Never originate.** …`).
+ * An unresolved pointer is reported as DEAD (no such heading), NO SUCH FILE or AMBIGUOUS FILE — each a hold
+ * — or, prefixed `warn:`, as PARAPHRASE (a near-match, naming the nearest real heading), which needs a read.
+ * Exit: 0 clean or warnings only · 1 a hold: a promotion or sync hold, not a crash · 2 usage, or no skills.
+ *
+ * --cited-by <file> also judges the `<file>.md` → Section pointers a non-skill file (README, a tool) writes
+ * into the indexed skills. Repeat it per file.
  *
  * An in-file pointer — `(→ Heading)` or `(-> Heading)`, in parentheses — resolves against the file it sits in,
  * then any other file of the same skill. A bare `A → B` is prose (a flow, a mapping) and is not read. A target
  * whose first hop names a doc archetype — `(→ SCHEMA)`, `(→ implementation-plan)` — passes when no heading matches.
  *
  * Limits, stated so they are not rediscovered as bugs:
- *  - Only the FIRST hop of a chained reference is verified — `file.md` → Visualizer → P2 confirms
+ *  - Only the FIRST hop of a chained reference is verified — `<file>.md` → Visualizer → P2 confirms
  *    Visualizer exists, not P2.
  *  - A reference to a numbered step rather than a heading is a legitimate form it cannot verify; it
  *    falls out as a PARAPHRASE and needs a human read.
- *  - A bold label a sibling doc cites is load-bearing like a heading but is not one, so it reports as
- *    unresolved. That is this tool's limit, not a defect in the label — do not "fix" the label.
+ *  - A bold label resolves only at a bullet's start; a cited bold paragraph or numbered step does not.
  *  - An in-file target over 80 characters is not read, and code — fenced or inline — is read like prose.
  *  - Two roots holding a skill of the same name are indexed as one skill.
  */
@@ -41,18 +44,21 @@ import { homedir } from "os";
 // The grammars these assets actually write
 // ---------------------------------------------------------------------------
 
-// `file.md` · `references/file.md` · `other-skill/references/file.md`, each optionally followed by a
-// first hop: `file.md` → Heading. A naive matcher reports nearly every reference as broken.
+// `<file>.md` · `references/<file>.md` · `<other-skill>/references/<file>.md`, each optionally followed by a
+// first hop: `<file>.md` → Heading. A naive matcher reports nearly every reference as broken.
 const REF =
   /`(?:(?!references\/)([a-z0-9-]+)\/)?(?:references\/)?([a-z0-9-]+\.md)`(?:\s*(?:→|->)\s*([^`\n|]{2,80}?))?(?=\s*(?:[.,;)|]|$|→|->|\n))/gm;
 
 // A blank line ends the capture, so an unclosed `(→` cannot swallow the next paragraph.
 const IN_FILE = /\((?:→|->)\s*((?:(?!\n\s*\n)[^)]){2,80})\)/g;
-// (→ `file.md` → X) is a file pointer, which REF already reads.
+// (→ `<file>.md` → X) is a file pointer, which REF already reads.
 const FILE_POINTER = /`[^`]*\.md`/;
 
 // Back-ticked (### `Specimen`), numbered (### 1. Colors), and the various dash characters.
 const HEADING = /^#{1,4}\s+(.+)$/gm;
+// A bullet's leading bold label — `- **Never originate.** …` — is cited like a heading. Only a bullet's:
+// bold mid-sentence is emphasis, and a numbered step is cited by number.
+const LABEL = /^\s*[-*]\s+\*\*(.+?)\*\*/gm;
 
 // Non-skill targets a skill legitimately cites. The doc archetypes and work files are stable; the
 // rule filenames are the one list a new environment may need to extend.
@@ -94,13 +100,17 @@ function markdownFiles(dir) {
 
 const distinctiveWords = (text) => text.split(/\W+/).filter((word) => word.length > 3);
 
-/** null when the first hop names a heading in `headings`; otherwise its DEAD or PARAPHRASE verdict. */
-function judgeHop(hop, headings) {
+/**
+ * null when the first hop names a heading or a bullet label; otherwise its DEAD or PARAPHRASE verdict.
+ * Labels resolve but never supply a near-match: a kit holds far more labels than headings, and a dead
+ * pointer sharing two words with one would be demoted from a hold to a warning.
+ */
+function judgeHop(hop, headings, labels) {
   const firstHop = norm(hop.split("→")[0].split("->")[0]);
   if (!firstHop) return null;
 
   const forms = [firstHop, norm(firstHop.split("(")[0])].filter(Boolean);
-  const resolves = headings.some((heading) =>
+  const resolves = [...headings, ...labels].some((heading) =>
     forms.some((form) => heading === form || heading.startsWith(form) || form.startsWith(heading)),
   );
   if (resolves) return null;
@@ -118,9 +128,23 @@ function judgeHop(hop, headings) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const roots = args.length ? args : [join(homedir(), ".claude", "skills")];
+const citedBy = [];
+const rootArgs = [];
+for (let i = 0; i < args.length; i++) {
+  if (args[i] !== "--cited-by") {
+    rootArgs.push(args[i]);
+    continue;
+  }
+  const file = args[++i];
+  if (!file || !existsSync(file)) {
+    console.error(`--cited-by needs an existing file: ${file ?? "(none given)"}`);
+    process.exit(2);
+  }
+  citedBy.push(file);
+}
+const roots = rootArgs.length ? rootArgs : [join(homedir(), ".claude", "skills")];
 
-const files = new Map(); // "<skill>\u0000<name>" -> { skill, name, text, headings }
+const files = new Map(); // "<skill>\u0000<name>" -> { skill, name, text, headings, labels }
 const byName = new Map(); // "<name>" -> [skill, ...]
 
 function indexSkill(dir, skill) {
@@ -128,7 +152,8 @@ function indexSkill(dir, skill) {
     const name = basename(path);
     const text = readFileSync(path, "utf8");
     const headings = new Set([...text.matchAll(HEADING)].map((match) => norm(match[1])));
-    files.set(`${skill}\u0000${name}`, { skill, name, text, headings });
+    const labels = new Set([...text.matchAll(LABEL)].map((match) => norm(match[1])));
+    files.set(`${skill}\u0000${name}`, { skill, name, text, headings, labels });
     byName.set(name, [...(byName.get(name) ?? []), skill]);
   }
 }
@@ -164,15 +189,21 @@ if (files.size === 0) {
 // Resolve each reference
 // ---------------------------------------------------------------------------
 
-const unresolved = new Set();
+// DEAD, NO SUCH FILE and AMBIGUOUS FILE are defects; a PARAPHRASE may be a legitimate numbered-step
+// reference the tool cannot verify, so it warns and needs a human read.
+const holds = new Set();
+const warnings = new Set();
+const report = (line, verdict) => (verdict.startsWith("PARAPHRASE") ? warnings : holds).add(line);
 
 const headingsBySkill = new Map();
-for (const { skill, headings } of files.values()) {
+const labelsBySkill = new Map();
+for (const { skill, headings, labels } of files.values()) {
   headingsBySkill.set(skill, [...(headingsBySkill.get(skill) ?? []), ...headings]);
+  labelsBySkill.set(skill, [...(labelsBySkill.get(skill) ?? []), ...labels]);
 }
 
-for (const key of [...files.keys()].sort()) {
-  const { skill, name, text } = files.get(key);
+/** Judge every `<file>.md` → Section pointer in `text`; `skill` is null for a file outside any skill. */
+function judgeFilePointers(where, skill, text) {
   for (const [, refSkill, refFile, hop] of text.matchAll(REF)) {
     if (EXTERNAL.has(refFile)) continue;
 
@@ -182,29 +213,39 @@ for (const key of [...files.keys()].sort()) {
       const owners = byName.get(refFile) ?? [];
       if (owners.length === 1) target = `${owners[0]}\u0000${refFile}`;
       else if (owners.length === 0) {
-        unresolved.add(`${skill}/${name}: NO SUCH FILE  ${refSkill ? `${refSkill}/` : ""}${refFile}`);
+        holds.add(`${where}: NO SUCH FILE  ${refSkill ? `${refSkill}/` : ""}${refFile}`);
         continue;
       } else {
-        unresolved.add(`${skill}/${name}: AMBIGUOUS FILE  ${refFile} in ${owners.join(", ")}`);
+        holds.add(`${where}: AMBIGUOUS FILE  ${refFile} in ${owners.join(", ")}`);
         continue;
       }
     }
     if (!hop) continue;
 
-    const verdict = judgeHop(hop, [...files.get(target).headings]);
-    if (verdict) unresolved.add(`${skill}/${name}: ${verdict}  \`${refFile}\` → ${JSON.stringify(hop.trim())}`);
+    const { headings, labels } = files.get(target);
+    const verdict = judgeHop(hop, [...headings], [...labels]);
+    if (verdict) report(`${where}: ${verdict}  \`${refFile}\` → ${JSON.stringify(hop.trim())}`, verdict);
   }
+}
+
+for (const key of [...files.keys()].sort()) {
+  const { skill, name, text } = files.get(key);
+  judgeFilePointers(`${skill}/${name}`, skill, text);
 
   for (const [, captured] of text.matchAll(IN_FILE)) {
     if (FILE_POINTER.test(captured)) continue;
     const pointer = captured.replace(/\n\s*>\s?/g, " ");
-    const verdict = judgeHop(pointer, headingsBySkill.get(skill));
+    const verdict = judgeHop(pointer, headingsBySkill.get(skill), labelsBySkill.get(skill));
     if (verdict && !namesDocArchetype(pointer)) {
-      unresolved.add(`${skill}/${name}: ${verdict}  (→ ${JSON.stringify(pointer.replace(/\s+/g, " ").trim())})`);
+      report(`${skill}/${name}: ${verdict}  (→ ${JSON.stringify(pointer.replace(/\s+/g, " ").trim())})`, verdict);
     }
   }
 }
 
-for (const line of unresolved) console.log(line);
-console.log(`\n${files.size} files scanned, ${unresolved.size} unresolved`);
-process.exit(unresolved.size ? 1 : 0);
+// A cited file's (→ X) is the file's own prose, not a pointer into a skill, so only its file pointers count.
+for (const file of citedBy) judgeFilePointers(file, null, readFileSync(file, "utf8"));
+
+for (const line of holds) console.log(line);
+for (const line of warnings) console.log(`warn: ${line}`);
+console.log(`\n${files.size} files scanned, ${holds.size} to fix, ${warnings.size} to read`);
+process.exit(holds.size ? 1 : 0);

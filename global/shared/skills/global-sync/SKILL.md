@@ -20,6 +20,9 @@ Claude Field Kit `incoming/` for review.
 - The user has said "don't sync" or "confirm before sync" — ask for explicit confirmation first
 - The global hook scripts are not present in `global/shared/hooks/` (they're the source delivered to `~/.claude/hooks/`)
 - This is the very first run in a new environment — verify `~/.claude/` exists and is writable
+- The tool prints `[global-sync] REFUSED: …` — a skill pointer under `global/` does not resolve, so nothing was
+  written. Report the lines `skill-reference-check` printed above it, fix each pointer, and rerun; never work
+  around it. `warn:` lines do not stop the sync: report them for a read.
 
 ## How to invoke
 
@@ -42,13 +45,15 @@ node /home/ag-95/projects/claude-field-kit/global/tools/global-sync.mjs --env ws
 
 ## What happens
 
-1. Reads `global/shared/` + env overlay; overlay files win on conflict
-2. Transforms hook commands: WSL-wrapped for Windows, bare `node` for WSL
-3. Deep-merges the `hooks` key into `~/.claude/settings.json` (all other keys preserved)
-4. Writes all composed files to `~/.claude/` (hooks scripts to `~/.claude/hooks/`)
-5. Updates `~/.claude/.claude-sync-manifest.json`
-6. If `~/.claude/.claude-sync-dirty` exists: detects drifted files, routes to `incoming/`, appends harvest tasks to `tasks.md`, clears the flag
-7. If a delivered file's Claude Field Kit source was deleted: warns via `additionalContext`; never deletes.
+1. Runs `skill-reference-check` over `global/shared/skills` and the env overlay's `skills/`; a dead pointer
+   refuses the sync before anything is written
+2. Reads `global/shared/` + env overlay; overlay files win on conflict
+3. Transforms hook commands: WSL-wrapped for Windows, bare `node` for WSL
+4. Deep-merges the `hooks` key into `~/.claude/settings.json` (all other keys preserved)
+5. Writes all composed files to `~/.claude/` (hooks scripts to `~/.claude/hooks/`)
+6. Updates `~/.claude/.claude-sync-manifest.json`
+7. If `~/.claude/.claude-sync-dirty` exists: detects drifted files, routes to `incoming/`, appends harvest tasks to `tasks.md`, clears the flag
+8. If a delivered file's Claude Field Kit source was deleted: warns via `additionalContext`; never deletes.
    The entry stays tracked while the file exists on disk, so the warning repeats until it is removed by hand
 
 ## After running

@@ -96,6 +96,53 @@ try {
   }
 
   {
+    const kit = makeKit();
+    kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: x\n---\n\n# S1\n\nSee `r.md` → Nowhere.\n");
+    kit.commit("dead pointer");
+    const project = makeProject("p", validRecord({ tiers: { domains: ["web"], stacks: [], repo: null } }));
+    const dry = tool(kit.dir, [project]);
+    check("hold: a dead skill pointer refuses the dry run", dry.status === 1 && dry.stdout.includes("REFUSED") && dry.stdout.includes("DEAD"), out(dry));
+
+    const recordBefore = readFileSync(join(project, ".claude/kit-delivery.json"), "utf8");
+    const applied = tool(kit.dir, ["--apply", project]);
+    check(
+      "hold: --apply writes nothing",
+      applied.status === 1 && applied.stdout.includes("REFUSED") && !existsSync(join(project, ".claude/rules")) && !existsSync(join(project, ".claude/skills"))
+        && readFileSync(join(project, ".claude/kit-delivery.json"), "utf8") === recordBefore && !existsSync(join(kit.dir, "tmp/project-sync-backup")),
+      out(applied),
+    );
+
+    const stat = tool(kit.dir, ["--status", project]);
+    check("hold: --status still runs", stat.status === 0 && !stat.stdout.includes("REFUSED"), out(stat));
+  }
+
+  {
+    const kit = makeKit();
+    kit.write("project/domains/web/skills/s1/references/r.md", "# Ref\n\n## Colour Token Rules Overview\n");
+    kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: x\n---\n\n# S1\n\nSee `r.md` → Colour Token Rules Summary.\n");
+    kit.commit("near pointer");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a near-match only warns", r.status === 0 && r.stdout.includes("warn:") && !r.stdout.includes("REFUSED"), out(r));
+  }
+
+  {
+    const kit = makeKit();
+    kit.git("rm", "-q", "-r", "project/domains/web/skills");
+    kit.commit("no skills");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a kit with no skills folder runs", r.status === 0 && !r.stdout.includes("REFUSED"), out(r));
+  }
+
+  {
+    const kit = makeKit();
+    kit.write("project/stacks/py/skills/s2/SKILL.md", "---\nname: s2\ndescription: x\n---\n\n# S2\n\nSee `s2-ref.md` → Gone.\n");
+    kit.write("project/stacks/py/skills/s2/references/s2-ref.md", "# Ref\n");
+    kit.commit("new stack skill");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a new stacks/<name>/skills root is checked", r.status === 1 && r.stdout.includes("REFUSED") && r.stdout.includes("Gone"), out(r));
+  }
+
+  {
     const r = tool(shared.dir, [makeProject("p")]);
     check("refuse: missing record", r.status === 1 && r.stdout.includes("project-bootstrap adopt"), out(r));
   }

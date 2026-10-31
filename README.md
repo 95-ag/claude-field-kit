@@ -187,8 +187,10 @@ Delivery:
 - **Global tier** — the `global-sync` tool (`global/tools/global-sync.mjs`, via the `global-sync` skill)
   composes `global/shared` + the env overlay and delivers it to each `~/.claude` (Windows + WSL),
   transforming `hooks.json` into that env's `settings.json` (WSL-wrapped on Windows, bare `node` on WSL).
+  It refuses before writing anything while a skill pointer under `global/` does not resolve.
 - **Project tier** — the `project-sync` tool (`global/tools/project-sync.mjs`, via the owner-run `project-sync`
-  skill) delivers `project/` updates to projects already set up.
+  skill) delivers `project/` updates to projects already set up. Its dry run and `--apply` refuse while a skill
+  pointer under `project/` does not resolve.
   - Each project's `.claude/kit-delivery.json` records its tiers, its opt-outs (`skip`) and the kit version of
     every file it holds — that version is the file's merge base.
   - An untouched file is replaced; an edited rule, hook or agent is 3-way merged against its base, with no
@@ -215,10 +217,9 @@ Promoted assets run **handsfree** across every session, so nothing lands without
 - **Heavily-rewritten item** — build the merged candidate in a scratch file and review it in a diff tool
   (incoming-vs-merged for what's dropped, current-vs-merged for what changes); iterate, then apply.
 - **Repo-tier item** — same diff review, then apply verbatim.
-- **Multi-file skill** — run `node global/tools/skill-reference-check.mjs incoming/skills` first and treat a
-  non-zero exit as a hold; a split or rename breaks a `file.md` → Section pointer silently and the breakage
-  reads as correct prose. A bold label cited as a heading is the tool's known limit, not a break — read the
-  report before acting.
+- **Multi-file skill** — run `node global/tools/skill-reference-check.mjs incoming/skills` first and treat
+  exit 1 as a hold; a split or rename breaks a `<file>.md` → Section pointer silently and the breakage reads as
+  correct prose. A `warn:` line is a near-match the tool cannot settle — read it before acting.
 
 ### Project bootstrap
 A new project's `.claude/` is seeded from `project/shared` (+ its domains/stacks) by the owner-run
