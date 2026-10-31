@@ -59,7 +59,7 @@ incoming/            # staging (local-only, gitignored) — captured by asset TY
 ├── notes/                                # hand-staged rough items (lessons, deferred global edits, ideas, hook bugs)
 └── plugins/                              # plugin refs
 
-tests/               # tool harnesses — run with node
+tests/               # tool and hook harnesses — node tests/<tool>/run.mjs; sandboxes under the OS temp dir
 ```
 
 ## Assets
