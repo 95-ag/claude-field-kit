@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from "child_process";
-import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { basename, dirname, join, relative, resolve, sep } from "path";
 import { blobAt, readBlob, targetFor } from "./kit.mjs";
@@ -13,7 +13,10 @@ const BACKUP_ROOT = ["tmp", "project-sync-backup"];
 const MERGE_ROOT = ["tmp", "project-sync-merge"];
 // `=======` is not tested: a Markdown setext underline is the same line, and a real conflict always carries the other two.
 const CONFLICT_MARKER = /^(<<<<<<<|>>>>>>>)( |\r?$)/m;
-const META_FILES = ["project.json", "added.json"];
+const META_FILES = ["project.json", "added.json", "merge.json"];
+// A --resolved run backs up the merge copies it consumes here, so --restore can bring the merge back.
+const MERGE_BACKUP = "merge";
+const SIDECARS = ["", ".kit", ".project"];
 const RECORD = ".claude/kit-delivery.json";
 const SETTINGS = ".claude/settings.json";
 const CLAUDE_MD = ".claude/CLAUDE.md";
@@ -66,17 +69,33 @@ function mergeText(kitPath, projectBytes, baseBytes, headBytes) {
   }
 }
 
+// one stamp per process, so every project in one run shares one run directory however long the run takes
+let runStamp = null;
+
 function backupDirFor(kit, projectDir) {
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+  runStamp ??= new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+  const stamp = runStamp;
   const root = join(kit, ...BACKUP_ROOT);
   let run = join(root, stamp);
-  for (let n = 1; existsSync(run); n++) run = join(root, `${stamp}-${n}`);
+  for (let n = 1; existsSync(join(run, basename(projectDir))); n++) run = join(root, `${stamp}-${n}`);
   return join(run, basename(projectDir));
 }
 
 // Copies every existing file in `toSave` into a fresh backup directory, with the metadata `restore` reads.
-function takeBackup(kit, projectDir, toSave, added) {
+function takeBackup(kit, projectDir, toSave, added, mergeCopies = []) {
   const backup = backupDirFor(kit, projectDir);
+  const workspace = join(kit, ...MERGE_ROOT, basename(projectDir));
+  for (const copy of mergeCopies) {
+    for (const file of SIDECARS.map((suffix) => copy + suffix).filter(isFile)) {
+      const saved = join(backup, MERGE_BACKUP, relative(workspace, file));
+      mkdirSync(dirname(saved), { recursive: true });
+      copyFileSync(file, saved);
+    }
+  }
+  if (mergeCopies.length) {
+    mkdirSync(backup, { recursive: true });
+    writeFileSync(join(backup, "merge.json"), `${JSON.stringify({ workspace }, null, 2)}\n`);
+  }
   for (const target of toSave.filter((t) => isFile(inside(projectDir, t)))) {
     mkdirSync(dirname(join(backup, target)), { recursive: true });
     copyFileSync(inside(projectDir, target), join(backup, target));
@@ -89,12 +108,24 @@ function takeBackup(kit, projectDir, toSave, added) {
 
 export const mergeWorkspace = (kit, projectDir, target) => join(kit, ...MERGE_ROOT, basename(projectDir), target.replace(/^\.claude\//, ""));
 
+// the same project reached through a link is still the same project
+const realOrResolved = (path) => (typeof path === "string" && existsSync(path) ? realpathSync(path) : resolve(String(path)));
+
 // Two projects with the same folder name share a workspace folder; project.json says whose it is.
 function assertWorkspaceOwner(kit, projectDir) {
-  const meta = join(kit, ...MERGE_ROOT, basename(projectDir), "project.json");
+  assertFolderOwner(join(kit, ...MERGE_ROOT, basename(projectDir)), projectDir);
+}
+
+function assertFolderOwner(folder, projectDir) {
+  const meta = join(folder, "project.json");
   if (!isFile(meta)) return;
-  const owner = JSON.parse(readFileSync(meta, "utf8")).projectDir;
-  if (owner !== resolve(projectDir)) throw new Refusal(`${meta} names ${owner}, not ${resolve(projectDir)} — another project of the same name owns these merge copies; once they are settled, delete the folder with its copies, their .kit and .project sidecars and project.json`);
+  let owner;
+  try {
+    owner = JSON.parse(readFileSync(meta, "utf8")).projectDir;
+  } catch (error) {
+    throw new Refusal(`${meta} is not valid JSON (${error.message}) — delete it once no other project's merge copies sit beside it`);
+  }
+  if (realOrResolved(owner) !== realOrResolved(projectDir)) throw new Refusal(`${meta} names ${owner}, not ${resolve(projectDir)} — another project of the same name owns these merge copies; once they are settled, delete the folder with its copies, their .kit and .project sidecars and project.json`);
 }
 
 // The owner's hand-merged copy; refused while it is absent, built against another kit version or another project file, or
@@ -117,7 +148,8 @@ function writeWorkspace(kit, projectDir, target, bytes, kitBytes, projectBytes) 
   const path = mergeWorkspace(kit, projectDir, target);
   if (isFile(path)) {
     const matches = (sidecar, expected) => isFile(path + sidecar) && readFileSync(path + sidecar).equals(expected);
-    const stale = !matches(".kit", kitBytes) ? "kit moved" : !matches(".project", projectBytes) ? "project file changed" : null;
+    const missing = [".kit", ".project"].find((sidecar) => !isFile(path + sidecar));
+    const stale = missing ? `${missing} sidecar missing` : !matches(".kit", kitBytes) ? "kit moved" : !matches(".project", projectBytes) ? "project file changed" : null;
     return { path, kept: true, date: statSync(path).mtime.toISOString().slice(0, 10), stale };
   }
   mkdirSync(dirname(path), { recursive: true });
@@ -134,6 +166,11 @@ function removeWorkspace(kit, projectDir, target) {
   for (const file of [path, `${path}.kit`, `${path}.project`]) if (isFile(file)) unlinkSync(file);
   const root = join(kit, ...MERGE_ROOT, basename(projectDir));
   for (let dir = dirname(path); dir !== root && dir.startsWith(root) && existsSync(dir) && !readdirSync(dir).length; dir = dirname(dir)) rmdirSync(dir);
+  // with no copy left, project.json would only keep a like-named project refused
+  if (existsSync(root) && readdirSync(root).join() === "project.json") {
+    unlinkSync(join(root, "project.json"));
+    rmdirSync(root);
+  }
 }
 
 // The record on its own, backed up first; null when it would not change.
@@ -154,7 +191,11 @@ export function previewEdits(kit, projectDir, rec, done) {
 }
 
 export function applyPlan(kit, projectDir, rec, plan, { resolved = [] } = {}) {
-  const head = (kitPath) => blobAt(kit, "HEAD", kitPath);
+  const heads = new Map();
+  const head = (kitPath) => {
+    if (!heads.has(kitPath)) heads.set(kitPath, blobAt(kit, "HEAD", kitPath));
+    return heads.get(kitPath);
+  };
   const headCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: kit, encoding: "utf8" }).trim();
   const renamed = plan.notes.filter((n) => n.kind === "renamed-edited");
   for (const target of [...plan.actions.map((a) => a.target), ...renamed.flatMap((n) => [n.target, n.fromTarget])]) inside(projectDir, target);
@@ -242,7 +283,7 @@ export function applyPlan(kit, projectDir, rec, plan, { resolved = [] } = {}) {
   const edited = [...(settings.text === null ? [] : [SETTINGS]), ...(rules.text === null ? [] : [CLAUDE_MD])];
   const toSave = [...fileWrites.filter((a) => a.kind !== "add").map((a) => a.target), ...resolvedWrites.map((w) => w.target), ...moved.map((a) => a.target), RECORD, ...edited];
   for (const target of [...fileWrites.map((a) => a.target), ...resolvedWrites.map((w) => w.target), ...edited]) if (!isFile(inside(projectDir, target))) added.push(target);
-  const backup = takeBackup(kit, projectDir, toSave, added);
+  const backup = takeBackup(kit, projectDir, toSave, added, resolvedWrites.map((w) => mergeWorkspace(kit, projectDir, w.target)));
   result.backup = backup;
 
   try {
@@ -285,13 +326,16 @@ export function restore(backupDir) {
   const collect = (rel) => {
     for (const entry of readdirSync(join(backupDir, rel), { withFileTypes: true })) {
       const child = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) collect(child);
+      if (entry.isDirectory()) {
+        if (rel || entry.name !== MERGE_BACKUP) collect(child);
+      }
       else if (rel || !META_FILES.includes(entry.name)) backedUp.push(child);
     }
   };
   collect("");
   // every path is checked before the first change, so a refused restore leaves the project as it was
   for (const rel of [...added, ...backedUp]) inside(projectDir, rel);
+  const merges = mergeCopiesIn(backupDir, projectDir);
 
   let removed = 0;
   for (const target of added) {
@@ -306,6 +350,35 @@ export function restore(backupDir) {
     mkdirSync(dirname(abs), { recursive: true });
     copyFileSync(join(backupDir, rel), abs);
   }
-  const restored = backedUp.length;
+  for (const { saved, path } of merges) {
+    mkdirSync(dirname(path), { recursive: true });
+    copyFileSync(saved, path);
+  }
+  if (merges.length) {
+    const meta = join(merges[0].workspace, "project.json");
+    if (!isFile(meta)) writeFileSync(meta, `${JSON.stringify({ projectDir: resolve(projectDir) }, null, 2)}\n`);
+  }
+  const restored = backedUp.length + merges.length;
   return { restored, removed };
+}
+
+// The merge copies a --resolved run consumed, each paired with where it goes back. Refused when a copy already sits
+// there — it may be a merge in progress — or when the workspace folder now belongs to a like-named project.
+function mergeCopiesIn(backupDir, projectDir) {
+  const metaPath = join(backupDir, "merge.json");
+  if (!isFile(metaPath)) return [];
+  const { workspace } = JSON.parse(readFileSync(metaPath, "utf8"));
+  assertFolderOwner(workspace, projectDir);
+  const found = [];
+  const walk = (rel) => {
+    for (const entry of readdirSync(join(backupDir, MERGE_BACKUP, rel), { withFileTypes: true })) {
+      const child = rel ? join(rel, entry.name) : entry.name;
+      if (entry.isDirectory()) walk(child);
+      else found.push({ saved: join(backupDir, MERGE_BACKUP, child), path: join(workspace, child), workspace });
+    }
+  };
+  walk("");
+  const taken = found.filter(({ path }) => existsSync(path));
+  if (taken.length) throw new Refusal(`${taken[0].path} already exists — a merge copy is never overwritten; settle or delete it, then rerun --restore`);
+  return found;
 }

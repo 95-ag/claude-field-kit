@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from "fs";
 import { basename, dirname, join } from "path";
-import { blobAt, blobOf, catalog, commitsSince, everPaths, fileTarget, pathHistoryBlobs } from "./kit.mjs";
+import { blobAt, blobOf, catalog, commitsSince, everPaths, fileTarget, isAncestor, pathHistoryBlobs } from "./kit.mjs";
 import { Refusal } from "./report.mjs";
 
 const isStringList = (v) => Array.isArray(v) && v.every((x) => typeof x === "string");
@@ -22,6 +22,10 @@ function shapeProblem(rec) {
 
 export function readRecord(projectDir) {
   const path = recordPath(projectDir);
+  // a record read through a link describes another project; --apply would refuse it later, so every mode refuses now
+  for (const linked of [join(projectDir, ".claude"), path]) {
+    if (lstatSync(linked, { throwIfNoEntry: false })?.isSymbolicLink()) throw new Refusal(`${linked} is a symbolic link — nothing is read or written through it`);
+  }
   if (!existsSync(path)) throw new Refusal(`no delivery record at ${path} — run project-bootstrap adopt for this project`);
   let rec;
   try {
@@ -92,7 +96,10 @@ export function findProjects(kit) {
 }
 
 export function status(kit, projectDir, rec = readRecord(projectDir)) {
-  const behind = rec.delivered ? commitsSince(kit, rec.delivered.commit) : null;
+  const counted = rec.delivered ? commitsSince(kit, rec.delivered.commit) : null;
+  // a count from a commit off main's history measures the wrong range, so it is not given
+  const notAncestor = counted !== null && !isAncestor(kit, rec.delivered.commit);
+  const behind = notAncestor ? null : counted;
   const owed = [];
   for (const entry of activeEntries(catalog(kit), rec)) {
     for (const file of entry.files) {
@@ -102,7 +109,7 @@ export function status(kit, projectDir, rec = readRecord(projectDir)) {
       if (!removedByProject) owed.push(file);
     }
   }
-  return { delivered: rec.delivered, behind, owed };
+  return { delivered: rec.delivered, behind, notAncestor, owed };
 }
 
 // Adopt's writer of `files`. Without `at`, a present file is recorded only when its bytes are a past version of that

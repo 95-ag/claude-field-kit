@@ -6,7 +6,7 @@
  * Usage:
  *   node project-sync.mjs [--kit <path>] (<project-dir>... | --all)
  *   node project-sync.mjs [--kit <path>] --catalog
- *   node project-sync.mjs [--kit <path>] --apply [--resolved <kit-path>[,<kit-path>…]] [--take-kit <kit-skill-dir>[,<kit-skill-dir>…]] (<project-dir>... | --all)
+ *   node project-sync.mjs [--kit <path>] --apply [--resolved <kit-path>[,<kit-path>…]] [--take-kit <kit-path>[,<kit-path>…]] (<project-dir>... | --all)
  *   node project-sync.mjs [--kit <path>] --status (<project-dir>... | --all)
  *   node project-sync.mjs [--kit <path>] --record-bases [--at <commit>] <project-dir>
  *   node project-sync.mjs [--kit <path>] --restore <backup-dir>
@@ -20,7 +20,7 @@
  *             (an ancestor of HEAD) every present file is recorded at that commit's blob instead. Writes the record only,
  *             after a backup.
  * --apply     Back up, write, update the record, print the report.
- * --resolved  With --apply and one project: kit paths (under project/) the owner merged by hand — a merge
+ * --resolved  With --apply and one project: kit paths, relative to project/ (stacks/node/rules/x.md), the owner merged by hand — a merge
  *             conflict, an edited file with no recorded base, or a file the kit renamed that the project edited (named by
  *             its new path). --apply leaves those files' merge copies under <kit>/tmp/project-sync-merge/<project>/
  *             (markers for a conflict; the project's copy for an edited file; for a renamed file the merge of the old
@@ -31,9 +31,11 @@
  *             and removes the copy; for a renamed file it also removes the old path and drops its record entry. Refused
  *             while the copy is missing, still holds a conflict marker, or either sidecar no longer matches the kit's
  *             HEAD or the project file.
- * --take-kit  With --apply and one project: kit skill directories (under project/) currently held for a project edit.
- *             Each is replaced wholesale with the kit's HEAD version, as a released skill is, without consulting incoming/.
- * --restore   Put a backup's files back and remove the files that run added.
+ * --take-kit  With --apply and one project: kit paths, relative to project/, of skill directories held for a project edit
+ *             or of edited binary files. Each is replaced wholesale with the kit's HEAD version, as a released skill
+ *             is, without consulting incoming/.
+ * --restore   Put a backup's files back and remove the files that run added; after a --resolved run, also put back the
+ *             merge copies it consumed. Refused while a copy already sits at one of those paths.
  *
  * With project directories and no mode flag it prints the plan per project and writes nothing.
  *
@@ -41,7 +43,8 @@
  * on a dead pointer; a near-match is printed as `warn:` and does not refuse.
  *
  * Exit: 0 ok · 1 refused (printed as `REFUSED: …`) or, with --apply, something still owed (a conflict, a file
- * edited with no recorded base, a renamed file the project edited, an edited binary, a held skill) · 2 usage.
+ * edited with no recorded base, a renamed file the project edited, an edited binary, a symlinked or non-regular
+ * target, a held skill) · 2 usage.
  */
 import { spawnSync } from "child_process";
 import { existsSync, readdirSync, realpathSync } from "fs";
@@ -54,7 +57,7 @@ import { findProjects, planBases, readRecord, status, validateRecord } from "./p
 import { Refusal, owedLines, renderBases, renderPlan, renderReport, renderStatus } from "./project-sync/report.mjs";
 
 function usage(message) {
-  console.error(`${message}\nusage: project-sync [--kit <path>] (--catalog | --restore <backup-dir> | --record-bases [--at <commit>] <project-dir> | [--apply [--resolved <kit-path>,…] [--take-kit <kit-skill-dir>,…] | --status] (<project-dir>... | --all))`);
+  console.error(`${message}\nusage: project-sync [--kit <path>] (--catalog | --restore <backup-dir> | --record-bases [--at <commit>] <project-dir> | [--apply [--resolved <kit-path>,…] [--take-kit <kit-path>,…] | --status] (<project-dir>... | --all))`);
   process.exit(2);
 }
 
@@ -73,7 +76,7 @@ const projects = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--kit") {
     kitArg = args[++i];
-    if (!kitArg) usage("--kit needs a path");
+    if (!kitArg || kitArg.startsWith("--")) usage("--kit needs a path");
   } else if (args[i] === "--catalog") wantCatalog = true;
   else if (args[i] === "--apply") wantApply = true;
   else if (args[i] === "--status") wantStatus = true;
@@ -105,6 +108,13 @@ if (wantBases && (wantApply || wantAll || projects.length !== 1)) usage("--recor
 if (atArg && !wantBases) usage("--at belongs to --record-bases");
 if (resolved.length && !(wantApply && projects.length === 1)) usage("--resolved needs --apply and exactly one project");
 if (takeKit.length && !(wantApply && projects.length === 1)) usage("--take-kit needs --apply and exactly one project");
+
+// the record, the catalog and the report all name kit paths without the project/ prefix
+const prefixed = [...resolved, ...takeKit].find((kitPath) => kitPath.startsWith("project/"));
+if (prefixed) {
+  console.log(`REFUSED: ${prefixed} — give kit paths relative to project/, as ${prefixed.slice("project/".length)}`);
+  process.exit(1);
+}
 
 const kit = kitRoot(kitArg);
 cacheKit(kit);

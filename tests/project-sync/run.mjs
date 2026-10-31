@@ -911,7 +911,7 @@ try {
         writeFileSync(`${ws}.kit`, readBlobText(kit, BLOB_A));
         const ok = apply(kit, d, ["--resolved", BLOB_A]);
         check("workspace: a setext-style ======= line does not block --resolved", ok.status === 0 && read(d, ".claude/rules/a.md") === merged, out(ok));
-        check("workspace: a consumed workspace copy and its sidecar are removed, empty directories pruned", !existsSync(ws) && !existsSync(`${ws}.kit`) && !existsSync(join(kit.dir, "tmp", "project-sync-merge", basename(d.project), "rules")) && existsSync(join(kit.dir, "tmp", "project-sync-merge", basename(d.project))), out(ok));
+        check("workspace: a consumed workspace copy and its sidecar are removed, the emptied folder with it", !existsSync(ws) && !existsSync(`${ws}.kit`) && !existsSync(join(kit.dir, "tmp", "project-sync-merge", basename(d.project))), out(ok));
       }
 
       {
@@ -1232,6 +1232,463 @@ try {
       }
 
       {
+        const owedSetup = (kitChanges) => {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          if (kitChanges) {
+            kit.write("project/shared/rules/a.md", `${RULE_A}\nkit addition\n`);
+            kit.commit("kit edits a");
+          }
+          persist(d);
+          return { kit, d };
+        };
+        const owedLine = (stdout, pattern) => new RegExp(`^Still owed:\\n(?:\\s+- .+\\n)*\\s+- ${pattern}`, "m").test(stdout);
+        const statusOwes = (kit, d, kitPath) => new RegExp(`^owed:\\n(?:\\s+- .+\\n)*\\s+- ${kitPath.replace(/\//g, "\\/")}$`, "m").test(tool(kit.dir, ["--status", d.project]).stdout);
+
+        {
+          const { kit, d } = owedSetup(true);
+          const outside = join(makeFamily(), "a.md");
+          writeFileSync(outside, RULE_A);
+          rmSync(d.abs(".claude/rules/a.md"));
+          symlinkSync(outside, d.abs(".claude/rules/a.md"));
+          const run = apply(kit, d);
+          check("owed: a symlinked rule the kit changed is owed by --status and --apply", statusOwes(kit, d, BLOB_A) && run.status === 1 && owedLine(run.stdout, "shared\\/rules\\/a\\.md — symlinked") && readFileSync(outside, "utf8") === RULE_A, out(run));
+        }
+        {
+          const { kit, d } = owedSetup(false);
+          const outside = join(makeFamily(), "SKILL.md");
+          writeFileSync(outside, read(d, ".claude/skills/s1/SKILL.md"));
+          rmSync(d.abs(".claude/skills/s1/SKILL.md"));
+          symlinkSync(outside, d.abs(".claude/skills/s1/SKILL.md"));
+          kit.write("project/domains/web/skills/s1/references/r.md", "# Ref\nkit addition\n");
+          kit.commit("kit edits r");
+          persist(d);
+          const run = apply(kit, d);
+          check(
+            "owed: a current symlinked file in a skill the kit changed elsewhere owes the skill, nothing written in it",
+            statusOwes(kit, d, `${SKILL}/references/r.md`) && run.status === 1 && owedLine(run.stdout, "domains\\/web\\/skills\\/s1 — not written: \\.claude\\/skills\\/s1\\/SKILL\\.md is symlinked") && read(d, ".claude/skills/s1/references/r.md") === "# Ref\n" && readRec(d.project).files[`${SKILL}/references/r.md`] !== headBlob(kit, `${SKILL}/references/r.md`),
+            out(run),
+          );
+        }
+        {
+          const { kit, d } = owedSetup(true);
+          rmSync(d.abs(".claude/rules/a.md"));
+          mkdirSync(d.abs(".claude/rules/a.md"));
+          const run = apply(kit, d);
+          check("owed: a directory at a rule's target the kit changed is owed by both", statusOwes(kit, d, BLOB_A) && run.status === 1 && owedLine(run.stdout, "shared\\/rules\\/a\\.md — not a regular file"), out(run));
+        }
+        {
+          const { kit, d } = owedSetup(false);
+          const outside = join(makeFamily(), "a.md");
+          writeFileSync(outside, RULE_A);
+          rmSync(d.abs(".claude/rules/a.md"));
+          symlinkSync(outside, d.abs(".claude/rules/a.md"));
+          const status = tool(kit.dir, ["--status", d.project]);
+          const run = apply(kit, d);
+          check("owed: a symlinked rule already current is owed by neither", /^owed: none$/m.test(status.stdout) && run.status === 0 && /^Still owed: none$/m.test(run.stdout), out(status) + out(run));
+        }
+        {
+          const { kit, d } = owedSetup(true);
+          kit.write("project/stacks/node/rules/b.md", "# Rule B\n\nNode kit specifics.\n");
+          kit.commit("kit edits b");
+          writeFileSync(d.abs(".claude/rules/node/b.md"), "# Rule B\n\nNode project specifics.\n");
+          const outside = join(makeFamily(), "a.md");
+          writeFileSync(outside, RULE_A);
+          rmSync(d.abs(".claude/rules/a.md"));
+          symlinkSync(outside, d.abs(".claude/rules/a.md"));
+          const run = apply(kit, d);
+          check("owed: a symlinked rule and an edited rule are both owed", run.status === 1 && owedLine(run.stdout, "shared\\/rules\\/a\\.md — symlinked") && owedLine(run.stdout, "stacks\\/node\\/rules\\/b\\.md — merge conflict"), out(run));
+        }
+      }
+
+      {
+        const conflicted = (kit, name = "p") => {
+          const d = deliverAll(kit, name);
+          writeFileSync(d.abs(".claude/rules/a.md"), RULE_A.replace("Keep things", "Keep project things"));
+          persist(d);
+          return d;
+        };
+        const mergeRoot = (kit, d) => join(kit.dir, "tmp", "project-sync-merge", basename(d.project));
+
+        {
+          const kit = makeKit();
+          const d = conflicted(kit);
+          const other = conflicted(kit);
+          kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+          kit.commit("kit edits a");
+          apply(kit, d);
+          writeFileSync(workspace(kit, d, "rules/a.md"), RULE_A.replace("Keep things", "Keep merged things"));
+          const resolved = apply(kit, d, ["--resolved", BLOB_A]);
+          const folderGone = !existsSync(mergeRoot(kit, d));
+          const second = apply(kit, other);
+          check("workspace: the folder goes with its last copy", resolved.status === 0 && folderGone && second.status === 1 && !second.stdout.includes("REFUSED") && existsSync(workspace(kit, other, "rules/a.md")), out(resolved) + out(second));
+        }
+        {
+          const kit = makeKit();
+          const d = conflicted(kit);
+          kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+          kit.commit("kit edits a");
+          apply(kit, d);
+          rmSync(`${workspace(kit, d, "rules/a.md")}.project`);
+          const run = apply(kit, d);
+          check("workspace: a missing .project sidecar reads 'sidecar missing', not 'project file changed'", /stale \(\.project sidecar missing\)/.test(run.stdout), out(run));
+        }
+        {
+          const kit = makeKit();
+          const d = conflicted(kit);
+          kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+          kit.commit("kit edits a");
+          apply(kit, d);
+          const link = join(makeFamily(), basename(d.project));
+          symlinkSync(d.project, link);
+          const run = tool(kit.dir, ["--apply", link]);
+          check("workspace: the owner check follows a symlinked project path", run.status === 1 && !run.stdout.includes("REFUSED"), out(run));
+        }
+        {
+          const kit = makeKit();
+          const d = conflicted(kit);
+          kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+          kit.commit("kit edits a");
+          apply(kit, d);
+          const meta = join(mergeRoot(kit, d), "project.json");
+          writeFileSync(meta, "{");
+          const run = apply(kit, d);
+          check("workspace: a corrupt project.json is REFUSED naming it, not a SyntaxError", run.status === 1 && run.stdout.includes(`REFUSED: ${meta}`) && run.stderr === "", out(run));
+        }
+        {
+          const kit = makeKit();
+          const d = conflicted(kit);
+          kit.write("project/shared/rules/a.md", RULE_A.replace("Keep things", "Keep kit things"));
+          kit.commit("kit edits a");
+          apply(kit, d);
+          const ws = workspace(kit, d, "rules/a.md");
+          writeFileSync(ws, RULE_A.replace("Keep things", "Keep merged things"));
+          const before = ["", ".kit", ".project"].map((suffix) => readFileSync(ws + suffix));
+          const projectBefore = read(d, ".claude/rules/a.md");
+          const resolved = apply(kit, d, ["--resolved", BLOB_A]);
+          const restored = tool(kit.dir, ["--restore", backupOf(resolved) ?? "none"]);
+          check(
+            "restore: --restore after --resolved puts the merge copy and its sidecars back",
+            resolved.status === 0 && restored.status === 0 && ["", ".kit", ".project"].every((suffix, i) => existsSync(ws + suffix) && readFileSync(ws + suffix).equals(before[i])) && read(d, ".claude/rules/a.md") === projectBefore,
+            out(resolved) + out(restored),
+          );
+
+          writeFileSync(ws, RULE_A.replace("Keep things", "Keep merged things"));
+          const again = apply(kit, d, ["--resolved", BLOB_A]);
+          mkdirSync(dirname(ws), { recursive: true });
+          writeFileSync(ws, "a merge in progress\n");
+          const projectNow = read(d, ".claude/rules/a.md");
+          const refused = tool(kit.dir, ["--restore", backupOf(again) ?? "none"]);
+          check("restore: an existing merge copy refuses the restore, nothing changed", again.status === 0 && refused.status === 1 && refused.stdout.includes("REFUSED") && read(d, ".claude/rules/a.md") === projectNow && readFileSync(ws, "utf8") === "a merge in progress\n", out(again) + out(refused));
+        }
+      }
+
+      {
+        const RULE_B = "# Rule B\n\nline one\nline two\nline three\n";
+        const renameKit = () => {
+          const kit = makeKit();
+          kit.write("project/stacks/node/rules/b.md", RULE_B);
+          kit.commit("b with lines");
+          return kit;
+        };
+
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          kit.git("rm", "-q", "project/shared/rules/a.md");
+          kit.commit("retire a");
+          kit.write("project/stacks/node/rules/b.md", "# Rule B\n\nNode specifics, revised.\n");
+          kit.commit("unrelated");
+          kit.write("project/shared/rules/new.md", RULE_A);
+          kit.commit("a new rule with a's text");
+          const plan = planProject(kit.dir, d.project, d.rec);
+          check(
+            "rename: a later similar file is not paired",
+            kinds(plan, "add").some((a) => a.kit === "shared/rules/new.md") && kinds(plan, "remove").some((a) => a.kit === BLOB_A) && notesOf(plan, "renamed-edited").length === 0,
+            show(plan),
+          );
+        }
+        {
+          const kit = renameKit();
+          const d = deliverAll(kit);
+          kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
+          kit.commit("rename b to c");
+          writeFileSync(d.abs(".claude/rules/node/b.md"), RULE_B.replace("line one", "line one, project"));
+          const plan = planProject(kit.dir, d.project, d.rec);
+          check("rename: a real rename still pairs", notesOf(plan, "renamed-edited").some((n) => n.kit === "stacks/node/rules/c.md" && n.from === BLOB_B), show(plan));
+        }
+        {
+          const kit = renameKit();
+          const d = deliverAll(kit);
+          kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
+          kit.commit("rename b to c");
+          const outside = join(makeFamily(), "b.md");
+          writeFileSync(outside, RULE_B);
+          rmSync(d.abs(".claude/rules/node/b.md"));
+          symlinkSync(outside, d.abs(".claude/rules/node/b.md"));
+          persist(d);
+          const run = apply(kit, d);
+          check("rename: a symlinked old path is owed naming the new path too", run.status === 1 && /^\s+- stacks\/node\/rules\/b\.md — symlinked, renamed to stacks\/node\/rules\/c\.md;/m.test(run.stdout), out(run));
+        }
+        {
+          const kit = renameKit();
+          const d = deliverAll(kit);
+          kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
+          kit.commit("rename b to c");
+          kit.write("project/stacks/node/rules/c.md", `${RULE_B}kit addition\n`);
+          kit.commit("edit c");
+          const projectText = RULE_B.replace("line one", "line one, project");
+          writeFileSync(d.abs(".claude/rules/node/b.md"), projectText);
+          d.rec.files[BLOB_B] = `1${"0".repeat(39)}`;
+          persist(d);
+          const run = apply(kit, d);
+          const ws = workspace(kit, d, "rules/node/c.md");
+          check(
+            "rename-edited, base gone: the report says no recorded base and the copy is the old-path bytes",
+            run.status === 1 && /^Still owed:\n(?:\s+- .+\n)*\s+- stacks\/node\/rules\/c\.md — renamed from stacks\/node\/rules\/b\.md, edited, no recorded base/m.test(run.stdout) && existsSync(ws) && readFileSync(ws, "utf8") === projectText,
+            out(run),
+          );
+        }
+        {
+          const kit = renameKit();
+          const d = deliverAll(kit);
+          kit.git("mv", "project/stacks/node/rules/b.md", "project/stacks/node/rules/c.md");
+          kit.commit("rename b to c");
+          kit.git("mv", "project/stacks/node/rules/c.md", "project/stacks/node/rules/e.md");
+          kit.commit("rename c to e");
+          writeFileSync(d.abs(".claude/rules/node/b.md"), RULE_B.replace("line one", "line one, project"));
+          const plan = planProject(kit.dir, d.project, d.rec);
+          check("rename: a two-hop chain a→b→c pairs a with c", notesOf(plan, "renamed-edited").some((n) => n.kit === "stacks/node/rules/e.md" && n.from === BLOB_B), show(plan));
+        }
+        {
+          const HOOK = "#!/usr/bin/env node\n/**\n * fmt — formats edited files.\n */\nconsole.log(1);\nconsole.log(2);\n";
+          const kit = makeKit();
+          kit.write("project/shared/hooks/fmt.mjs", HOOK);
+          kit.commit("fmt body");
+          const d = deliverAll(kit);
+          mkdirSync(join(kit.dir, "project/stacks/node/hooks"), { recursive: true });
+          kit.git("mv", "project/shared/hooks/fmt.mjs", "project/stacks/node/hooks/fmt.mjs");
+          kit.commit("move fmt to node");
+          kit.write("project/stacks/node/hooks/fmt.mjs", `${HOOK}console.log("kit");\n`);
+          kit.commit("kit edits fmt");
+          writeFileSync(d.abs(".claude/hooks/fmt.mjs"), HOOK.replace("console.log(1);", "console.log(\"project\");"));
+          persist(d);
+          const first = apply(kit, d);
+          const ws = workspace(kit, d, "hooks/fmt.mjs");
+          const merged = existsSync(ws) ? readFileSync(ws, "utf8") : "";
+          const resolved = apply(kit, d, ["--resolved", "stacks/node/hooks/fmt.mjs"]);
+          const rec = readRec(d.project);
+          check(
+            "rename: same-target edited rename merges at the one target and removes nothing",
+            first.status === 1 && merged.includes("project") && merged.includes("kit") && resolved.status === 0 && read(d, ".claude/hooks/fmt.mjs") === merged && "stacks/node/hooks/fmt.mjs" in rec.files && !("shared/hooks/fmt.mjs" in rec.files),
+            out(first) + out(resolved) + JSON.stringify(rec),
+          );
+        }
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          kit.git("mv", "project/shared/rules/a.md", "project/stacks/node/rules/a.md");
+          kit.commit("move a to node");
+          const plan = planProject(kit.dir, d.project, { ...d.rec, skip: ["stacks/node/rules/a.md"] });
+          check(
+            "rename: a skipped new path leaves the old copy, opted out",
+            !plan.actions.some((a) => a.target === ".claude/rules/a.md") && notesOf(plan, "opted-out-on-disk").some((n) => n.target === ".claude/rules/a.md"),
+            show(plan),
+          );
+        }
+      }
+
+      {
+        const REF = "# Ref\n\nline 1\nline 2\nline 3\nline 4\n";
+        const renamedSkill = () => {
+          const kit = makeKit();
+          kit.write("project/domains/web/skills/s1/references/r.md", REF);
+          kit.commit("longer ref");
+          const d = deliverAll(kit);
+          kit.git("mv", "project/domains/web/skills/s1", "project/domains/web/skills/s2");
+          kit.commit("rename s1 to s2");
+          kit.write("project/domains/web/skills/s2/references/r.md", `${REF}line 5\n`);
+          kit.commit("kit edits s2");
+          const edited = REF.replace("line 1", "line 1, project");
+          writeFileSync(d.abs(".claude/skills/s1/references/r.md"), edited);
+          persist(d);
+          return { kit, d, edited };
+        };
+        {
+          const { kit, d, edited } = renamedSkill();
+          const staged = join(kit.dir, "incoming", "skills", `${basename(d.project)}__s1`, "references", "r.md");
+          mkdirSync(dirname(staged), { recursive: true });
+          writeFileSync(staged, edited);
+          const plan = planProject(kit.dir, d.project, d.rec);
+          check(
+            "held rename: a staged copy under the old name releases the skill",
+            plan.held.length === 0 && kinds(plan, "replace").some((a) => a.target === ".claude/skills/s2/references/r.md") && kinds(plan, "remove").some((a) => a.target === ".claude/skills/s1/references/r.md"),
+            show(plan),
+          );
+        }
+        {
+          const { kit, d } = renamedSkill();
+          const dry = tool(kit.dir, [d.project]);
+          const taken = apply(kit, d, ["--take-kit", "domains/web/skills/s2"]);
+          check(
+            "held rename: unstaged, the held line names the project's copy, and --take-kit takes it by the new path",
+            /domains\/web\/skills\/s2 .*the project's copy is \.claude\/skills\/s1/.test(dry.stdout) && taken.status === 0 && !existsSync(d.abs(".claude/skills/s1")) && read(d, ".claude/skills/s2/references/r.md") === `${REF}line 5\n`,
+            out(dry) + out(taken),
+          );
+        }
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: v2\n---\n");
+          kit.write("project/domains/web/skills/s1/references/r.md", "# Ref v2\n");
+          kit.commit("kit edits both s1 files");
+          writeFileSync(d.abs(".claude/skills/s1/SKILL.md"), "---\nname: s1\ndescription: project\n---\n");
+          writeFileSync(d.abs(".claude/skills/s1/references/r.md"), "# Ref, project\n");
+          const staged = join(kit.dir, "incoming", "skills", `${basename(d.project)}__s1`, "references", "r.md");
+          mkdirSync(dirname(staged), { recursive: true });
+          writeFileSync(staged, "# Ref, project\n");
+          const plan = planProject(kit.dir, d.project, d.rec);
+          check("held: two edited files, one staged -> held, nothing written", plan.held.length === 1 && !plan.actions.some((a) => a.target.startsWith(".claude/skills/s1/")), show(plan));
+        }
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          persist(d);
+          const unknown = apply(kit, d, ["--take-kit", "domains/web/skills/nope"]);
+          const unedited = apply(kit, d, ["--take-kit", SKILL]);
+          d.rec.skip = [SKILL];
+          persist(d);
+          const skipped = apply(kit, d, ["--take-kit", SKILL]);
+          check(
+            "take-kit: refusals name the cause",
+            /not a kit skill directory/.test(unknown.stdout) && /not edited/.test(unedited.stdout) && /not active/.test(skipped.stdout) && [unknown, unedited, skipped].every((r) => r.status === 1),
+            out(unknown) + out(unedited) + out(skipped),
+          );
+          const resolved = apply(kit, d, ["--resolved", "project/shared/rules/a.md"]);
+          const take = apply(kit, d, ["--take-kit", "project/domains/web/skills/s1"]);
+          check("flags: a project/-prefixed path is refused with the right reason", [resolved, take].every((r) => r.status === 1 && /REFUSED: .*relative to project\//.test(r.stdout)), out(resolved) + out(take));
+        }
+      }
+
+      {
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          kit.write("project/shared/rules/a.md", `${RULE_A}\nkit addition\n`);
+          kit.commit("kit adds to a");
+          const edited = RULE_A.replace("Keep things", "Keep everything");
+          writeFileSync(d.abs(".claude/rules/a.md"), edited);
+          persist(d);
+          const shim = makeFamily();
+          const realGit = execFileSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).trim();
+          writeFileSync(join(shim, "git"), `#!/bin/sh\nif [ "$1" = "merge-file" ]; then exit 255; fi\nexec "${realGit}" "$@"\n`);
+          chmodSync(join(shim, "git"), 0o755);
+          const run = apply(kit, d, [], { PATH: `${shim}:${process.env.PATH}` });
+          check("merge: git merge-file exit 255 is REFUSED, nothing written, no backup", run.status === 1 && /git merge-file failed for shared\/rules\/a\.md/.test(run.stdout) && read(d, ".claude/rules/a.md") === edited && backups(kit).length === 0, out(run));
+        }
+        {
+          const outer = makeFamily();
+          execFileSync("git", ["init", "-q", "-b", "main"], { cwd: outer });
+          mkdirSync(join(outer, "kit", "project", "shared", "rules"), { recursive: true });
+          writeFileSync(join(outer, "kit", "project", "shared", "rules", "a.md"), RULE_A);
+          execFileSync("git", ["add", "-A"], { cwd: outer });
+          execFileSync("git", ["commit", "-q", "-m", "outer"], { cwd: outer });
+          const run = tool(join(outer, "kit"), [makeProject("p", validRecord())]);
+          check("refuse: a kit inside a larger repository", run.status === 1 && /not the root of a git checkout/.test(run.stdout), out(run));
+        }
+        {
+          const kit = makeKit();
+          const cases = [
+            [{ ...validRecord(), skip: "x" }, "`skip` must be a list"],
+            [{ ...validRecord(), tiers: { domains: [], stacks: [], repo: 3 } }, "`tiers.repo`"],
+            [{ ...validRecord(), delivered: { commit: 1 } }, "`delivered`"],
+            [{ ...validRecord(), files: [] }, "`files`"],
+            [[], "not a JSON object"],
+          ];
+          const failures = cases.filter(([record, says]) => {
+            const project = makeProject("p", record);
+            const path = join(project, ".claude", "kit-delivery.json");
+            const before = readFileSync(path);
+            const run = tool(kit.dir, [project]);
+            return !(run.status === 1 && run.stdout.includes("REFUSED") && run.stdout.includes(says) && readFileSync(path).equals(before));
+          });
+          check("refuse: shape-invalid records name the field, record untouched", failures.length === 0, JSON.stringify(failures));
+        }
+        {
+          const kit = makeKit();
+          const run = tool(kit.dir, ["--kit", "--apply", makeProject("p", validRecord())]);
+          check("usage: --kit with a flag-like value exits 2", run.status === 2, out(run));
+          const at = tool(kit.dir, ["--record-bases", "--at", "-x", makeProject("p", validRecord())]);
+          check("record-bases --at: a dash-led ref is refused as not a commit", at.status === 1 && at.stdout.includes("REFUSED") && at.stderr === "", out(at));
+        }
+        {
+          const kit = makeKit();
+          const real = makeProject("real", validRecord());
+          const project = join(makeFamily(), "p");
+          mkdirSync(project);
+          symlinkSync(join(real, ".claude"), join(project, ".claude"));
+          const runs = [tool(kit.dir, [project]), tool(kit.dir, ["--status", project])];
+          check("refuse: a symlinked .claude is refused at read, --status included", runs.every((r) => r.status === 1 && /REFUSED: .*symbolic link/.test(r.stdout)), runs.map(out).join(""));
+        }
+      }
+
+      {
+        {
+          const kit = makeKit();
+          kit.write("project/domains/web/skills/s1/SKILL.md", "---\nname: s1\ndescription: Does the\n  thing well.\n---\n");
+          kit.write("project/shared/hooks/fmt.mjs", "#!/usr/bin/env node\n/**\n * fmt — formats\n * edited files.\n *\n * Usage: none.\n */\n");
+          kit.commit("multi-line purposes");
+          const entries = catalogOf(kit).entries;
+          const purpose = (kitPath) => entries.find((e) => e.kit === kitPath)?.purpose;
+          check("catalog: a plain multi-line description is joined", purpose(SKILL) === "Does the thing well.", JSON.stringify(purpose(SKILL)));
+          check("catalog: a hook's purpose is its whole opening comment paragraph", purpose("shared/hooks/fmt.mjs") === "fmt — formats edited files.", JSON.stringify(purpose("shared/hooks/fmt.mjs")));
+        }
+        {
+          const kit = makeKit();
+          kit.git("checkout", "-q", "-b", "side");
+          kit.write("project/shared/rules/side.md", "# Side\n");
+          kit.commit("side commit");
+          const side = kit.git("rev-parse", "HEAD").trim();
+          kit.git("checkout", "-q", "main");
+          const project = makeProject("p", validRecord({ delivered: { commit: side, date: "2026-10-31" } }));
+          const run = tool(kit.dir, ["--status", project]);
+          check("status: a delivered commit off main's history reads unknown", run.status === 0 && run.stdout.includes(`behind: unknown — ${side.slice(0, 7)} is not in main's history`), out(run));
+        }
+        {
+          const kit = makeKit();
+          kit.write("project/shared/hooks.json", '{"hooks":{"Stop":[{"hooks":"x"}]}}\n');
+          kit.commit("malformed hooks.json");
+          const run = tool(kit.dir, [makeProject("p", validRecord())]);
+          check("settings: a malformed kit hooks.json is REFUSED, not a TypeError", run.status === 1 && run.stdout.includes("REFUSED") && run.stdout.includes("hooks.json") && run.stderr === "", out(run));
+        }
+        {
+          const kit = makeKit();
+          kit.write("project/shared/hooks.json", '{"hooks":{"Stop":[{"matcher":"x"}]}}\n');
+          kit.commit("hooks.json group with no hooks");
+          const run = tool(kit.dir, [makeProject("p", validRecord())]);
+          check("settings: a kit hooks.json group with no hooks list is REFUSED, not a TypeError", run.status === 1 && run.stdout.includes("REFUSED") && run.stdout.includes("hooks.json") && run.stderr === "", out(run));
+        }
+        {
+          const kit = makeKit();
+          const d = deliverAll(kit);
+          const run = apply(kit, d, ["--take-kit", "domains/web/skills/s1/references/r.md"]);
+          check("take-kit: a file inside a skill is refused, pointing at the skill directory", run.status === 1 && /REFUSED: --take-kit domains\/web\/skills\/s1\/references\/r\.md: belongs to skill domains\/web\/skills\/s1; take the skill directory/.test(run.stdout), out(run));
+        }
+        {
+          const kit = makeKit();
+          const one = deliverAll(kit, "p1");
+          const two = deliverAll(kit, "p2");
+          kit.write("project/shared/rules/a.md", `${RULE_A}\nkit addition\n`);
+          kit.commit("kit adds to a");
+          persist(one);
+          persist(two);
+          const run = tool(kit.dir, ["--apply", one.project, two.project]);
+          const paths = [...run.stdout.matchAll(/^Backup path: (.+)$/gm)].map((m) => m[1]);
+          check("backup: two projects in one run share one stamp dir", run.status === 0 && paths.length === 2 && dirname(paths[0]) === dirname(paths[1]), out(run));
+        }
+      }
+
+      {
         const kit = makeKit();
         kit.write("project/shared/agents/blob.bin", Buffer.from([0xff, 0xfe, 0x00, 0x01]));
         kit.commit("add a binary");
@@ -1244,9 +1701,27 @@ try {
         const status = tool(kit.dir, ["--status", d.project]);
         check(
           "owed parity: an edited binary is still owed after --apply (exit 1), as --status says",
-          run.status === 1 && /^Still owed:\n\s+- shared\/agents\/blob\.bin — edited binary — replace by hand or add to skip$/m.test(run.stdout) && /^owed:\n\s+- shared\/agents\/blob\.bin$/m.test(status.stdout),
+          run.status === 1 && /^Still owed:\n\s+- shared\/agents\/blob\.bin — edited binary — take it with --take-kit, or add to skip$/m.test(run.stdout) && /^owed:\n\s+- shared\/agents\/blob\.bin$/m.test(status.stdout),
           out(run) + out(status),
         );
+        const taken = apply(kit, d, ["--take-kit", "shared/agents/blob.bin"]);
+        const backup = backupOf(taken);
+        check(
+          "take-kit: an edited binary file takes the kit's bytes, backed up, record advanced",
+          taken.status === 0 &&
+            readFileSync(d.abs(".claude/agents/blob.bin")).equals(Buffer.from([0xff, 0x00, 0x02])) &&
+            readRec(d.project).files["shared/agents/blob.bin"] === headBlob(kit, "shared/agents/blob.bin") &&
+            Boolean(backup) && readFileSync(join(backup, ".claude/agents/blob.bin")).equals(Buffer.from([0xff, 0x00, 0x03])) &&
+            /shared\/agents\/blob\.bin — edited binary, taken from the kit/.test(taken.stdout),
+          out(taken),
+        );
+        const again = apply(kit, d, ["--take-kit", "shared/agents/blob.bin"]);
+        check("take-kit: a binary file no longer edited is refused as not edited", again.status === 1 && /REFUSED: --take-kit shared\/agents\/blob\.bin: not held/.test(again.stdout), out(again));
+        kit.write("project/shared/rules/a.md", RULE_A + "kit line\n");
+        kit.commit("kit adds to a");
+        writeFileSync(d.abs(".claude/rules/a.md"), "project line\n" + RULE_A);
+        const text = apply(kit, d, ["--take-kit", "shared/rules/a.md"]);
+        check("take-kit: a text file is refused, it merges instead", text.status === 1 && /REFUSED: --take-kit shared\/rules\/a\.md: not an edited binary/.test(text.stdout), out(text));
       }
 
       {
@@ -1839,10 +2314,14 @@ try {
       const first = kitMod2.catalog(kit.dir);
       check("kit cache: off by default — every catalog call is a fresh read", kitMod2.catalog(kit.dir) !== first);
       kitMod2.cacheKit(kit.dir);
-      const cached = kitMod2.catalog(kit.dir);
-      const pathsCached = kitMod2.everPaths(kit.dir);
-      check("kit cache: once on, catalog and everPaths are computed once", kitMod2.catalog(kit.dir) === cached && kitMod2.everPaths(kit.dir) === pathsCached && JSON.stringify(cached) === JSON.stringify(first));
-      kitMod2.cacheKit(null);
+      let cached;
+      try {
+        cached = kitMod2.catalog(kit.dir);
+        const pathsCached = kitMod2.everPaths(kit.dir);
+        check("kit cache: once on, catalog and everPaths are computed once", kitMod2.catalog(kit.dir) === cached && kitMod2.everPaths(kit.dir) === pathsCached && JSON.stringify(cached) === JSON.stringify(first));
+      } finally {
+        kitMod2.cacheKit(null);
+      }
       check("kit cache: switched off again", kitMod2.catalog(kit.dir) !== cached);
     }
 
@@ -1979,6 +2458,7 @@ try {
           ["--status"],
           ["--status", "--resolved", "x", d.project],
           ["--all", "--catalog"],
+          ["--catalog", d.project],
           ["--all", "--restore", "x"],
           ["--all", "--resolved", "x", "--apply"],
         ].every((args) => usage(args) === 2),

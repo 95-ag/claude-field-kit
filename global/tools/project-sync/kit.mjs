@@ -96,7 +96,7 @@ function readEverPaths(kit) {
   return paths;
 }
 
-// Commits in `commit..HEAD` that touch project/; null when the kit no longer holds `commit`
+// null when the kit no longer holds `commit`
 export function commitsSince(kit, commit) {
   try {
     return Number(gitText(kit, ["rev-list", "--count", `${commit}..HEAD`, "--", "project/"], { stdio: ["ignore", "pipe", "ignore"] }).trim());
@@ -112,17 +112,22 @@ export function resolveAncestor(kit, ref) {
   } catch {
     throw new Refusal(`${ref} is not a commit in the kit`);
   }
-  try {
-    git(kit, ["merge-base", "--is-ancestor", commit, "HEAD"]);
-  } catch {
-    throw new Refusal(`${ref} is not an ancestor of the kit's HEAD — a recorded base must come from main's history`);
-  }
+  if (!isAncestor(kit, commit)) throw new Refusal(`${ref} is not an ancestor of the kit's HEAD — a recorded base must come from main's history`);
   return commit;
 }
 
-export function renamesSince(kit, commit) {
+export function isAncestor(kit, commit) {
+  try {
+    git(kit, ["merge-base", "--is-ancestor", commit, "HEAD"], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function renamesSince(kit, commit, until = "HEAD") {
   const renames = new Map();
-  const raw = gitText(kit, ["diff", "-M", "--name-status", commit, "HEAD", "--", "project/"]);
+  const raw = gitText(kit, ["diff", "-M", "--name-status", commit, until, "--", "project/"]);
   for (const line of raw.split("\n")) {
     const [status, from, to] = line.split("\t");
     if (status?.startsWith("R")) renames.set(from.replace(/^project\//, ""), to.replace(/^project\//, ""));
@@ -130,11 +135,20 @@ export function renamesSince(kit, commit) {
   return renames;
 }
 
-// Where a path the kit removed now lives, read from the commit before its removal rather than from `delivered`, so a
-// rename stays linked for as long as the record still holds the old path.
+// Where a path the kit removed now lives, or null. Each hop is read inside the commit that removed the path, never across
+// a wider range, where a file added later with similar text would pair with it; a hop to a path the kit has since
+// removed too is followed on. Not tied to `delivered`, so a rename stays linked while the record holds the old path.
 export function renamedTo(kit, kitPath) {
-  const removedIn = gitText(kit, ["log", "-1", "--format=%H", "--no-renames", "--diff-filter=D", "HEAD", "--", `project/${kitPath}`]).trim();
-  return removedIn ? (renamesSince(kit, `${removedIn}^`).get(kitPath) ?? null) : null;
+  const seen = new Set();
+  for (let path = kitPath; !seen.has(path); ) {
+    seen.add(path);
+    const removedIn = gitText(kit, ["log", "-1", "--format=%H", "--no-renames", "--diff-filter=D", "HEAD", "--", `project/${path}`]).trim();
+    const next = removedIn ? renamesSince(kit, `${removedIn}^`, removedIn).get(path) : undefined;
+    if (!next) return null;
+    if (blobAt(kit, "HEAD", next) !== null) return next;
+    path = next;
+  }
+  return null;
 }
 
 export function assertDeliverable(kit) {
@@ -185,27 +199,34 @@ function frontmatterDescription(text) {
   const at = lines.findIndex((l) => l.startsWith("description:"));
   if (at === -1) return null;
   const inline = lines[at].slice("description:".length).trim();
-  if (inline && !/^[>|][+-]?$/.test(inline)) return inline.replace(/^(["'])(.*)\1$/, "$2");
   const block = [];
   for (const line of lines.slice(at + 1)) {
     if (!/^\s/.test(line)) break;
     block.push(line.trim());
   }
+  // a plain or quoted scalar may also run on over indented lines, which YAML folds with a space
+  if (inline && !/^[>|][+-]?$/.test(inline)) return [inline, ...block].join(" ").replace(/^(["'])(.*)\1$/, "$2");
   return block.join(" ").trim() || null;
 }
 
-function firstCommentLine(text) {
+function openingCommentParagraph(text) {
+  const paragraph = [];
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
-    if (!line || line.startsWith("#!") || line === "/**" || line === "/*" || line === "*/") continue;
-    if (/^(\/\/|#|\*|\/\*)/.test(line)) {
-      const text = line.replace(/^(\/\/+|#+|\*+|\/\*+)\s*/, "").replace(/\s*\*\/$/, "").trim();
-      if (text) return text;
+    if (!line || line.startsWith("#!") || line === "/**" || line === "/*" || line === "*/") {
+      if (paragraph.length) break;
       continue;
     }
-    break;
+    if (!/^(\/\/|#|\*|\/\*)/.test(line)) break;
+    const text = line.replace(/^(\/\/+|#+|\*+|\/\*+)\s*/, "").replace(/\s*\*\/$/, "").trim();
+    if (!text) {
+      if (paragraph.length) break;
+      continue;
+    }
+    paragraph.push(text);
+    if (line.endsWith("*/")) break;
   }
-  return "";
+  return paragraph.join(" ");
 }
 
 function firstParagraphAfterHeading(text) {
@@ -231,7 +252,7 @@ export function purposeOf(kit, kitPath) {
   const text = readBlob(kit, blob).toString("utf8");
   if (type === "skills") return frontmatterDescription(text) ?? "";
   if (type === "rules") return firstParagraphAfterHeading(text);
-  return frontmatterDescription(text) ?? firstCommentLine(text);
+  return frontmatterDescription(text) ?? openingCommentParagraph(text);
 }
 
 // The catalog is HEAD's tree, never the working tree: an ignored or untracked file has no blob to deliver or record.

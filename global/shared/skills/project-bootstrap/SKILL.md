@@ -14,8 +14,8 @@ is `project-sync`'s.
 - **Set-up — EXERCISED.** Walked end to end on a scratch repository with the owner's answers simulated.
   - `spec-write` and a live project session were not part of the run.
   - The resume path for an interrupted set-up is unexercised.
-- **Adopt — SPECIFIED.** Never run. The `--record-bases` mode beneath it is EXERCISED by the `project-sync`
-  harness against throwaway projects only.
+- **Adopt — EXERCISED** on four real projects, with and without `--at`.
+  - Correcting an existing record's tiers or `skip` is unexercised.
 
 ## When to use
 
@@ -28,15 +28,18 @@ Read the target's `.claude/` first.
 
 | Target holds | Mode |
 |---|---|
-| nothing, or only `docs/` | Set-up |
+| nothing, or only `docs/`, `CLAUDE.md` or `work/` | Set-up |
 | a record and no `.claude/CLAUDE.md` | Set-up resumed: an earlier set-up was interrupted |
 | any of `rules/`, `settings.json`, `hooks/`, `skills/`, `agents/`, and no record | Adopt: the `.claude/` was composed by hand |
-| a record and a `.claude/CLAUDE.md` | `project-sync`; adopt only if the owner wants the tiers or `skip` corrected |
+| a record and a `.claude/CLAUDE.md`, and the owner says set-up did not finish | Set-up resumed at step 6: steps 6–8 are safe to rerun |
+| a record and a `.claude/CLAUDE.md` otherwise | `project-sync`; adopt only if the owner wants the tiers or `skip` corrected |
 
 An interrupted set-up resumes by `delivered`:
 - Re-ask the step-2 questions first — a resume has no answers.
-- `delivered` null: the record is written, so resume at step 4 with the plan and `--apply`.
-- `delivered` set: the copy is done, so resume at step 5.
+- `delivered` null: the record is written, so resume at Set-up step 4 with the plan and `--apply`.
+- `delivered` set: the copy is done, so resume at Set-up step 5.
+- A resume never rewrites `tiers` or `skip`; the re-asked answers fill the templates only. Correcting the
+  tiers is Adopt's.
 
 ## Stop before running if
 
@@ -45,7 +48,8 @@ An interrupted set-up resumes by `delivered`:
   as new assets. Name the session and stop.
   - Check again immediately before every step that writes to the project, not only here.
   - A snapshot is not a lease.
-- Set-up is asked of a target with a record and a `.claude/CLAUDE.md` — that is `project-sync`'s.
+- Set-up is asked of a target with a record and a `.claude/CLAUDE.md` — that is `project-sync`'s, unless the
+  owner says set-up did not finish.
 - Set-up is asked of a hand-composed `.claude/` with no record — that is Adopt.
 - The owner has not said go for `--apply`.
 - The tool prints `REFUSED: …` — report the reason as printed and stop.

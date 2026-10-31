@@ -16,6 +16,9 @@ const ACTION_SECTIONS = [
 ];
 const NOTE_SECTIONS = ["edited-no-base", "removed-by-project", "retired-edited", "renamed-edited", "opted-out-on-disk", "binary-edited", "symlink", "project-only"];
 
+const heldDetail = (h) => `(edited: ${h.files.join(", ")}${h.projectCopy ? `; the project's copy is ${h.projectCopy}` : ""})`;
+const heldLine = (h) => `${h.skill} ${heldDetail(h)}`;
+
 function section(title, lines) {
   return [`${title}: ${lines.length ? "" : "none"}`.trimEnd(), ...lines.map((line) => `  - ${line}`)];
 }
@@ -27,7 +30,7 @@ export function renderPlan(projectName, plan, preview) {
     const rows = plan.actions.filter((a) => a.kind === kind).map((a) => `${a.kit} -> ${a.target}`);
     lines.push(...section(title, rows));
   }
-  lines.push(...section("Held skills", plan.held.map((h) => `${h.skill} (edited: ${h.files.join(", ")})`)));
+  lines.push(...section("Held skills", plan.held.map(heldLine)));
   lines.push(...section("Settings", settingsLines(preview.settings, true)));
   lines.push(...section("Rules table", rulesLines(preview.rules, true)));
   for (const kind of NOTE_SECTIONS) {
@@ -46,9 +49,11 @@ export function owedLines(plan, result) {
   return [
     ...result.conflicts.map((kitPath) => `${kitPath} — merge conflict; merge in the workspace copy, then --resolved`),
     ...openNotes(plan, result).filter((n) => n.kind === "edited-no-base").map((n) => `${n.kit} — edited, no recorded base; merge in the workspace copy, then --resolved`),
-    ...openNotes(plan, result).filter((n) => n.kind === "renamed-edited").map((n) => `${n.kit} — renamed from ${n.from}, edited in the project; merge in the workspace copy, then --resolved`),
-    ...plan.notes.filter((n) => n.kind === "binary-edited").map((n) => `${n.kit} — edited binary — replace by hand or add to skip`),
-    ...plan.held.map((h) => `${h.skill} — held skill (edited: ${h.files.join(", ")})`),
+    ...openNotes(plan, result).filter((n) => n.kind === "renamed-edited").map((n) => `${n.kit} — renamed from ${n.from}, edited${n.base ? " in the project" : ", no recorded base"}; merge in the workspace copy, then --resolved`),
+    ...plan.notes.filter((n) => n.kind === "binary-edited").map((n) => `${n.kit} — edited binary — take it with --take-kit, or add to skip`),
+    ...(plan.blocked ?? []).map((b) => `${b.skill} — not written: ${b.target} is symlinked; replace it by hand or add the skill to skip`),
+    ...plan.notes.filter((n) => n.owed).map((n) => `${n.kit} — ${n.kind === "symlink" ? "symlinked" : "not a regular file"}${n.renamedTo ? `, renamed to ${n.renamedTo}` : ""}; replace by hand or add to skip`),
+    ...plan.held.map((h) => `${h.skill} — held skill ${heldDetail(h)}`),
   ];
 }
 
@@ -87,7 +92,7 @@ export function renderReport(projectName, plan, result) {
   lines.push(...section("Conflicts", result.conflicts.map((kitPath) => `${kitPath} -> ${targetOf(kitPath)}${merging(kitPath)}`)));
   lines.push(...section("Edited without base", openNotes(plan, result).filter((n) => n.kind === "edited-no-base").map((n) => `${n.target} (${n.kit})${merging(n.kit)}`)));
   lines.push(...section("Removed by the project", noteRows(["removed-by-project"])));
-  lines.push(...section("Held skills", [...plan.held.map((h) => `${h.skill} (edited: ${h.files.join(", ")})`), ...(plan.taken ?? []).map((t) => `${t.skill} — taken from the kit (edited: ${t.files.join(", ")})`)]));
+  lines.push(...section("Held skills", [...plan.held.map(heldLine), ...(plan.taken ?? []).filter((t) => t.skill).map((t) => `${t.skill} — taken from the kit (edited: ${t.files.join(", ")})`)]));
   lines.push(...section("Skipped / opted out", noteRows(["opted-out-on-disk"])));
   lines.push(...section("Settings", settingsLines(result.settings)));
   lines.push(...section("Rules table", rulesLines(result.rules)));
@@ -95,12 +100,12 @@ export function renderReport(projectName, plan, result) {
   lines.push(`Backup path: ${result.backup ?? "none"}`);
   lines.push(`delivered: ${describeDelivered(result.before)} -> ${describeDelivered(result.after)}`);
   const renamedRows = openNotes(plan, result).filter((n) => n.kind === "renamed-edited").map((n) => `${n.target} (${n.kit}) — ${n.detail}${merging(n.kit)}`);
-  lines.push(...section("Notes", [...renamedRows, ...noteRows(["retired-edited", "binary-edited", "symlink", "project-only"]), ...(recorded ? [`${recorded} file(s) already current, recorded`] : [])]));
+  lines.push(...section("Notes", [...renamedRows, ...noteRows(["retired-edited", "binary-edited", "symlink", "project-only"]), ...(plan.taken ?? []).filter((t) => t.file).map((t) => `${t.file} — edited binary, taken from the kit`), ...(recorded ? [`${recorded} file(s) already current, recorded`] : [])]));
   return lines.join("\n");
 }
 
-export function renderStatus(projectName, { delivered, behind, owed }) {
-  const behindText = delivered === null ? "never delivered" : behind === null ? `unknown — ${delivered.commit.slice(0, 7)} is not in the kit` : `${behind} kit commit(s) since delivered`;
+export function renderStatus(projectName, { delivered, behind, notAncestor, owed }) {
+  const behindText = delivered === null ? "never delivered" : notAncestor ? `unknown — ${delivered.commit.slice(0, 7)} is not in main's history` : behind === null ? `unknown — ${delivered.commit.slice(0, 7)} is not in the kit` : `${behind} kit commit(s) since delivered`;
   return [`== ${projectName} ==`, `delivered: ${delivered ? describeDelivered(delivered) : "never"}`, `behind: ${behindText}`, ...section("owed", owed)].join("\n");
 }
 

@@ -1,7 +1,7 @@
 import { execFileSync } from "child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync } from "fs";
 import { basename, join } from "path";
-import { blobAt, blobOf, catalog, fileTarget, readBlob, renamedTo, renamesSince, targetFor } from "./kit.mjs";
+import { blobAt, blobOf, catalog, fileTarget, readBlob, renamedTo, targetFor } from "./kit.mjs";
 import { Refusal } from "./report.mjs";
 
 const HEX_OID = /^[0-9a-f]{40}$/;
@@ -33,7 +33,6 @@ function gitSucceeds(kit, args) {
   }
 }
 const blobExists = (kit, blob) => HEX_OID.test(blob) && gitSucceeds(kit, ["cat-file", "-e", blob]);
-const commitExists = (kit, commit) => HEX_OID.test(commit) && gitSucceeds(kit, ["cat-file", "-e", `${commit}^{commit}`]);
 
 // Walks .claude/ → target without following links: a link anywhere on the way means a write would land elsewhere.
 function inspect(projectDir, target) {
@@ -63,15 +62,20 @@ function walkFiles(dir) {
   return found;
 }
 
-function renameLinks(kit, rec) {
-  const links = new Map();
-  const since = rec.delivered?.commit;
-  const sinceDelivered = since && commitExists(kit, since) ? renamesSince(kit, since) : new Map();
+// Where each recorded path the kit renamed away now lives
+function movesOf(kit, rec) {
+  const moves = new Map();
   for (const from of Object.keys(rec.files)) {
     if (targetFor(from) === null || blobAt(kit, "HEAD", from) !== null) continue;
-    const to = sinceDelivered.get(from) ?? renamedTo(kit, from);
-    if (to && rec.files[to] === undefined && !links.has(to)) links.set(to, from);
+    const to = renamedTo(kit, from);
+    if (to) moves.set(from, to);
   }
+  return moves;
+}
+
+function renameLinks(rec, moves) {
+  const links = new Map();
+  for (const [from, to] of moves) if (rec.files[to] === undefined && !links.has(to)) links.set(to, from);
   return links;
 }
 
@@ -90,9 +94,18 @@ function classifyActive(ctx, { unit, kit: kitPath, target, head }) {
     item.forcedActions = clean;
   };
 
+  // `--status` owes a file whose record lags HEAD whatever sits at its target, so a link or a directory there is owed too
+  const owed = rec.files[kitPath] !== head;
+  const unwritable = (state, noteKit, noteTarget) => {
+    // `--status` owes the new path; the old one is where the owner finds the file
+    const renamedTo = noteKit === kitPath ? undefined : kitPath;
+    if (state === "symlink") item.notes.push({ kind: "symlink", kit: noteKit, target: noteTarget, owed, renamedTo });
+    else item.notes.push({ kind: "project-only", kit: noteKit, target: noteTarget, detail: "not a regular file", owed, renamedTo });
+    return item;
+  };
+
   const here = inspect(projectDir, target);
-  if (here.state === "symlink") return note("symlink", kitPath, target), item;
-  if (here.state === "other") return note("project-only", kitPath, target, "not a regular file"), item;
+  if (here.state === "symlink" || here.state === "other") return unwritable(here.state, kitPath, target);
 
   const oldKit = links.get(kitPath);
   const oldTarget = oldKit ? targetFor(oldKit) : null;
@@ -104,8 +117,7 @@ function classifyActive(ctx, { unit, kit: kitPath, target, head }) {
     claimed.add(oldKit);
     const recorded = rec.files[oldKit];
     const old = sameTarget ? here : inspect(projectDir, oldTarget);
-    if (old.state === "symlink") return note("symlink", oldKit, oldTarget), item;
-    if (old.state === "other") return note("project-only", oldKit, oldTarget, "not a regular file"), item;
+    if (old.state === "symlink" || old.state === "other") return unwritable(old.state, oldKit, oldTarget);
     // the record moves to the new path, so the next run reads it as removed by the project, never as not yet delivered
     if (old.state === "missing") return item.notes.push({ kind: "removed-by-project", kit: oldKit, target: oldTarget, detail: `renamed to ${kitPath}`, renamedTo: kitPath }), item;
     const clean = [{ kind: "replace", kit: kitPath, target }, ...(sameTarget ? [] : [{ kind: "remove", kit: oldKit, target: oldTarget }])];
@@ -115,7 +127,12 @@ function classifyActive(ctx, { unit, kit: kitPath, target, head }) {
       item.actions.push(...clean);
     } else {
       if (isBinary(old.bytes) || isBinary(readBlob(kit, head))) note("binary-edited", kitPath, target, `renamed from ${oldKit}; the project's copy is ${oldTarget}`);
-      else item.notes.push({ kind: "renamed-edited", kit: kitPath, target, from: oldKit, fromTarget: oldTarget, base: blobExists(kit, recorded) ? recorded : null, detail: `renamed from ${oldKit}; the project's edited copy is ${oldTarget}` });
+      else {
+        const base = blobExists(kit, recorded) ? recorded : null;
+        // with no base there is nothing to merge against, so the workspace copy is the project's old-path file as it is
+        const detail = `renamed from ${oldKit}; ${base ? "" : "no recorded base — "}the project's edited copy is ${oldTarget}`;
+        item.notes.push({ kind: "renamed-edited", kit: kitPath, target, from: oldKit, fromTarget: oldTarget, base, detail });
+      }
       markEdited(oldTarget, old.bytes, clean);
     }
     return item;
@@ -177,12 +194,13 @@ function stagedCopyMatches(kit, projectDir, item) {
   return existsSync(staged) && readFileSync(staged).equals(item.editedBytes);
 }
 
-// `takeKit` names held skills (kit paths under project/) the owner chose to replace with the kit version
+// `takeKit` names held skills and edited binary files (kit paths under project/) the owner chose to replace with the kit version
 export function planProject(kit, projectDir, rec, { takeKit = [] } = {}) {
   const cat = catalog(kit);
   const activeBuckets = new Set(["shared", ...rec.tiers.domains.map((d) => `domains/${d}`), ...rec.tiers.stacks.map((s) => `stacks/${s}`), ...(rec.tiers.repo ? [`repos/${rec.tiers.repo}`] : [])]);
   const isActive = (kitPath) => activeBuckets.has(bucketOf(kitPath)) && !isSkipped(kitPath, rec.skip);
-  const ctx = { kit, rec, projectDir, links: renameLinks(kit, rec), claimed: new Set() };
+  const moves = movesOf(kit, rec);
+  const ctx = { kit, rec, projectDir, links: renameLinks(rec, moves), claimed: new Set() };
 
   const items = [];
   const notes = [];
@@ -204,7 +222,8 @@ export function planProject(kit, projectDir, rec, { takeKit = [] } = {}) {
     if (target === null || blobAt(kit, "HEAD", recorded) !== null) continue;
     retiredTargets.add(target);
     if (ctx.claimed.has(recorded) || activeTargets.has(target)) continue;
-    if (!isActive(recorded)) {
+    // a skip of the new path covers the copy still at the old one
+    if (!isActive(recorded) || isSkipped(moves.get(recorded) ?? "", rec.skip)) {
       if (inspect(projectDir, target).state !== "missing") notes.push({ kind: "opted-out-on-disk", kit: recorded, target });
       continue;
     }
@@ -251,16 +270,23 @@ export function planProject(kit, projectDir, rec, { takeKit = [] } = {}) {
   const actions = [];
   const held = [];
   const taken = [];
+  const blocked = [];
   const units = new Map();
   for (const item of items) {
-    if (item.unit === null) {
+    if (item.unit === null && takeKit.includes(item.kit) && item.notes.some((n) => n.kind === "binary-edited")) {
+      actions.push(...item.forcedActions);
+      taken.push({ file: item.kit });
+    } else if (item.unit === null) {
       actions.push(...item.actions);
       notes.push(...item.notes);
     } else units.set(item.unit, [...(units.get(item.unit) ?? []), item]);
   }
   for (const [unit, group] of units) {
-    if (group.some((i) => i.notes.some((n) => n.kind === "symlink"))) {
+    const link = group.flatMap((i) => i.notes).find((n) => n.kind === "symlink");
+    if (link) {
       notes.push(...group.flatMap((i) => i.notes));
+      // a skill is written whole or not at all, so one symlinked file holds back every change to the rest
+      if (group.some((i) => i.actions.length || i.edited)) blocked.push({ skill: unit, target: link.target });
       continue;
     }
     notes.push(...group.filter((i) => !i.edited).flatMap((i) => i.notes));
@@ -271,13 +297,27 @@ export function planProject(kit, projectDir, rec, { takeKit = [] } = {}) {
       actions.push(...group.flatMap((i) => (i.edited ? i.forcedActions : i.actions)));
       taken.push({ skill: unit, files: edited.map((i) => i.kit) });
     } else {
-      held.push({ skill: unit, target: `.claude/skills/${unit.split("/").pop()}`, files: edited.map((i) => i.kit) });
+      const target = `.claude/skills/${unit.split("/").pop()}`;
+      // a renamed skill's edit sits in the project under its old name, which is where the owner and incoming/ find it
+      const copy = edited[0].editedTarget.split("/").slice(0, 3).join("/");
+      held.push({ skill: unit, target, files: edited.map((i) => i.kit), projectCopy: copy === target ? null : copy });
     }
   }
   for (const kitPath of takeKit) {
-    if (!taken.some((t) => t.skill === kitPath)) throw new Refusal(`--take-kit ${kitPath}: ${kitPath} is not held in this run — only a skill held for a project edit can be taken from the kit`);
+    if (taken.some((t) => t.skill === kitPath || t.file === kitPath)) continue;
+    const skillDir = kitPath.match(SKILL_DIR)?.[0];
+    const why = skillDir
+      ? `belongs to skill ${skillDir}; take the skill directory`
+      : !cat.entries.some((e) => e.kit === kitPath)
+        ? "not a kit skill directory or file under project/"
+        : !isActive(kitPath)
+          ? "not active in this project — skipped, or its tier is off"
+          : items.some((i) => i.unit === null && i.kit === kitPath && i.edited)
+            ? "not an edited binary — an edited text file merges"
+            : "not held — the project has not edited it";
+    throw new Refusal(`--take-kit ${kitPath}: ${why}; only a skill held for a project edit, or an edited binary file, can be taken from the kit`);
   }
-  return { actions, held, taken, notes };
+  return { actions, held, taken, blocked, notes };
 }
 
 function lstatOrNull(path) {

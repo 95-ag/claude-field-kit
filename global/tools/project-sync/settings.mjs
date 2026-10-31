@@ -28,11 +28,18 @@ function activeBuckets(rec) {
 }
 
 function readHooksJson(path) {
+  let parsed;
   try {
-    return withoutComments(JSON.parse(readFileSync(path, "utf8")));
+    parsed = withoutComments(JSON.parse(readFileSync(path, "utf8")));
   } catch (error) {
     throw new Refusal(`${path} is not valid JSON (${error.message})`);
   }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) throw new Refusal(`${path} is not a JSON object`);
+  assertHooksShape(parsed, path);
+  // a project's settings may hold a group with no `hooks` list; a kit file that does would compose nothing
+  const listless = Object.entries(parsed.hooks ?? {}).find(([, groups]) => groups.some((group) => !Array.isArray(group.hooks)));
+  if (listless) throw new Refusal(`${path} has an unexpected shape: an entry of \`hooks.${listless[0]}\` has no \`hooks\` list`);
+  return parsed;
 }
 
 export function composeHooks(kit, rec) {
