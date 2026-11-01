@@ -12,7 +12,7 @@ what the tool cannot merge, and reports every outcome.
 **Maturity:** EXERCISED on real projects — the dry run, `--apply` and `--status` on four, `--resolved` on three,
 `--take-kit` on one. The limit: those runs predate the renamed-file, edited-binary, symlinked-target,
 merge-workspace cleanup and `--restore` changes, whose paths have run only in the tool's harness, against
-throwaway kits and projects.
+throwaway kits and projects; a harvest-prepared copy (step 5) has not run at all.
 
 ## When to use
 
@@ -80,6 +80,13 @@ or `--all` for every folder beside the kit that holds a record.
      project's version.
    - Two sidecars sit beside each copy: `.kit` holds the kit's `HEAD` version, `.project` the project bytes the
      copy was built from.
+   - Before hand-merging a conflict, look for a resolved copy the kit's own `harvest` skill prepared (its
+     step 6) at `tmp/harvest/<name>/`, at the workspace copy's path relative to its own folder:
+     - the lines that harvest promoted are the project's own, reworded, so the copy is the merge;
+     - use it only where its `.kit` and `.project` match the workspace copy's and the workspace copy is new
+       this run — never over one the report marks "workspace copy kept" or stale;
+     - to use it, write it over the workspace copy, keeping that copy's sidecars;
+     - otherwise hand-merge as usual.
    - For a conflict, also read the base the project last received: `git cat-file blob` on its `files` entry.
    - For a conflict, keep the project's wording and deletions; take the kit's additions. Never put back a line
      the project removed.

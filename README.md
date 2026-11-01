@@ -143,7 +143,8 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   has no project `.claude/` copy, so the hook never sees it; stage a shaped fix by hand into `incoming/<type>/`,
   or an unsure/deferred one into `incoming/notes/`.
 - **Promote = place in the tier AND remove the staged copy from `incoming/`.** Verify the tier copy exists
-  before deleting the incoming one (no-loss). `incoming/` then holds only un-promoted items.
+  before deleting the incoming one (no-loss). `incoming/` then holds only un-promoted items — and a source
+  project's staged skill copy, kept until that project's `project-sync` has run (→ Delivery, Project tier).
 
 ### Promotion & sync
 - **Only reusable assets promote** — project-specific knowledge stays in the project.
@@ -152,7 +153,8 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
   constants, and neutralize or relabel worked examples that read as project bias. A thin generalized subset is
   not the goal.
 - **Scan for over-pinning before promoting** — worst-hiding first: a value stated as a requirement, then
-  literal values as file contents, then paths and un-caveated names, then names and dates. Full procedure →
+  literal values as file contents, then paths and un-caveated names, then a case only the source project
+  meets, then names and dates. Full procedure →
   [`contributing-to-claude-field-kit.md`](project/shared/rules/contributing-to-claude-field-kit.md).
 - **Separate the general rule from its project costume** — a captured learning often carries a genuinely
   general rule wearing project specifics. Lift the general part out; keep only the truly domain-specific part,
@@ -166,12 +168,18 @@ improve in a project  →  incoming/<type>  →  review  →  promote to a tier
 - **Reconcile file-by-file** — read → merge in context → place each file individually. No bulk `cp`/scripts
   that skip the per-file review (a `cp` is fine only to *apply* a candidate already reviewed in a diff tool).
 - **Cold no-loss review per merge** — genericizing silently weakens specifics (exact paths, named values, hard
-  mandates, rationale sentences). Diff the merged asset against the original and re-apply any dropped delta;
-  for additive edits, the no-loss proof is a removed-lines-only diff.
+  mandates, rationale sentences).
+  - Diff the merged asset against the original and re-apply any dropped delta.
+  - Outside the repo tier, a line cut to keep only its general cause is a deliberate drop, shown as a change
+    marker in the owner's preview.
+  - For a purely additive change, the no-loss proof is a removed-lines-only diff.
 - **Verify before folding a lesson** — add / strengthen / drop-as-already-covered, in the right section; never
   blind-append (a large share of a batch is often already present).
 - **A captured update diffs both ways** — it can carry regressions (shortened cross-refs, dropped tool-flexible
-  hedges), not just additions. Merge the genuine net-new; restore the kit's general form where the capture weakened it.
+  hedges), not just additions.
+  - Outside the repo tier, merge the genuine net-new, each line as its general cause in the fewest words —
+    being new is not enough when only the source project needs it (over-pinning scan → contributing rule).
+  - Restore the kit's general form where the capture weakened it.
 - **Disposition table before deleting** scratch or source notes — map every item to promoted / rejected /
   project-specific (zero-loss; name the authoritative copy), then a separate fresh-eyes review, before removing anything.
 - **Deferred removal when a delete is blocked** — if a guard (e.g. the command-firewall on `rm -rf`) blocks
@@ -213,9 +221,10 @@ Promoted assets run **handsfree** across every session, so nothing lands without
   the owner decides from the message alone.
 - **Don't rubber-stamp** — check each merge against the authoring conventions (duplication, overloaded lines,
   voice/density match) and tighten before applying; if a bullet got contorted by iterative edits, rewrite it clean.
-- **Strict one-item loop** — preview → apply → next; no batching.
-- **Heavily-rewritten item** — build the merged candidate in a scratch file and review it in a diff tool
-  (incoming-vs-merged for what's dropped, current-vs-merged for what changes); iterate, then apply.
+- **Strict one-item loop** — preview → apply → `asset-reviewer` → next; no batching.
+- **A large change** — any single hunk over 10 lines, or 5 or more hunks of over 3 lines each: build the merged
+  candidate in a scratch file and review it in a diff tool (incoming-vs-merged for what's dropped,
+  current-vs-merged for what changes); iterate, then apply. A smaller change needs only the inline preview.
 - **Repo-tier item** — same diff review, then apply verbatim.
 - **Multi-file skill** — run `node global/tools/skill-reference-check.mjs incoming/skills` first and treat
   exit 1 as a hold; a split or rename breaks a `<file>.md` → Section pointer silently and the breakage reads as
@@ -308,7 +317,7 @@ minimal other context loaded.
   - An asset that calls its own gate a "self-review" licenses the failure the gate exists to catch.
   - **Before contributing an asset, dispatch the `asset-reviewer` agent on it** — a conformance defect
     costs less caught here than at promotion, and it is the author who cannot see it.
-  - Its conformance findings are verdicts; its substance *Questions* are not.
+  - Its conformance findings are verdicts; its *Not judged* list and *Questions* are not.
   - With no reviewer available, run the checklist yourself and say so — never call that a fresh-eyes pass.
 - **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
   nothing until one file lists the report's required sections.

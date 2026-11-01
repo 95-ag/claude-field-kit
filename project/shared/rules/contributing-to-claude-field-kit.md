@@ -84,7 +84,7 @@ with little change.
   - An asset that calls its own gate a "self-review" licenses the failure the gate exists to catch.
   - **Before contributing an asset, dispatch the `asset-reviewer` agent on it** — a conformance defect
     costs less caught here than at promotion, and it is the author who cannot see it.
-  - Its conformance findings are verdicts; its substance *Questions* are not.
+  - Its conformance findings are verdicts; its *Not judged* list and *Questions* are not.
   - With no reviewer available, run the checklist yourself and say so — never call that a fresh-eyes pass.
 - **A rule that defers to a report needs a report the asset defines.** "State it in the report" binds
   nothing until one file lists the report's required sections.
@@ -132,7 +132,9 @@ name-and-date grep proves nothing. Scan worst-hiding first:
 2. **Literal values presented as a file's contents** — a palette, a set of sizes, a config block.
 3. **Project paths**, and token or component names carried with no caveat that names adapt while the
    structure is fixed.
-4. **Names and dates** — last: easiest to find, least often the problem.
+4. **A case only the source project meets** — a technique, a harness or a gate it built for itself. Test
+   each line against the other projects the kit serves; what one project hits stays in its own copy.
+5. **Names and dates** — last: easiest to find, least often the problem.
 
 - **Check each hit in context.** A specific inside a marked `Example:` is compliant; "fixing" it strips a
   correct worked example.
