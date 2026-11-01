@@ -198,11 +198,99 @@ try {
   const missingCite = run("--cited-by", join(SB, "docs/nope.md"), skills);
   check("cited-by: a missing file is a usage error (exit 2)", missingCite.status === 2, show(missingCite));
 
+  // --- --rules ---------------------------------------------------------------------------------------
+  // A kit-shaped rules tree: a universal rule and a node delta sharing a name, a domain rule cited by its kit
+  // path and by its delivered path, and a global rule a project rule cites across tiers.
+  const R = join(SB, "rk");
+  put("rk/global/shared/rules/git.md", "# Git\n\n## Commits\n\n- **Pathspec.** body\n");
+  put("rk/project/shared/rules/build-verification.md", "# Build\n\n## Always required\n\n## Batch gate, not per-commit\n");
+  put("rk/project/stacks/node/rules/build-verification.md", "# Build — node\n\n## Node / Next specifics\n");
+  put("rk/project/domains/web-frontend/rules/motion.md", "# Motion\n\n## Reduced motion (non-negotiable)\n\n## Tokens\n");
+  put("rk/project/stacks/node/rules/nextjs.md", [
+    "# Next",
+    "",
+    "Gate per the universal `build-verification.md` → Always required.",
+    "Node commands live in build-verification.md → Node / Next specifics.",
+    "Motion is in `web-frontend/motion.md` → Tokens, and domains/web-frontend/rules/motion.md → Reduced motion and more.",
+    "Commits follow `git.md` → Pathspec.",
+    "Release notes go in `RELEASE.md` → Versioning.",
+    "",
+  ].join("\n"));
+  const ruleRoots = ["global/shared/rules", "project/shared/rules", "project/stacks/node/rules", "project/domains/web-frontend/rules"]
+    .flatMap((r) => ["--rules", join(R, r)]);
+  const rulesOk = run(...ruleRoots);
+  check("rules: backticked and bare pointers to real sections pass", rulesOk.status === 0, show(rulesOk));
+  check("rules: kit path and delivered path both resolve", !out(rulesOk).includes("motion.md"), show(rulesOk));
+  check("rules: a bare name shared by universal rule and delta resolves in either", !out(rulesOk).includes("build-verification.md"), show(rulesOk));
+  check("rules: an ALL-CAPS project doc is skipped", !out(rulesOk).includes("RELEASE.md"), show(rulesOk));
+  check("rules: a trailing parenthetical in a heading still matches", !out(rulesOk).includes("Reduced motion"), show(rulesOk));
+  check("rules: --rules alone does not fall back to ~/.claude/skills", /\b5 files scanned/.test(out(rulesOk)), show(rulesOk));
+
+  put("rk/project/stacks/node/rules/dead.md", "# Dead\n\nSee `build-verification.md` → Never required.\nAnd motion.md → Gone Section.\n");
+  const rulesDead = run(...ruleRoots);
+  check("rules: a dead section is a DEAD hold naming the rule file", rulesDead.status === 1 &&
+    /dead\.md: DEAD\s+`build-verification\.md` → "Never required"/.test(out(rulesDead)), show(rulesDead));
+  check("rules: a bare-form dead section is a DEAD hold", /dead\.md: DEAD\s+motion\.md → "Gone Section"/.test(out(rulesDead)), show(rulesDead));
+
+  const rulesPartial = run("--rules", join(R, "project/stacks/node/rules"), "--rules", join(R, "project/shared/rules"));
+  check("rules: a cross-tier pointer with its root missing is NO SUCH FILE",
+    rulesPartial.status === 1 && /NO SUCH FILE\s+git\.md/.test(out(rulesPartial)), show(rulesPartial));
+
+  put("rk-skills/skill-r/SKILL.md", "# Skill R\n\nSee `git.md` → Gone Rule Section.\nAnd `motion.md` → Anything.\n");
+  const skillToRule = run(join(SB, "rk-skills"), "--rules", join(R, "global/shared/rules"));
+  check("rules: a skill pointer to an indexed rule is judged", skillToRule.status === 1 && out(skillToRule).includes("Gone Rule Section"), show(skillToRule));
+  check("rules: a skill pointer to an unindexed rule stays skipped", !out(skillToRule).includes("Anything"), show(skillToRule));
+
+  // A rule may cite itself by name; a path names one rule, or is ambiguous; a skill's own file outranks a rule.
+  const R2 = join(SB, "rk2");
+  put("rk2/global/shared/rules/git.md", "# Git\n\n## Commits\n");
+  put("rk2/project/stacks/node/rules/git.md", "# Git — node\n\n## Node commits\n");
+  put("rk2/project/repos/portfolio/rules/git.md", "# Git — portfolio\n");
+  put("rk2/project/domains/web-frontend/rules/motion.md", "# Motion\n\n## Tokens\n\nAbove, `motion.md` → Tokens.\n");
+  put("rk2/project/stacks/node/rules/x.md", [
+    "# X",
+    "",
+    "See `web-frontend/motion.md` → Nope Path.",
+    "See `node/git.md` → Node commits.",
+    "See `rules/git.md` → Commits.",
+    "",
+  ].join("\n"));
+  const r2Roots = ["global/shared/rules", "project/stacks/node/rules", "project/repos/portfolio/rules", "project/domains/web-frontend/rules"]
+    .flatMap((r) => ["--rules", join(R2, r)]);
+  const r2 = run(...r2Roots);
+  check("rules: a rule citing its own name resolves against itself", !out(r2).includes("motion.md → \"Tokens\"") && !/NO SUCH FILE\s+motion\.md/.test(out(r2)), show(r2));
+  check("rules: a path-form pointer to a missing section is DEAD", /x\.md: DEAD\s+`web-frontend\/motion\.md` → "Nope Path"/.test(out(r2)), show(r2));
+  check("rules: a path-form pointer names one rule", !out(r2).includes("Node commits"), show(r2));
+  check("rules: a path matching several rules is AMBIGUOUS FILE", /AMBIGUOUS FILE\s+`?rules\/git\.md/.test(out(r2)), show(r2));
+
+  put("rk2-skills/skill-m/SKILL.md", "# Skill M\n\nSee `motion.md` → Own Heading.\n");
+  put("rk2-skills/skill-m/references/motion.md", "# Motion notes\n\n## Own Heading\n");
+  const ownFile = run(join(SB, "rk2-skills"), "--rules", join(R2, "project/domains/web-frontend/rules"));
+  check("rules: a skill's own reference file outranks a same-named rule", ownFile.status === 0, show(ownFile));
+
+  put("rk3/global/shared/rules/working-together.md", "# Working together\n\n## Shared docs\n");
+  put("rk3-skills/skill-w/SKILL.md", "# Skill W\n\nSee `working-together.md` → Shared docs.\n");
+  const unlisted = run(join(SB, "rk3-skills"), "--rules", join(SB, "rk3/global/shared/rules"));
+  check("rules: a skill pointer to an indexed rule missing from the built-in list resolves", unlisted.status === 0, show(unlisted));
+  put("rk3-skills/skill-w/SKILL.md", "# Skill W\n\nSee `working-together.md` → Gone Docs.\n");
+  const unlistedDead = run(join(SB, "rk3-skills"), "--rules", join(SB, "rk3/global/shared/rules"));
+  check("rules: …and a dead section there is DEAD", unlistedDead.status === 1 && out(unlistedDead).includes("Gone Docs"), show(unlistedDead));
+
+  put("paren/skill-p/SKILL.md", "# Skill P\n\nSee `odd.md` → Totally Nonexistent.\n");
+  put("paren/skill-p/references/odd.md", "# Odd\n\n## (deprecated)\n\n## Real\n");
+  const paren = run(join(SB, "paren"));
+  check("a parenthetical-only heading does not make every pointer resolve", paren.status === 1 && out(paren).includes("Totally Nonexistent"), show(paren));
+
   // --- the kit itself --------------------------------------------------------------------------------
+  const kitGlobal = run(join(ROOT, "global/shared/skills"), "--rules", join(ROOT, "global/shared/rules"),
+    "--rules", join(ROOT, "global/windows/rules"));
+  check("kit: the global skill and rule roots exit 0 — what global-sync holds on", kitGlobal.status === 0, show(kitGlobal));
   const kit = run(
     join(ROOT, "global/shared/skills"),
     join(ROOT, "project/domains/web-frontend/skills"),
     join(ROOT, "project/repos/portfolio/skills"),
+    // A skill may cite a global rule, which resolves only with the rules indexed.
+    "--rules", join(ROOT, "global/shared/rules"),
   );
   check("kit: every skill root exits 0", kit.status === 0, show(kit));
 } finally {

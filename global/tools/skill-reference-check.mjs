@@ -3,7 +3,7 @@
  * skill-reference-check — resolve every cross-reference in a multi-file skill, within and across skills.
  *
  * Usage:
- *   node skill-reference-check.mjs [--cited-by <file>]... [<skills-dir> ...]
+ *   node skill-reference-check.mjs [--cited-by <file>]... [--rules <rules-dir>]... [<skills-dir> ...]
  *
  * Each argument is a directory holding skill folders (<skills-dir>/<skill>/.../*.md), or a single skill
  * directory — one holding a SKILL.md — which is read as that one skill and says so.
@@ -23,6 +23,15 @@
  * --cited-by <file> also judges the `<file>.md` → Section pointers a non-skill file (README, a tool) writes
  * into the indexed skills. Repeat it per file.
  *
+ * --rules <rules-dir> indexes a folder of rules and judges every pointer a rule writes — back-ticked or bare
+ * (`accessibility.md → Images & media`) — against the indexed rules and skills; a skill's pointer to an indexed
+ * rule is judged too. Repeat it per rules folder. A rule's delivered path is its path under the folder,
+ * prefixed `<name>/` when the folder is `…/domains|stacks|repos/<name>/rules`, and a pointer may name it by
+ * that path or by its kit path. A bare name several rules share (a universal rule and a stack's delta) resolves
+ * when any of them holds the section. An unindexed ALL-CAPS name (`RELEASE.md`) is a project doc and is
+ * skipped. Pass every rules folder a pointer can reach — a project rule cites global ones — or a cross-tier
+ * pointer reads as NO SUCH FILE. With --rules and no skills dir, ~/.claude/skills is not read.
+ *
  * An in-file pointer — `(→ Heading)` or `(-> Heading)`, in parentheses — resolves against the file it sits in,
  * then any other file of the same skill. A bare `A → B` is prose (a flow, a mapping) and is not read. A target
  * whose first hop names a doc archetype — `(→ SCHEMA)`, `(→ implementation-plan)` — passes when no heading matches.
@@ -35,9 +44,10 @@
  *  - A bold label resolves only at a bullet's start; a cited bold paragraph or numbered step does not.
  *  - An in-file target over 80 characters is not read, and code — fenced or inline — is read like prose.
  *  - Two roots holding a skill of the same name are indexed as one skill.
+ *  - In a rule, only a pointer carrying a section is read; a bare file mention and an in-file (→ X) are prose.
  */
 import { readFileSync, readdirSync, existsSync } from "fs";
-import { join, basename, resolve } from "path";
+import { join, basename, relative, resolve } from "path";
 import { homedir } from "os";
 
 // ---------------------------------------------------------------------------
@@ -61,15 +71,27 @@ const HEADING = /^#{1,4}\s+(.+)$/gm;
 const LABEL = /^\s*[-*]\s+\*\*(.+?)\*\*/gm;
 
 // Non-skill targets a skill legitimately cites. The doc archetypes and work files are stable; the
-// rule filenames are the one list a new environment may need to extend.
-const EXTERNAL = new Set([
+// rule filenames are the one list a new environment may need to extend. A rule is judged instead of skipped
+// once --rules indexes it, so only the docs are skipped in a rule's own pointers.
+const EXTERNAL_DOCS = new Set([
   "DESIGN.md", "PRODUCT.md", "PROJECT.md", "ARCHITECTURE.md", "SCHEMA.md",
   "IMPLEMENTATION-PLAN.md", "README.md", "CLAUDE.md", "AGENTS.md", "package.json",
   "session.md", "tasks.md", "lessons.md",
+]);
+const EXTERNAL = new Set([
+  ...EXTERNAL_DOCS,
   "engineering.md", "git.md", "component-structure.md", "design-system.md",
   "build-verification.md", "accessibility.md", "motion.md", "visual-verification.md",
   "browser-testing.md", "nextjs.md",
 ]);
+const PROJECT_DOC = /^[A-Z][A-Z0-9_-]*\.md$/;
+
+// A rule names another by a path (`node/nextjs.md`, `domains/web-frontend/rules/motion.md`) as well as a
+// bare name, and often without back-ticks: `accessibility.md → Images & media`.
+const RULE_REF =
+  /`([a-zA-Z0-9._\/-]+\.md)`\s*(?:→|->)\s*([^`\n|]{2,80}?)(?=\s*(?:[.,;)|]|$|→|->|\n))/gm;
+const RULE_BARE =
+  /(?<![\w\/`.-])([a-zA-Z0-9_\/-]+\.md)\s*(?:→|->)\s*([^`\n|]{2,80}?)(?=\s*(?:[.,;)|]|$|→|->|\n))/gm;
 const DOC_ARCHETYPES = new Set([
   "design.md", "product.md", "project.md", "architecture.md", "schema.md", "implementation-plan.md",
 ]);
@@ -86,6 +108,14 @@ function norm(text) {
     .replace(/\s+/g, " ")
     .toLowerCase()
     .replace(/^[\s:.,]+|[\s:.,]+$/g, "");
+}
+
+// A heading's trailing qualifier — `## Reduced motion (non-negotiable)` — is not part of how it is cited.
+function headingForms(text) {
+  // An empty form — from `## (deprecated)` — would prefix-match every pointer into the file, so it is dropped.
+  return new Set([...text.matchAll(HEADING)].flatMap((match) => [
+    norm(match[1]), norm(match[1].replace(/\s*\([^)]*\)\s*$/, "")),
+  ]).filter(Boolean));
 }
 
 function markdownFiles(dir) {
@@ -129,20 +159,22 @@ function judgeHop(hop, headings, labels) {
 
 const args = process.argv.slice(2);
 const citedBy = [];
+const ruleRoots = [];
 const rootArgs = [];
 for (let i = 0; i < args.length; i++) {
-  if (args[i] !== "--cited-by") {
+  if (args[i] !== "--cited-by" && args[i] !== "--rules") {
     rootArgs.push(args[i]);
     continue;
   }
-  const file = args[++i];
-  if (!file || !existsSync(file)) {
-    console.error(`--cited-by needs an existing file: ${file ?? "(none given)"}`);
+  const flag = args[i];
+  const path = args[++i];
+  if (!path || !existsSync(path)) {
+    console.error(`${flag} needs an existing ${flag === "--rules" ? "directory" : "file"}: ${path ?? "(none given)"}`);
     process.exit(2);
   }
-  citedBy.push(file);
+  (flag === "--rules" ? ruleRoots : citedBy).push(path);
 }
-const roots = rootArgs.length ? rootArgs : [join(homedir(), ".claude", "skills")];
+const roots = rootArgs.length ? rootArgs : ruleRoots.length ? [] : [join(homedir(), ".claude", "skills")];
 
 const files = new Map(); // "<skill>\u0000<name>" -> { skill, name, text, headings, labels }
 const byName = new Map(); // "<name>" -> [skill, ...]
@@ -151,7 +183,7 @@ function indexSkill(dir, skill) {
   for (const path of markdownFiles(dir)) {
     const name = basename(path);
     const text = readFileSync(path, "utf8");
-    const headings = new Set([...text.matchAll(HEADING)].map((match) => norm(match[1])));
+    const headings = headingForms(text);
     const labels = new Set([...text.matchAll(LABEL)].map((match) => norm(match[1])));
     files.set(`${skill}\u0000${name}`, { skill, name, text, headings, labels });
     byName.set(name, [...(byName.get(name) ?? []), skill]);
@@ -180,8 +212,24 @@ for (const root of roots) {
   }
 }
 
-if (files.size === 0) {
-  console.error(`no skill folders found under: ${roots.join(", ")}`);
+const rules = []; // { path, delivered, text, headings, labels }
+for (const root of ruleRoots) {
+  const tier = resolve(root).replace(/\\/g, "/").match(/\/(?:domains|stacks|repos)\/([^/]+)\/rules\/?$/);
+  for (const path of markdownFiles(root)) {
+    const text = readFileSync(path, "utf8");
+    const underRoot = relative(root, path).replace(/\\/g, "/");
+    rules.push({
+      path: resolve(path).replace(/\\/g, "/"),
+      delivered: tier ? `${tier[1]}/${underRoot}` : underRoot,
+      text,
+      headings: headingForms(text),
+      labels: new Set([...text.matchAll(LABEL)].map((match) => norm(match[1]))),
+    });
+  }
+}
+
+if (files.size === 0 && rules.length === 0) {
+  console.error(`no skill folders or rules found under: ${[...roots, ...ruleRoots].join(", ")}`);
   process.exit(2);
 }
 
@@ -202,10 +250,36 @@ for (const { skill, headings, labels } of files.values()) {
   labelsBySkill.set(skill, [...(labelsBySkill.get(skill) ?? []), ...labels]);
 }
 
+/**
+ * The indexed rules a pointer path names. The citing rule counts only when it is the sole match: a stack delta
+ * naming `build-verification.md` means the universal file, but a rule may also cite a section of its own.
+ */
+function rulesNamed(pointer, citingPath) {
+  const hits = rules.filter((rule) =>
+    [rule.delivered, rule.path].some((path) => path === pointer || path.endsWith(`/${pointer}`)));
+  const others = hits.filter((rule) => rule.path !== citingPath);
+  return others.length ? others : hits;
+}
+
+/** Judge one hop against several same-named rules: it resolves when any of them holds the section. */
+function judgeAgainstRules(where, pointer, hop, hits) {
+  if (hits.length > 1 && pointer.includes("/")) {
+    holds.add(`${where}: AMBIGUOUS FILE  ${pointer} in ${hits.map((rule) => rule.delivered).join(", ")}`);
+    return;
+  }
+  const verdict = judgeHop(hop, hits.flatMap((rule) => [...rule.headings]), hits.flatMap((rule) => [...rule.labels]));
+  if (verdict) report(`${where}: ${verdict}  ${pointer} → ${JSON.stringify(hop.trim())}`, verdict);
+}
+
 /** Judge every `<file>.md` → Section pointer in `text`; `skill` is null for a file outside any skill. */
 function judgeFilePointers(where, skill, text) {
   for (const [, refSkill, refFile, hop] of text.matchAll(REF)) {
-    if (EXTERNAL.has(refFile)) continue;
+    // A skill's own reference file outranks a same-named rule, as it did before rules were indexed.
+    if (EXTERNAL.has(refFile) && !files.has(`${refSkill ?? skill}\u0000${refFile}`)) {
+      const hits = refSkill || !hop ? [] : rulesNamed(refFile, null);
+      if (hits.length) judgeAgainstRules(where, `\`${refFile}\``, hop, hits);
+      continue;
+    }
 
     let target = `${refSkill ?? skill}\u0000${refFile}`;
     if (!files.has(target)) {
@@ -213,7 +287,9 @@ function judgeFilePointers(where, skill, text) {
       const owners = byName.get(refFile) ?? [];
       if (owners.length === 1) target = `${owners[0]}\u0000${refFile}`;
       else if (owners.length === 0) {
-        holds.add(`${where}: NO SUCH FILE  ${refSkill ? `${refSkill}/` : ""}${refFile}`);
+        const hits = refSkill ? [] : rulesNamed(refFile, null);
+        if (hits.length && hop) judgeAgainstRules(where, `\`${refFile}\``, hop, hits);
+        else if (!hits.length) holds.add(`${where}: NO SUCH FILE  ${refSkill ? `${refSkill}/` : ""}${refFile}`);
         continue;
       } else {
         holds.add(`${where}: AMBIGUOUS FILE  ${refFile} in ${owners.join(", ")}`);
@@ -245,7 +321,33 @@ for (const key of [...files.keys()].sort()) {
 // A cited file's (→ X) is the file's own prose, not a pointer into a skill, so only its file pointers count.
 for (const file of citedBy) judgeFilePointers(file, null, readFileSync(file, "utf8"));
 
+/** Judge a rule's pointer: indexed rules first, then a skill file, then a doc that is skipped. */
+function judgeRulePointer(where, rule, pointer, hop, form) {
+  const shown = form === "`" ? `\`${pointer}\`` : pointer;
+  const hits = rulesNamed(pointer, rule.path);
+  if (hits.length) return judgeAgainstRules(where, shown, hop, hits);
+
+  const owners = byName.get(basename(pointer)) ?? [];
+  if (owners.length === 1) {
+    const { headings, labels } = files.get(`${owners[0]}\u0000${basename(pointer)}`);
+    const verdict = judgeHop(hop, [...headings], [...labels]);
+    if (verdict) report(`${where}: ${verdict}  ${shown} → ${JSON.stringify(hop.trim())}`, verdict);
+    return;
+  }
+  if (owners.length > 1) return holds.add(`${where}: AMBIGUOUS FILE  ${pointer} in ${owners.join(", ")}`);
+  if (EXTERNAL_DOCS.has(basename(pointer)) || PROJECT_DOC.test(basename(pointer))) return;
+  holds.add(`${where}: NO SUCH FILE  ${pointer}`);
+}
+
+for (const rule of rules) {
+  const where = relative(process.cwd(), rule.path);
+  // The two grammars never read the same pointer: the bare one refuses a path that opens on a back-tick.
+  for (const [grammar, form] of [[RULE_REF, "`"], [RULE_BARE, "bare"]]) {
+    for (const match of rule.text.matchAll(grammar)) judgeRulePointer(where, rule, match[1], match[2], form);
+  }
+}
+
 for (const line of holds) console.log(line);
 for (const line of warnings) console.log(`warn: ${line}`);
-console.log(`\n${files.size} files scanned, ${holds.size} to fix, ${warnings.size} to read`);
+console.log(`\n${files.size + rules.length} files scanned, ${holds.size} to fix, ${warnings.size} to read`);
 process.exit(holds.size ? 1 : 0);

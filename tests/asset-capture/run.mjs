@@ -202,6 +202,59 @@ try {
   // V13 no project dir given
   check("V13 bare --verify --since 30 → exit 2", spawnSync("node", [HOOK, "--verify", "--since", "30"], {
     env: { ...process.env, CLAUDE_FIELD_KIT_INCOMING: `${kit}/incoming` }, encoding: "utf8" }).status === 2);
+
+  // ---- A: a shell write reaches capture through bash-write-adapter, whatever the hook's cwd ----
+  // The harness hands the hook the session's cwd — the kit, after it resets a `cd` out of the project — so the
+  // write lands in a .claude/ the cwd does not hold. Each case gets a fresh kit and a git project whose
+  // .claude/ is gitignored, as a real one is; HOME and the marker dir stay in the sandbox.
+  const ADAPTER = join(ROOT, "global/shared/hooks/bash-write-adapter.mjs");
+  const RULE = ".claude/rules/portfolio/content.md";
+  const viaAdapter = (cwdOf, commandOf) => {
+    const S = mkdtempSync(join(SB, "adapter-"));
+    const k = `${S}/kit`, p = `${S}/agp`;
+    for (const d of [`${S}/home`, `${k}/incoming`, `${k}/.claude/work`, `${p}/.claude/rules/portfolio`, `${p}/src`]) mkdirSync(d, { recursive: true });
+    writeFileSync(`${k}/.claude/work/tasks.md`, "# Tasks\n\n## Backlog\n\n### Harvest\n");
+    writeFileSync(`${p}/.gitignore`, ".claude/\n");
+    writeFileSync(`${p}/${RULE}`, "# c\n");
+    spawnSync("git", ["init", "-q"], { cwd: p });
+    const cwd = cwdOf({ kit: k, proj: p });
+    const command = commandOf({ kit: k, proj: p });
+    const hook = (event) => spawnSync("node", [ADAPTER], {
+      env: { ...process.env, HOME: `${S}/home`, CLAUDE_FIELD_KIT_INCOMING: `${k}/incoming` }, encoding: "utf8",
+      input: JSON.stringify({ hook_event_name: event, tool_use_id: "t1", cwd, scratchpad_dir: S, tool_input: { command } }),
+    });
+    hook("PreToolUse");
+    // Past the marker's mtime grace, so only the command's own write can count as new.
+    const until = Date.now() + 20; while (Date.now() < until) {}
+    spawnSync("bash", ["-c", command], { cwd });
+    hook("PostToolUse");
+    return existsSync(`${k}/incoming/rules/agp__portfolio__content.md`);
+  };
+  const atKit = ({ kit: k }) => k;
+  check("adapter: cwd=kit, sed -i on an absolute path", viaAdapter(atKit, ({ proj: p }) => `sed -i 's/c/A/' ${p}/${RULE}`));
+  check("adapter: cwd=project root, sed -i relative", viaAdapter(({ proj: p }) => p, () => `sed -i 's/c/B/' ${RULE}`));
+  check("adapter: cwd=project subdir, sed -i ../.claude/…", viaAdapter(({ proj: p }) => `${p}/src`, () => `sed -i 's/c/C/' ../${RULE}`));
+  check("adapter: cwd=project subdir, python3 write",
+    viaAdapter(({ proj: p }) => `${p}/src`, () => `python3 -c "open('../${RULE}','w').write('D')"`));
+  check("adapter: cwd=kit, cd <project> && sed -i .claude/…", viaAdapter(atKit, ({ proj: p }) => `cd ${p} && sed -i 's/c/E/' ${RULE}`));
+  check("adapter: cwd=kit, path held in a shell variable assigned from a literal",
+    viaAdapter(atKit, ({ proj: p }) => `P=${p}/.claude/rules; sed -i 's/c/F/' "$P/portfolio/content.md"`));
+  check("adapter: a command naming .claude/ but changing nothing stages nothing",
+    !viaAdapter(atKit, ({ proj: p }) => `cat ${p}/${RULE}`));
+  // Every Bash call pays for the scan before the fast path, and a heredoc can carry an unbroken base64 run.
+  {
+    const S = mkdtempSync(join(SB, "adapter-long-"));
+    mkdirSync(`${S}/home`);
+    const command = `echo ${"QUJD".repeat(25000)} | base64 -d > /dev/null`;
+    const hook = (event) => spawnSync("node", [ADAPTER], {
+      env: { ...process.env, HOME: `${S}/home`, CLAUDE_FIELD_KIT_INCOMING: `${S}/incoming` }, encoding: "utf8",
+      input: JSON.stringify({ hook_event_name: event, tool_use_id: "t1", cwd: S, scratchpad_dir: S, tool_input: { command } }),
+    });
+    hook("PreToolUse");
+    const started = Date.now();
+    hook("PostToolUse");
+    check("adapter: a 100KB unbroken command is scanned in well under a second", Date.now() - started < 1000);
+  }
 } finally {
   rmSync(SB, { recursive: true, force: true });
 }

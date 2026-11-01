@@ -9,8 +9,9 @@
  * --env   Target environment. Auto-detected from CLAUDE_PROJECT_DIR if omitted.
  * --root  Claude Field Kit repo root. Default: /home/ag-95/projects/claude-field-kit
  *
- * Refuses before writing anything while skill-reference-check reports a dead pointer in global/shared/skills
- * or the env overlay's skills/; a near-match is printed as `warn:` and does not refuse.
+ * Refuses before writing anything while skill-reference-check reports a dead pointer in global/shared/skills,
+ * global/shared/rules, or the env overlay's skills/ and rules/; a near-match is printed as `warn:` and does not
+ * refuse.
  *
  * Stop before running if the user has not confirmed the sync.
  */
@@ -81,9 +82,10 @@ function readJson(path, fallback = {}) {
   try { return JSON.parse(readFileSync(path, "utf8")); } catch { return fallback; }
 }
 
+// A string is written as utf8; a Buffer as its bytes, so a binary deliverable arrives intact.
 function writeFile(path, content) {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content, "utf8");
+  writeFileSync(path, content);
 }
 
 function writeJson(path, data) {
@@ -227,7 +229,8 @@ function detectDrift(manifest) {
   for (const [absPath, expectedHash] of Object.entries(manifest.files ?? {})) {
     if (absPath === SETTINGS_PATH) continue; // settings managed separately
     if (!existsSync(absPath)) continue;
-    const actual = sha256(readFileSync(absPath, "utf8"));
+    // Bytes, as delivered: a binary decoded as utf8 hashes differently from what deliver() recorded.
+    const actual = sha256(readFileSync(absPath));
     if (actual !== expectedHash) drifted.push(absPath);
   }
   return drifted;
@@ -325,9 +328,11 @@ function deliver(previousManifest) {
     if (rel.startsWith(".")) continue;
     if (rel.startsWith("plugins/")) continue; // plugins/ holds scope/reference docs, not deliverables
 
+    // Read as bytes: a utf8 round-trip mangles a binary. Valid UTF-8 hashes identically either way, so a
+    // text file's manifest entry does not change.
     const content = (rel === "CLAUDE.md" && combinedClaude != null)
       ? combinedClaude
-      : readFileSync(src, "utf8");
+      : readFileSync(src);
 
     const dest = join(TARGET_DIR, rel);
     writeFile(dest, content);
@@ -370,13 +375,15 @@ function deliver(previousManifest) {
 
 function referenceHold() {
   const roots = [join(GLOBAL_SHARED, "skills"), join(GLOBAL_OVERLAY, "skills")].filter((root) => existsSync(root));
-  if (roots.length === 0) return;
+  const ruleRoots = [join(GLOBAL_SHARED, "rules"), join(GLOBAL_OVERLAY, "rules")].filter((root) => existsSync(root));
+  if (roots.length === 0 && ruleRoots.length === 0) return;
   const check = join(dirname(fileURLToPath(import.meta.url)), "skill-reference-check.mjs");
-  const result = spawnSync(process.execPath, [check, ...roots], { encoding: "utf8" });
+  const args = [check, ...ruleRoots.flatMap((root) => ["--rules", root]), ...roots];
+  const result = spawnSync(process.execPath, args, { encoding: "utf8" });
   if (result.status !== 0 || /^warn:/m.test(result.stdout)) process.stdout.write(result.stdout);
   if (result.status === 0) return;
   const reason = result.status === 1
-    ? "a skill pointer under global/ does not resolve — fix it in the kit and rerun"
+    ? "a skill or rule pointer under global/ does not resolve — fix it in the kit and rerun"
     : `skill-reference-check could not run (exit ${result.status}): ${(result.stderr ?? "").trim()}`;
   process.stderr.write(`[global-sync] REFUSED: ${reason}\n`);
   process.exit(1);

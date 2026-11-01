@@ -9,6 +9,7 @@
 // tree is touched. The copy sits in tools/ beside skill-reference-check.mjs, which its reference hold runs
 // from the tool's own directory.
 import { spawnSync } from "child_process";
+import { createHash, randomBytes } from "crypto";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { dirname, join } from "path";
@@ -40,7 +41,14 @@ try {
   put(`${kit}/global/shared/CLAUDE.md`, "# shared\n");
   put(`${kit}/global/shared/skills/foo/SKILL.md`, "# foo\n");
   put(SOURCE_GONE, "# gone\n");
+  // Invalid UTF-8 up front, so a text-mode copy cannot round-trip it by luck.
+  const BLOB = Buffer.concat([Buffer.from([0xff, 0xfe, 0x00, 0x80, 0xc3]), randomBytes(512)]);
+  mkdirSync(`${kit}/global/shared/skills/foo/assets`, { recursive: true });
+  writeFileSync(`${kit}/global/shared/skills/foo/assets/blob.bin`, BLOB);
   put(`${kit}/global/wsl/CLAUDE.md`, "# wsl overlay\n\n> meta\n\nwsl delta\n");
+  const RULE_A = `${kit}/global/shared/rules/a.md`;
+  put(RULE_A, "# A\n\nSee `b.md` → Real.\n");
+  put(`${kit}/global/shared/rules/b.md`, "# B\n\n## Real\n");
   put(`${kit}/.claude/work/tasks.md`, "# Tasks\n\n## Backlog\n- [ ] existing\n\n## Done\n- old\n");
 
   const DELIVERED_GONE = `${home}/skills/foo/references/gone.md`;
@@ -56,6 +64,13 @@ try {
   check("run 1 passes the reference hold", run1.status === 0 && !/REFUSED/.test(run1.stderr ?? ""));
   check("run 1 delivers and tracks the file", existsSync(MANIFEST) && tracked().includes(DELIVERED_GONE) && existsSync(DELIVERED_GONE));
   check("run 1 warns about nothing", !warns(run1, "no longer have a Claude Field Kit source"));
+  check("a binary deliverable arrives byte-exact",
+    readFileSync(`${home}/skills/foo/assets/blob.bin`).equals(BLOB));
+  // Valid UTF-8 hashes the same as bytes or as a string, so moving to bytes must not re-hash a text file —
+  // a changed hash would read as drift on every machine's next sync.
+  check("a text deliverable's manifest hash is the sha256 of its bytes",
+    JSON.parse(readFileSync(MANIFEST, "utf8")).files[`${home}/skills/foo/SKILL.md`] ===
+      createHash("sha256").update(readFileSync(`${kit}/global/shared/skills/foo/SKILL.md`)).digest("hex"));
 
   // --- 2. the kit source goes away; the delivered copy stays on disk -----------------------------------
   unlinkSync(SOURCE_GONE);
@@ -89,6 +104,17 @@ try {
   check("drift LOG names the file it wrote", (run6.stdout ?? "").includes("incoming/skills/wsl__foo__SKILL.md"));
   check("drift log does not name a file it did not write",
     !/incoming\/skills\/SKILL\.md/.test(run6.stdout ?? ""));
+  check("a byte-exact binary is not routed as drift", !existsSync(`${kit}/incoming/skills/wsl__foo__assets__blob.bin`));
+
+  // --- 6. a dead rule-to-rule pointer refuses the sync before anything is written ---------------------
+  writeFileSync(RULE_A, "# A\n\nSee `b.md` → Gone.\n", "utf8");
+  const manifestBefore = readFileSync(MANIFEST);
+  const run7 = sync();
+  check("a dead rule pointer refuses the sync", run7.status === 1 && /REFUSED/.test(run7.stderr ?? ""));
+  check("a refused sync writes nothing", readFileSync(MANIFEST).equals(manifestBefore) &&
+    readFileSync(`${home}/rules/a.md`, "utf8").includes("→ Real"));
+  writeFileSync(RULE_A, "# A\n\nSee `b.md` → Real.\n", "utf8");
+  check("the fixed pointer passes again", sync().status === 0);
 } finally {
   rmSync(SB, { recursive: true, force: true });
 }

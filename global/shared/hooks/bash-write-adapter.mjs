@@ -20,8 +20,9 @@
  *      filtered by mtime against the pre-command marker. Filtering a candidate set beats diffing
  *      two snapshots: a file that was ALREADY dirty and is modified again keeps the same status
  *      line, so a snapshot diff would miss it while mtime does not.
- *   2. An mtime walk of <cwd>/.claude/{rules,skills,agents,hooks}. Those are gitignored, so git is
- *      blind to them — which is exactly the asset-capture case this work exists to fix.
+ *   2. An mtime walk of .claude/{rules,skills,agents,hooks} under cwd, the repo root, and every root
+ *      the command text names (see namedClaudeRoots). Those are gitignored, so git is blind to them —
+ *      which is exactly the asset-capture case this work exists to fix.
  *   3. An mtime stat of the manifest-tracked ~/.claude/ files. They sit outside every repo, and
  *      they are what hub-dirty-flag needs to see for global-sync to notice drift.
  *
@@ -33,6 +34,12 @@
  *   - Writes outside the working repo are not detected at all. A cwd-relative write into a system
  *     directory is neither prevented by command-firewall (the target carries no absolute path) nor
  *     seen here. That combination has no coverage in either direction; only OS permissions stop it.
+ *   - An asset edit in another project's .claude/ is seen only when the command text names that root —
+ *     a `<root>/.claude/<asset dir>` literal or a `cd <root>`. A path built at runtime, or held in a
+ *     variable never assigned a literal in the same command, is not. Nor are: a quoted path holding a
+ *     space, a Windows drive path (only UNC is translated), a bare `cd ~`, `pushd` and `git -C`, a
+ *     second `cd` resolved relative to the first, and comma-joined paths. `asset-capture --verify`
+ *     reports the miss.
  *   - The protected-path scan reaches two directory levels from the repo root. A secret nested
  *     deeper than that is not reported.
  *   - The kit's own incoming/ is gitignored and sits outside .claude/, so a shell write there
@@ -56,7 +63,7 @@ import {
   statSync, unlinkSync, writeFileSync,
 } from "fs";
 import { tmpdir } from "os";
-import { basename, dirname, join } from "path";
+import { basename, dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
@@ -214,6 +221,45 @@ function scanProtected(root, sinceMs, hardBlock, normalize) {
   return hits;
 }
 
+// The hook's cwd is the session's, and the harness resets the shell there after a `cd` out of it, so a
+// command editing another project's .claude/ — `cd <proj> && sed -i .claude/…`, or `../<proj>/.claude/…`
+// from the kit — never shows up under <cwd>/.claude/. The command text is the only place that project is
+// named. Every `<root>/.claude/<asset dir>` literal and every `cd` target yields a candidate root; a relative
+// one is tried against cwd and each `cd` target, and only roots that hold a .claude/ are kept. The mtime
+// walk that follows decides what actually changed, so a root named by a read-only command costs a walk.
+const CD_TARGET_RE = /(?:^|[;&|(]\s*|\s)cd\s+(["']?)([^\s;&|)"']+)\1/g;
+const ASSET_DIR_AFTER_RE = /^(?:rules|skills|agents|hooks)(?:\/|$|[\s'"`;|&)])/;
+const TOKEN_DELIMITER_RE = /[\s'"`=;|&()<>]/;
+
+// Found by indexOf and a backward walk, never by a regex with an unanchored `[^…]*` prefix: that backtracks
+// from every start position, and a heredoc carrying a long base64 run then costs seconds on every Bash call.
+function claudeLiteralPrefixes(text) {
+  const prefixes = [];
+  for (let at = text.indexOf(".claude/"); at !== -1; at = text.indexOf(".claude/", at + 1)) {
+    if (!ASSET_DIR_AFTER_RE.test(text.slice(at + 8, at + 16))) continue;
+    let start = at;
+    while (start > 0 && !TOKEN_DELIMITER_RE.test(text[start - 1])) start--;
+    prefixes.push(text.slice(start, at));
+  }
+  return prefixes;
+}
+
+function namedClaudeRoots(command, cwd) {
+  const text = String(command ?? "");
+  const expand = (p) => toWsl(p.startsWith("~/") ? join(HOME, p.slice(2)) : p);
+  const cdTargets = [...text.matchAll(CD_TARGET_RE)]
+    .map((m) => m[2])
+    .filter((p) => !p.includes("$"))
+    .map((p) => resolve(cwd, expand(p)));
+  const roots = [...cdTargets];
+  for (const prefix of claudeLiteralPrefixes(text)) {
+    if (prefix.includes("$")) continue; // a variable's value is not in the text
+    const rel = expand(prefix).replace(/\/+$/, "") || ".";
+    for (const base of [cwd, ...cdTargets]) roots.push(resolve(base, rel));
+  }
+  return [...new Set(roots)].filter((root) => existsSync(join(root, ".claude")));
+}
+
 function manifestFilesChanged(sinceMs) {
   try {
     const m = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
@@ -291,7 +337,8 @@ async function post(input) {
   const repoRoot = runGit(["rev-parse", "--show-toplevel"], cwd).trim();
 
   const repoChanged = repoRoot ? changedSince(porcelainPaths(repoRoot), since) : [];
-  const assetChanged = ASSET_DIRS.flatMap((d) => walkNewer(join(cwd, ".claude", d), since));
+  const assetRoots = [...new Set([cwd, repoRoot, ...namedClaudeRoots(input?.tool_input?.command, cwd)].filter(Boolean))];
+  const assetChanged = assetRoots.flatMap((root) => ASSET_DIRS.flatMap((d) => walkNewer(join(root, ".claude", d), since)));
   const hubChanged = manifestFilesChanged(since);
 
   // Kept out of repoChanged deliberately: a protected file must be reported, never formatted or staged.
