@@ -1,11 +1,11 @@
 # Content Rules
 
-Full frontmatter schema, field definitions, and validation rules are in `docs/SCHEMA.md`. Read it before authoring or modifying any MDX content or content utilities. These rules govern authoring behavior.
+Full frontmatter schema, field definitions, and validation rules are in `.claude/docs/SCHEMA.md`. Read it before authoring or modifying any MDX content or content utilities. These rules govern authoring behavior.
 
 ## Frontmatter
 
 - Slug is derived from the MDX filename — never add a `slug:` field
-- Missing required fields fail the build — check `docs/SCHEMA.md` §3 for the required field list
+- Missing required fields fail the build — check `.claude/docs/SCHEMA.md` → Project Frontmatter Schema → Field reference for the required field list
 - Missing optional fields render nothing — never use placeholders or "TBD"
 - Image paths must start with `/` (web paths from `/public`, not filesystem paths)
 
@@ -30,5 +30,5 @@ Full frontmatter schema, field definitions, and validation rules are in `docs/SC
 
 ## Validation
 
-- Zod schemas live in `/lib/schemas/` — keep them as the single source of validation logic
-- Build-fail and build-warn conditions are documented in `docs/SCHEMA.md` §3.5
+- Zod schemas live in `src/lib/schemas/` — keep them as the single source of validation logic
+- Build-fail and build-warn conditions are documented in `.claude/docs/SCHEMA.md` → Project Frontmatter Schema → Validation Rules

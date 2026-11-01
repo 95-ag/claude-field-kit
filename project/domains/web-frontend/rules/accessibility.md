@@ -21,7 +21,11 @@ Reusable accessibility requirements for web UI. Spec values live in DESIGN.md wh
 
 ## Touch targets
 
-- Minimum 44×44px for every interactive element on touch devices.
+- Minimum 44×44px for every discrete interactive control on touch devices — buttons, links outside a
+  sentence, icon actions, form controls, nav items.
+- A link inline in a sentence is exempt: its size is set by the text's line height, which is why WCAG's
+  target-size criteria exclude it.
+- Compactness is never an exemption for a control that stands on its own.
 
 ## Forms
 
@@ -76,7 +80,7 @@ Reusable accessibility requirements for web UI. Spec values live in DESIGN.md wh
 
 ## Motion
 
-- Motion accessibility requirements are defined in motion.md → Reduced motion.
+- Motion accessibility requirements are defined in motion.md → Reduced motion and motion.md → Invariant floor.
 
 ## Layout & reflow
 

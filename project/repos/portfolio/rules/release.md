@@ -14,6 +14,11 @@ Allowlist source of truth → `release.sh`.
 - `production` — generated release branch with **orphan history**, independent of `main`. GitHub
   default branch. Treated as a build artifact (like `dist/`), never a development branch.
 
+## Release numbering
+
+- Tiers and their meaning are defined in root `RELEASE.md` → Release Versioning — a release train, not
+  semver. Never restate the tiers here.
+
 ## Branch ownership
 
 - `production` has no merge relationship with `main`.

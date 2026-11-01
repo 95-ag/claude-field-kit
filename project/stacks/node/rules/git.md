@@ -4,7 +4,7 @@ Extends the global `git.md`. Load alongside it and any other stack rule this rep
 
 ## Verification gate (per commit)
 Build succeeds + lint + typecheck pass before committing. The full lint/typecheck/test/build suite runs
-at the batch gate, not per commit — see build-verification.md → Batch gate, not per-commit.
+at the batch gate, not per commit — see the universal build-verification.md → Batch gate, not per-commit.
 
 ## Commit clustering
 Separate infrastructure, routing, schemas, content pipeline, and UI shells.
@@ -22,8 +22,7 @@ Separate infrastructure, routing, schemas, content pipeline, and UI shells.
 ## dev → main promotion (Model B)
 - Promote only when `dev` is releasable: all intended features merged, `npm run build` green, lint +
   typecheck clean, plus domain verification gates pass.
-- Promote by **fast-forward** (`--no-ff` only if a release marker is wanted); never squash `dev → main`.
-- The user runs the promotion — Claude provides the commands (see global PR closure).
+- Promotion mechanics and who runs it → global `git.md` → Branching models and PR closure.
 
 ## .gitignore (stack)
 - `node_modules/`, `.next/`, build outputs and caches.

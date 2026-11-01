@@ -14,12 +14,16 @@ Keep global CSS organized by concern, not in one monolithic file. Typical concer
 
 When to split: start in one global file; move a concern into its own file once it is a distinct self-contained block (a full token set, the type scale, the prose layer) or it exceeds ~150 lines — whichever comes first. Threshold is tunable. Route- or feature-scoped CSS stays with its route, never in the global files.
 
+- An unlayered rule beats any layered one — check a rule's cascade layer before adding an override.
+
 ## Token discipline
 
 - Use design-system tokens for every visual value — color, typography, spacing, radius, elevation, z-index, motion, and breakpoints.
 - Never use raw hex values, arbitrary pixel values, magic numbers, or one-off visual constants in components.
 - Resolve values by token name from their canonical home — never eyeball them from screenshots.
 - Never invent a token variant the system does not define. Extend the system in DESIGN.md first, then consume it.
+- A retired token fails silently (compiles to nothing, or to the framework's default) — retire a whole
+  namespace at once and assert its absence in the built output.
 
 ## Color
 

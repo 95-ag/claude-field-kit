@@ -52,7 +52,8 @@ Additional rules:
 3. Part of the app frame — mounted as a single instance in the root layout (navigation, footer,
    app-wide provider)? → `shell/`. The test is **mounted vs composed**: a layout-mounted singleton is
    shell even without a nav/footer role; a primitive the shell merely composes (e.g. a theme toggle)
-   stays in `ui/` per step 2.
+   stays in `ui/` per step 2. Spanning the whole page is not the test either: a layer composed per
+   section inside a page, however far it reaches, is page-bound and belongs in step 5.
 4. The ambient background (when the project has one)? → `background/`.
 5. Bound to one page, route, or data shape? → a domain/feature folder named for it. If used by exactly
    one route, keep it inline until an extract trigger fires (see Inline vs extract).
@@ -80,8 +81,9 @@ The DESIGN.md section names are the standard; folder names are the project's to 
 
 ## Component sub-groups
 
-Under DESIGN.md → Components, **UI** and **Document** are sub-grouped by role. This is the general
-vocabulary; a system instantiates only the sub-groups it populates.
+Under DESIGN.md → Components, **UI** and **Document** are sub-grouped by role, or by feature where a
+feature-named sub-group applies (below). This is the general vocabulary; a system instantiates only the
+sub-groups it populates.
 
 - **UI** — Controls/Actions · Links · Display · Inputs · Feedback/Status
 - **Document** (authored-content blocks) — Annotations · Figures & Media · Diagrams & Charts · Code · Embeds
@@ -92,15 +94,26 @@ dividing line is the **authoring registry**, not the file format. A primitive re
 convenience keeps its canonical home (e.g. a layout primitive stays in `layout/`) — being reachable from
 authored content doesn't make it a Document member. **Folder is the home.**
 
+**Feature-named sub-groups:**
+
+- A sub-group may instead be named for a feature when its members are portable but serve one feature
+  together (*Example:* a photo gallery's modal, viewer, strip and their helpers), and splitting them by
+  role would scatter one feature across sub-folders.
+- Portable is the step-2 test — no page, route, or data assumptions. A member that has one belongs in a
+  `<feature>/` domain folder, never in the sub-group.
+- It is a sub-folder of its layer and a sub-heading under that layer's DESIGN.md section, like a role
+  sub-group.
+
 **Prose** — the base long-form text styling layer — is NOT a component; it's a Foundations concern
-(DESIGN.md → Foundations → Prose), with no entry in the component folders.
+(DESIGN.md → Foundations → Prose, when the doc carries one), with no entry in the component folders.
 
 ## Foldering rule
 
 A layer folder (`ui/`, `layout/`, `document/`, …) stays **flat** while small. When adding a component
 would push a flat group past ~10 members, the SAME change splits that group into sub-folders matching the
-sub-group vocabulary above (`ui/controls/`, `ui/display/`, …). Not optional — part of the addition; the
-split axis is pre-defined, so it's mechanical. The threshold is tunable.
+sub-group vocabulary above (`ui/controls/`, `ui/display/`, …), or into a feature-named sub-group where
+Component sub-groups admits one. Not optional — part of the addition; the role axis is pre-defined, so the
+split is mechanical except for that one judgement. The threshold is tunable.
 
 ## Ownership
 

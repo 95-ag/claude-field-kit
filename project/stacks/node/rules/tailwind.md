@@ -19,7 +19,7 @@ whether a utility survives the build is `build-verification.md` → Node / Next 
   `getComputedStyle().boxShadow`.
 - A renamed or retired scale key can fall back to Tailwind's own default value rather than compiling to
   nothing (that case → `build-verification.md` → Node / Next specifics), so a wrong value ships instead of
-  a missing one. Close the whole namespace and assert the negative against the built CSS.
+  a missing one (retiring → `web-frontend/design-system.md` → Token discipline).
 
 ## Transitions
 

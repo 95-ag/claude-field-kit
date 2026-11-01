@@ -12,6 +12,9 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
   - **Confirmed by browser render**
 - If browser rendering is unavailable, stop and state that visual verification could not be performed.
 - Do not present inferred conclusions as visually verified findings.
+- Types, tests and the build cannot see a rendered result — a wrong coordinate space or unit passes all
+  three.
+  - A task with no surface to render on gets one built before it is called done.
 
 ## Verification scope
 
@@ -20,6 +23,9 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
 - For responsive behavior, verify the relevant viewport sizes rather than assuming layout behavior.
 - For theme-specific behavior, verify each theme independently.
 - Judge a visual treatment (color, blend, texture, grain, shadow, glow) on the real surface at the density it will be seen at — its effect depends on that surface, so a stand-in measures nothing. *Example:* soft-light barely registers on near-white, since its effect shrinks toward both black and white.
+- When a device check is handed to a person, name every part of the target they must touch.
+  - A property set per element can differ between a control's anchor, label and icon, so the result
+    depends on where their finger lands.
 
 ## Evidence
 
@@ -27,6 +33,10 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
 - When reporting findings, identify what was visually confirmed versus what remains inferred.
 - If a visual defect cannot be reproduced in a rendered environment, report the limitation rather than guessing.
 - Beating a failed alternative is not success — "better than multiply" only shows multiply is worse. Measure each candidate against the real surface on its own terms; the best of a set may still not work.
+- Some CSS no available render can confirm — an engine may not expose the property to `getComputedStyle`.
+  - Confirm the rule in the source *and* in the built stylesheet, where a dropped rule would show; the
+    minifier rewrites selectors, so grep the built form.
+  - Report it as inferred from code, pending a device check.
 
 ## Capture guidance
 
@@ -38,7 +48,11 @@ How to verify anything visual. A visual claim is only valid when backed by an ac
 ## Local iteration
 
 - A style edit not reflecting on the dev server is usually a stale build/HMR cache, not a CSS mistake — verify the **computed** style (`getComputedStyle`) before re-tuning, and re-`touch` the edited file to force a recompile. The file on disk is the source of truth; a production build compiles it correctly regardless of the dev cache.
-- To clear the build-cache dir, `rm -rf` is blocked by the global `command-firewall` — move it aside (non-destructive) or hand the user the exact `rm`, then restart the dev server.
+- The re-`touch` remedy assumes the dev server's update channel works.
+  - When no edit reaches the browser however often the file is touched, the channel itself has died —
+    stop re-touching (→ `node/nextjs.md` → Dev server and HMR, in a Next.js project).
+- To clear the build-cache dir, `rm -rf` is blocked by the global `command-firewall` — move it aside (non-destructive) or hand the user the exact `rm`.
+  - Restart the dev server only if you started it (→ `node/browser-testing.md` → Dev server vs build).
 - Render-to-compare for any visual choice: a throwaway scratch route rendering the real components/variants side-by-side (both themes) beats deciding from a description. Keep it uncommitted; delete it after the decision.
 
 ## Reviewing a design with the owner

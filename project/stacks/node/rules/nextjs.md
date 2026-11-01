@@ -1,6 +1,6 @@
 # Next.js
 
-Framework conventions for a Next.js (App Router) project. Build/lint/test gates live in build-verification.md → Build Verification (Node).
+Framework conventions for a Next.js (App Router) project. Build/lint/test gates live in node/build-verification.md.
 
 ## Rendering
 
@@ -9,7 +9,7 @@ Framework conventions for a Next.js (App Router) project. Build/lint/test gates 
 - Add `'use client'` only when browser APIs, local state, effects, event handlers, or client-only libraries require it.
 - Keep client boundaries as small as practical.
 - Do not promote whole trees to client components when only a leaf requires client behavior.
-- Read the installed Next.js version's documentation before using an unfamiliar API — the installed version may differ from training data.
+- Read the installed Next.js version's documentation (`node_modules/next/dist/docs/`, where the version ships it) before using an unfamiliar API — the installed version may differ from training data.
 
 ## Data fetching
 
@@ -30,6 +30,15 @@ Framework conventions for a Next.js (App Router) project. Build/lint/test gates 
 - Make static, revalidated, and dynamic rendering decisions explicit.
 - Cache invalidation and revalidation rules belong to the data source that owns the data.
 
+## Dev server and HMR
+
+- A dead HMR update subscription leaves every request answering `200` while edits stop reaching the
+  browser — only a manual reload shows them.
+  - No build gate sees it: the production build never touches that path.
+- When HMR dies twice in one session, suspect the dev bundler's persistent cache under `.next/`.
+  - Clear it and restart as `web-frontend/visual-verification.md` → Local iteration describes.
+  - Fall back to the previous bundler (`--webpack`) where the installed version still offers it.
+
 ## Fonts
 
 - Load all fonts via `next/font`.
@@ -42,6 +51,7 @@ Framework conventions for a Next.js (App Router) project. Build/lint/test gates 
 - Provide explicit dimensions or an equivalent layout strategy that prevents layout shift.
 - Image paths reference web paths from `/public`, never filesystem-relative paths.
 - Video elements use appropriate loading, poster, caption, and accessibility behavior as defined by accessibility.md.
+- After overwriting a `/public` asset, clear `.next/cache/images` (as `web-frontend/visual-verification.md` → Local iteration describes) and restart the dev server (if you started it) — `next/image` otherwise serves a stale optimized copy.
 
 ## Imports
 

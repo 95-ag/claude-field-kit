@@ -1,7 +1,7 @@
 # Build Verification — node (stack delta)
 
-Node/TypeScript specifics. Load alongside the universal `project/shared/rules/build-verification.md` (seeded
-as `.claude/rules/build-verification.md`); this file adds only the node toolchain commands and quirks.
+Node/TypeScript specifics. Load alongside the universal `build-verification.md`; this file adds only the node
+toolchain commands and quirks.
 
 ## Commands
 
@@ -24,4 +24,13 @@ as `.claude/rules/build-verification.md`); this file adds only the node toolchai
 - With Tailwind, a utility class that resolves to nothing also builds green: an unknown key raises no error,
   so a closed or renamed scale silently removes utilities. Compile a probe through the project's own PostCSS
   pipeline and assert the utility exists, rather than inferring it from the token file.
-- A per-commit quick check (build + lint + typecheck) may be required by `stacks/node/rules/git.md`.
+  - A probe answers only "does this resolve from the token layer". For "what shipped", read the real
+    build's output.
+- `notFound()` under static export emits a 404 body **at that path** rather than omitting the route. Verify
+  "the route is gone" by finding the file in the export, never by reading the source.
+- Next synthesises metadata it was not given (`twitter:*` from `openGraph`), so the built HTML can carry more
+  tags than the source asks for. Audit tags against the output, not the metadata object.
+- **A warning that names a missing declaration is not always fixed by supplying it.** Node's
+  `MODULE_TYPELESS_PACKAGE_JSON` warning is not cleared by `"type": "commonjs"` — that makes every
+  `import`/`export` file error. Silence it per script with `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON`.
+- A per-commit quick check (build + lint + typecheck) may be required by `node/git.md`.

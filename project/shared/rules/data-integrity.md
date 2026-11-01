@@ -27,6 +27,9 @@ Represent data honestly — missing means missing, and no value is ever fabricat
 
 - Validate data at external boundaries (input, API, file, parse) — reject or surface malformed data,
   never silently coerce it into a plausible-looking value.
+- A validator checks what types cannot see — e.g. formats, duplicate identifiers, references to files or
+  records that must exist, values that read plausibly but are wrong — not a field the type system already
+  guarantees.
 - Preserve identifiers exactly as provided — never normalize, reformat, trim, pad, or regenerate ids
   unless explicitly required.
 - Preserve type and precision through transforms — do not stringify numbers, truncate precision, or

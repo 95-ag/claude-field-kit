@@ -17,7 +17,7 @@ Global `git.md` defines Model A (direct-to-main squash) and Model B (dev-integra
 - `production` is **never merged or fast-forwarded** from `main` (that would be Model A/B) — it is **snapshot-replaced** each release. Full model + commands → `release.md` (+ root `RELEASE.md`).
 
 - Model B / a `dev` integration branch does NOT apply.
-- All branch / remote / PR / merge / orphan-checkout ops are user-owned (global "Branch & remote autonomy" + `release.md`).
+- All branch / remote / PR / merge / orphan-checkout ops are user-owned (global `git.md` → PR and merge policy + `release.md`).
 
 ## Public repo
 
