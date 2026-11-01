@@ -20,7 +20,7 @@ Claude Field Kit `incoming/` for review.
 - The user has said "don't sync" or "confirm before sync" — ask for explicit confirmation first
 - The global hook scripts are not present in `global/shared/hooks/` (they're the source delivered to `~/.claude/hooks/`)
 - This is the very first run in a new environment — verify `~/.claude/` exists and is writable
-- The tool prints `[global-sync] REFUSED: …` — a skill pointer under `global/` does not resolve, so nothing was
+- The tool prints `[global-sync] REFUSED: …` — a skill or rule pointer under `global/` does not resolve, so nothing was
   written. Report the lines `skill-reference-check` printed above it, fix each pointer, and rerun; never work
   around it. `warn:` lines do not stop the sync: report them for a read.
 
@@ -45,8 +45,8 @@ node /home/ag-95/projects/claude-field-kit/global/tools/global-sync.mjs --env ws
 
 ## What happens
 
-1. Runs `skill-reference-check` over `global/shared/skills` and the env overlay's `skills/`; a dead pointer
-   refuses the sync before anything is written
+1. Runs `skill-reference-check` over `global/shared/skills`, `global/shared/rules` and the env overlay's `skills/`
+   and `rules/`; a dead pointer refuses the sync before anything is written
 2. Reads `global/shared/` + env overlay; overlay files win on conflict
 3. Transforms hook commands: WSL-wrapped for Windows, bare `node` for WSL
 4. Deep-merges the `hooks` key into `~/.claude/settings.json` (all other keys preserved)

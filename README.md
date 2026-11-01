@@ -195,7 +195,7 @@ Delivery:
 - **Global tier** — the `global-sync` tool (`global/tools/global-sync.mjs`, via the `global-sync` skill)
   composes `global/shared` + the env overlay and delivers it to each `~/.claude` (Windows + WSL),
   transforming `hooks.json` into that env's `settings.json` (WSL-wrapped on Windows, bare `node` on WSL).
-  It refuses before writing anything while a skill pointer under `global/` does not resolve.
+  It refuses before writing anything while a skill or rule pointer under `global/` does not resolve.
 - **Project tier** — the `project-sync` tool (`global/tools/project-sync.mjs`, via the owner-run `project-sync`
   skill) delivers `project/` updates to projects already set up. Its dry run and `--apply` refuse while a skill
   pointer under `project/` does not resolve.
