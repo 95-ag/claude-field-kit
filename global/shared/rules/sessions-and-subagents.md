@@ -14,6 +14,13 @@ its working tree.
 - Never resume a subagent that died mid-run — dispatch a fresh one instead
 - Before re-dispatching, establish what the dead run left behind (`git status`, `git diff`, the project's checks) and say so in the new brief
 - Split a subagent task that both decides and acts into pure decision logic and a separate execution step — shorter runs die less often
+- A subagent may ignore any rule its brief does not name — point at each binding rule by path and section; never summarise one or assume it auto-loads
+- Restate in the brief any prohibition whose breach hangs or destroys work, even where a rule already holds it
+- Judge a subagent by what it wrote, not what it reports:
+  - check the artifact its job writes
+  - require its report to list the rules it loaded
+  - check that a mid-run correction landed
+- Name the defect class, not the instance, and require the sweep's result in the report
 
 ## Parallel sessions
 
