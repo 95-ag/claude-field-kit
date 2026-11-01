@@ -79,8 +79,8 @@ the doc marks non-generatable is skipped and reported, never stubbed
 - A bulk run adds many components to one folder in a single change, so a per-item check passes on
   every item and the folder still lands over the threshold.
 - **Count the folder's post-run membership before emitting**, and where it would cross, the same run
-  performs the split the rule prescribes — the rule's split axis is pre-defined, so the split is
-  mechanical, not a design decision.
+  performs the split the rule prescribes — mechanical on the role axis. Where the rule admits a
+  feature-named sub-group, report the choice instead of deciding it silently.
 - The threshold and the sub-group names are the repo's rule to state; this skill only evaluates them
   at the right moment.
 

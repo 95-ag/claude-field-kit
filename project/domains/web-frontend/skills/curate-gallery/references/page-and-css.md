@@ -63,7 +63,7 @@ export default function DesignSystemPage() {
             <InlineThemeSelector />
           </div>
           <div class="body-caption">
-            Dev-only reference, excluded from the production build. Components render
+            Dev-only reference, excluded from production. Components render
             on the page background; fixed and route-aware chrome render live in
             bounded frames.
           </div>

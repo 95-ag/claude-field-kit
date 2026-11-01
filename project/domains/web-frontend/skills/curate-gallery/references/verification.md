@@ -76,8 +76,9 @@ Run the full toolchain before marking the gallery done:
 1. **Linter** — zero errors (e.g. Biome `check` for a TypeScript project; equivalent for other
    stacks. No `!important` where enforceable; zero unused lint suppressions).
 2. **Type check** — zero errors under strict mode.
-3. **Production build** — succeeds. The gallery route prerenders static (no server-side-only APIs,
-   no dynamic-only data fetching).
+3. **Production build** — succeeds. Where the build includes the gallery route (option 1 of
+   `stack-adapters.md` → (e) Production exclusion), it prerenders static (no server-side-only APIs, no
+   dynamic-only data fetching); otherwise confirm the production output holds no gallery content.
 4. **Zero duplicate `id`s** — gallery section ids are `ds-<slug>`-namespaced so the reused
    section-nav's text-derived `h2` ids never collide. Verify post-build:
    `document.querySelectorAll('[id]')` → check for duplicates (or run a static DOM audit).

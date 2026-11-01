@@ -32,8 +32,10 @@ it a tag in your working notes:
   log, table cell)
 - `[inferred]` — reasonably derivable from code structure, commit messages, or naming
   conventions; state the inference explicitly in prose if it affects a claim
-- `[user-confirmed]` — the user's own attestation; **no artifact backs it**, whether the
-  work is private, internal, or unreleased
+- `[user-confirmed]` — the user's own attestation; **no artifact a reader could in
+  principle be shown backs it**, whether the work is private, internal, or unreleased.
+  A private or unshareable artifact yields `[user-confirmed]`, not `[verified]`, even if
+  you saw it
 
 Tag **per claim**, not per project. One page routinely mixes tiers — a `[verified]`
 subsystem beside a `[user-confirmed]` one is normal, not a defect.
@@ -43,8 +45,6 @@ Writing rules by tag:
 - `[user-confirmed]` may be stated plainly — it is the user's own work and their word.
   Never phrase it to imply artifact support ("the repo shows…", "the benchmark
   reports…"), and never attach a number to it.
-- A private or unshareable artifact yields `[user-confirmed]`, not `[verified]` — the
-  test is whether a reader could in principle be shown it, not whether you saw it.
 - Never surface tags in the final MDX prose. They govern what you write, not what the
   reader sees.
 - Any unresolved `[inferred]` claim on a metric becomes a clarification question before
@@ -57,47 +57,44 @@ Writing rules by tag:
 The pipeline assumes report+repo by default. When one source is missing, degrade
 gracefully: skip missing tiers and escalate gaps to user clarification.
 
-### Report + repo (full)
+### Report + repo (full) — `report+repo`
 
 **Primary path.** All tiers 1–3 available. Metrics from PDF tables; implementation
 from code. No extra constraints.
 
-### Repo only
+### Repo only — `repo-only`
 
-Tiers 1 and part of 3 are unavailable. Apply these constraints:
+Tier 1a and part of tier 3 are unavailable; tier 1b design docs may still sit in the
+repo. Apply these constraints:
 
-- Metrics sourced from README, eval scripts, output artifacts, or commit history
-- Tag each claim in your working notes before writing prose (see Confidence Tagging above)
-- Never write paper-style metrics ("achieved X% on benchmark Y") without a traceable
-  source; if no source exists, ask or omit
+- Metrics only from README, eval scripts, output artifacts, or commit history; with no
+  traceable source, ask or omit (→ Common drift patterns to avoid)
 - Architecture and data facts from code; tech stack from imports and configs
 - Heavier user clarification required for results framing and any headline metric
 - The `summary` field must not claim precision beyond what the repo supports
 
-### Design docs + partial artifacts (mixed evidence)
+### Design docs + partial artifacts — `mixed-evidence`
 
 Common in client and freelance work: thorough design documentation, a repo covering only
 part of the system, and further work the user attests to but cannot show. Evidence varies
 **by subsystem**, so no single mode label describes the page — tag per claim and apply:
 
 - Design docs establish **intent**. Never write a designed behavior in the present
-  indicative ("the engine groups listings into canonical products") unless an artifact or
-  a user attestation confirms it was built.
+  indicative ("the service does X") unless an artifact or a user attestation confirms it
+  was built.
 - Where a design doc and shipped code disagree, **code wins for what shipped**. The
   divergence is usually the most interesting content on the page — surface it rather than
   quietly following the doc.
 - A planning estimate is never reported as a measured value. Prefer the measured figure
   and make clear which is which.
-- Private or internal work is `[user-confirmed]`: write it plainly, never imply the reader
-  could verify it, never attach a number.
 - Undocumented drift — a decision log still naming a superseded choice — is a finding, not
   an error to smooth over. Confirm the real reason with the user.
 
-### Prior draft only (extreme degradation)
+### Prior draft only (extreme degradation) — `prior-draft-only`
 
 When neither repo nor PDF is accessible and only a prior MDX draft exists:
 
-- The prior draft is **reference only** — treat every claim in it as unverified
+- Treat every claim in the prior draft as unverified
 - **Refuse all numeric metrics** — do not include them as "reported" or "from the project owner"; there is no traceable source
 - Omit `overview.results` entirely — never populate it with unverifiable numbers
 - Architecture and stack claims: include only what is strongly inferable from the project name and framing; flag lower-confidence items as uncertain in working-notes; drop anything speculative
@@ -106,7 +103,7 @@ When neither repo nor PDF is accessible and only a prior MDX draft exists:
 
 This is the strictest operating mode. Its output is a structural shell that must be confirmed and filled in by the user before it is suitable for publishing.
 
-### Report only
+### Report only — `report-only`
 
 Tiers 2 and 3 are unavailable. Apply these constraints:
 
@@ -142,7 +139,7 @@ These are the most common credibility failures in portfolio content:
 - **Data-free success framing** — success language when the actual result was partial
   failure (e.g., 30% accuracy on a 10-class problem ≠ convergence)
 - **Inline code noise in prose** — where a table or plain language would be cleaner
-- **Paper-style metrics without source** — citing a benchmark score with no traceable
-  table cell or file line
+- **Paper-style metrics without source** — citing a score ("achieved X% on benchmark
+  Y") with no traceable table cell or file line; ask or omit
 - **Design intent written as shipped outcome** — a spec describes what the system was
   designed to do; writing it as what the system does claims a build no artifact supports

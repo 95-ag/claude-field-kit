@@ -2,14 +2,14 @@
 name: project-content-extraction
 description: >
   Converts a research project (PDF report + repo + user context) into a fresh,
-  schema-aligned portfolio MDX page at content/projects/<slug>.mdx. Always rebuilds
+  schema-aligned portfolio MDX page at content/projects/{slug}.mdx. Always rebuilds
   body content from scratch — never transforms a prior draft. Produces complete
   frontmatter + H2-spine body, density-reduced and ready for human approval before
   asset generation begins.
 
   Use this skill whenever the user starts a new portfolio project page, says things
-  like "extract <project> into MDX", "build the case study for <slug>", "write up
-  the <project>", "turn this paper/repo into a portfolio page", or supplies a PDF +
+  like "extract {project} into MDX", "build the case study for {slug}", "write up
+  the {project}", "turn this paper/repo into a portfolio page", or supplies a PDF +
   repo + slug in any combination — even if they don't say "MDX" or "portfolio". Fire
   on any request that initiates the content phase of a project. Do NOT fire for asset
   generation (diagrams, charts), cover/hero work, or reviewing an existing page —
@@ -26,7 +26,7 @@ or cover work begins.
 ## Before writing anything — read these references
 
 1. **`references/evidence-and-modes.md`** — determines which source mode applies
-   (report+repo / repo-only / report-only / mixed-evidence), how to rank conflicting
+   (see → Source mode quick-reference below), how to rank conflicting
    claims, and how to tag every claim's confidence. Read this before touching any
    source material.
 
@@ -47,88 +47,54 @@ or cover work begins.
 
 ### Step 1 — Source Intake
 
-Read every source before writing a single line. Consult `references/extraction-procedure.md`
-Step 1 for the complete intake checklist.
-
-Key discipline: dump the PDF and read it end-to-end. Inventory all tables (metric
-sources) and all figures (determines what can be regenerated vs. must be cropped).
-Scan the repo's README, training scripts, config files, and imports. Build a
-numeric-claim log if a prior draft exists — that's an audit, not a transformation.
-
-Ask the user upfront about anything that requires clarification (GitHub URL, logo
-permissions, title framing, metric framing choices). Do this before writing, not
-mid-draft.
+Read every source and ask every clarification question before writing a single line
+(→ `references/extraction-procedure.md` Step 1, tagged by mode).
 
 ### Step 2 — Narrative Direction Proposal
 
-Before writing anything, surface the narrative direction to the user and wait for
-approval. See `references/extraction-procedure.md` Step 2 for the full format.
-
-In brief: one sentence on the project differentiator, the narrative arc named
-explicitly, the H2 section plan with rationale for non-obvious choices, and any
-framing decisions (built-from-scratch scope, result frame). Keep it to 5–10 lines.
-Do not proceed to Step 3 until the user approves.
+Surface the narrative direction brief and wait for the user's approval before Step 3
+(format → `references/extraction-procedure.md` Step 2).
 
 ### Step 3 — Write the MDX
 
-Three sub-steps in order — do not reorder:
-
-**(a) Frontmatter (except overview).** Write title, summary, tags, stack, links,
-logos, projectType, publishedAt, heroImage. The schema is strict — get these right
-before touching the body. See `references/frontmatter-rules.md` for every field.
-Leave all `overview.*` fields as empty placeholders for now.
-
-**(b) Body.** Discard any existing body content and rebuild from source. Old content
-is reference material, not a transformation input. Keep only the file path and any
-frontmatter already confirmed correct. Pick the H2 spine that fits the project (ML /
-research or applied-systems) — see `references/extraction-procedure.md` Step 3 for
-both spines, the narrative arc, and the standalone-readability requirement. Place only
-rough visual/representation markers where one seems likely — not definitive slots. The
-page's representation layer (which tables, diagrams, callouts; prose vs. visual) is
-designed in project-assets-generation, after the narrative stabilizes.
-
-**(c) Overview (after body is complete).** Return to write all `overview.*` fields
-once the body is finished. The project differentiator, core findings, and narrative
-arc are now established — write the overview to reflect them accurately. See
-`references/frontmatter-rules.md` §overview for field rules and density targets.
+Frontmatter first, then the body on the chosen H2 spine, then the final overview — in
+that order (→ `references/extraction-procedure.md` Step 3). Place only rough
+representation markers in the body; the representation layer is designed in
+project-assets-generation, after the narrative stabilizes.
 
 ### Step 4 — Density Reduction (prose density only)
 
-Before finalizing, run the density checklist from `references/extraction-procedure.md`
-Step 4. This pass is **prose density only** — cut verbose narrative, pull the one
-interesting hyperparameter into prose with its rationale and drop the rest, keep prose
-lists in natural flow. Do **not** make definitive table-vs-prose-vs-diagram decisions
-here — those are the representation layer, owned by project-assets-generation. Run the
-component audit at the end of this step.
+Run `references/extraction-procedure.md` Step 4. Definitive table-vs-prose-vs-diagram
+decisions are not made here.
 
 ### Step 5 — Reader Review
 
-Run the Reader Review pass from `references/extraction-procedure.md` Step 5. Run it
-as a subagent. Apply all FLAG findings before presenting to the user.
+Run `references/extraction-procedure.md` Step 5 — a subagent that sees screenshots of
+the rendered page only, never the MDX.
 
 ## Output
 
 One file: `content/projects/<slug>.mdx`
 
-Stop here — hand the file path to the user for approval. Do not run reviewers,
+Stop here — hand the file path to the user for approval. Do not run `project-review`,
 generate assets, or build the cover. Those are separate skills that run after
-this step is approved.
+this step is approved. Step 5's Reader Review is this skill's own gate, not one of them.
 
 ## Validation — check before handing off
 
-All items are required. Do not present the MDX to the user until all pass.
+All items are required. Do not present the MDX to the user until all pass. Each is a
+gate; the rule it checks lives where it points.
 
-- `next build` passes (Zod validates frontmatter at build time; schema at
-  `src/lib/schemas/project.ts`)
-- No H1 in the MDX body
-- No raw HTML in body — use components: `<Figure>`, `<Diagram>`, `<Callout>`,
-  `<Stack>`, `<Highlight>`
-- No `slug:` field in frontmatter
-- No paper-style metrics written without a traceable source
-- No design-doc intent written as shipped outcome; `[user-confirmed]` claims carry no numbers
-- `overview.*` fields written after the body (not drafted before it)
-- Density reduction pass complete (Step 4 checklist in `extraction-procedure.md`)
-- Reader Review pass complete (Step 5 in `extraction-procedure.md`); all FLAG items resolved
+- `next build` passes (schema at `src/lib/schemas/project.ts`)
+- Frontmatter and body markup conform → `frontmatter-rules.md` → Slug rule, Body
+  authoring rules
+- Headings conform → `narrative-structure.md` → Heading limits
+- Claims conform → `evidence-and-modes.md` → Confidence Tagging, Common drift patterns
+  to avoid
+- Overview final, nothing provisional left → `frontmatter-rules.md` → overview
+- Density Reduction complete → `extraction-procedure.md` Step 4
+- Reader Review complete; every FLAG applied or dropped with a stated reason →
+  `extraction-procedure.md` Step 5
 
 ## Source mode quick-reference
 

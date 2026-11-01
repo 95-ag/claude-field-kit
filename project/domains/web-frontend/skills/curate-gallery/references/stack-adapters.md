@@ -109,14 +109,17 @@ Three options — choose the one that fits the project's deploy model:
 
 1. **Release allowlist** — the `release.sh` (or equivalent) allowlist simply omits the `design-system/`
    route folder. Anything not in the allowlist is excluded from the production snapshot.
-2. **Env-gate at build** — wrap the route with `if (process.env.NODE_ENV === 'production') notFound()`
-   or exclude it from `generateStaticParams`. The route is absent from the SSG output.
-3. **Route omission** — remove the route segment from the production route manifest. Equivalent to
-   option 2 but done at the config level rather than in the route file.
+2. **Env-gate at build** — two forms:
+   - `if (process.env.NODE_ENV === 'production') notFound()` in the route. Under static export it still
+     emits a 404 body at its path — the gallery's content is gone, the path is not. Verify against the
+     export.
+   - Exclude the route from `generateStaticParams` (a dynamic segment only).
+3. **Route omission** — keep the route out of the production build at the config level, so it is never
+   compiled. Example: a dev-only page extension in `pageExtensions`, keyed on `NODE_ENV`.
 
-All three achieve the same result for a Next.js/SSG project: the gallery does not appear in the
-production build output. The allowlist approach (option 1) is preferred when a curated snapshot model
-already exists — no code changes needed.
+Options 1 and 3 leave no gallery path in the production output; option 2's `notFound()` form leaves a
+404 body there. The allowlist approach (option 1) is preferred when a curated snapshot model already exists —
+no code changes needed.
 
 **Defense-in-depth — also mark the route non-indexable.** Regardless of which exclusion option is
 used, the gallery route should carry route-level metadata declaring it non-indexable. Build exclusion

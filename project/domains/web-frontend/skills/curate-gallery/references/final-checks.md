@@ -67,8 +67,8 @@ them; an item tagged *(Build, Sync)* needs a sound DESIGN.md and does not apply 
 - [ ] **No invented affordance** — every rendered action, link, field and state traces to a rule in
       DESIGN.md or the product doc; sample data introduces no field the real schema lacks
 - [ ] Render-backed verification done — real browser render at relevant viewport(s) and both themes
-- [ ] Build gate green — linter, typecheck, and production build pass; gallery route prerenders; zero
-      duplicate ids
+- [ ] Build gate green — linter, typecheck, and production build pass; gallery route prerenders where the
+      build includes it, else the production output holds no gallery content; zero duplicate ids
 - [ ] Code-write boundary respected — no edits to production code without explicit per-case user agreement
 - [ ] Every mismatch reported to the user in the run report; no auto-fixes applied
 
