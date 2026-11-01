@@ -2,7 +2,7 @@
 
 How to consume the design system. Read DESIGN.md before implementing any UI; reference every value by its token name and never hardcode or duplicate one here.
 
-Where a value lives: spacing, radius, motion, z-index, breakpoint and focus-ring tokens in `docs/DESIGN.md` → YAML Registry; color and typography tokens either there or colocated in `docs/DESIGN.md` → Foundations, whichever that doc uses; elevation levels and per-level surface specs in `docs/DESIGN.md` → Foundations → Elevation & Depth.
+- **Where a value lives:** spacing, radius, motion, z-index, breakpoint and focus-ring tokens in `docs/DESIGN.md` → YAML Registry; color and typography tokens either there or colocated in `docs/DESIGN.md` → Foundations, whichever that doc uses; elevation levels and per-level surface specs in `docs/DESIGN.md` → Foundations → Elevation & Depth.
 
 ## Stylesheet organization
 

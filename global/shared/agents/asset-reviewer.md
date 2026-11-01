@@ -70,9 +70,11 @@ written conventions, which is a different act and finds different defects.
    exceptions is qualified.
 6. **Run the mechanical check** whenever the change touches any file of a multi-file skill, over the whole
    skill, never only the changed files. From the kit root:
-   `node global/tools/skill-reference-check.mjs --cited-by README.md --cited-by global/tools/project-sync.mjs … <dir>`
+   `node global/tools/skill-reference-check.mjs --rules global/shared/rules --cited-by README.md --cited-by global/tools/project-sync.mjs … <dir>`
    - `<dir>` holds skill folders or is one skill folder; prefer the widest root that covers every skill
      involved, since a single skill cannot resolve a pointer into another.
+   - For a skill under `project/`, add one `--rules` per `project/**/rules` folder — a project-tier skill can
+     cite any rule a project receives, and an unindexed rule reads as NO SUCH FILE.
    - Pass one `--cited-by` per file under `global/tools/`, directories expanded.
    - Run it unpiped, since a pipe can hide the exit code.
    - Exit 1 with reported lines is a blocking verdict, one per line; exit 1 with only a stack trace is a

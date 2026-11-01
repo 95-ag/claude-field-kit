@@ -198,7 +198,7 @@ Delivery:
   It refuses before writing anything while a skill or rule pointer under `global/` does not resolve.
 - **Project tier** — the `project-sync` tool (`global/tools/project-sync.mjs`, via the owner-run `project-sync`
   skill) delivers `project/` updates to projects already set up. Its dry run and `--apply` refuse while a skill
-  pointer under `project/` does not resolve.
+  or rule pointer in a `project/` file does not resolve.
   - Each project's `.claude/kit-delivery.json` records its tiers, its opt-outs (`skip`) and the kit version of
     every file it holds — that version is the file's merge base.
   - An untouched file is replaced; an edited rule, hook or agent is 3-way merged against its base, with no

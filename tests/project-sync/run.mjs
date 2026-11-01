@@ -143,6 +143,65 @@ try {
   }
 
   {
+    const kit = makeKit();
+    kit.write("project/shared/rules/c.md", "# Rule C\n\nSee `a.md` → Nowhere.\n");
+    kit.commit("dead rule pointer");
+    const project = makeProject("p", validRecord());
+    const dry = tool(kit.dir, [project]);
+    check("hold: a dead rule pointer refuses the dry run", dry.status === 1 && dry.stdout.includes("REFUSED") && dry.stdout.includes("DEAD"), out(dry));
+
+    const recordBefore = readFileSync(join(project, ".claude/kit-delivery.json"), "utf8");
+    const applied = tool(kit.dir, ["--apply", project]);
+    check(
+      "hold: a dead rule pointer refuses --apply and writes nothing",
+      applied.status === 1 && applied.stdout.includes("REFUSED") && !existsSync(join(project, ".claude/rules"))
+        && readFileSync(join(project, ".claude/kit-delivery.json"), "utf8") === recordBefore && !existsSync(join(kit.dir, "tmp/project-sync-backup")),
+      out(applied),
+    );
+
+    const stat = tool(kit.dir, ["--status", project]);
+    check("hold: --status still runs on a dead rule pointer", stat.status === 0 && !stat.stdout.includes("REFUSED"), out(stat));
+  }
+
+  {
+    const kit = makeKit();
+    kit.write("global/shared/rules/engineering.md", "# Engineering\n\n## Implementation standards\n");
+    kit.write("project/shared/rules/c.md", "# Rule C\n\nSee `engineering.md` → Implementation standards.\n");
+    kit.commit("cross-tier rule pointer");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a project rule's pointer into global/shared/rules resolves", r.status === 0 && !r.stdout.includes("REFUSED"), out(r));
+  }
+
+  {
+    const kit = makeKit();
+    kit.write("global/shared/rules/g.md", "# Rule G\n\nSee `a.md` → Nowhere.\n");
+    kit.commit("dead pointer inside a global rule");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check(
+      "hold: a dead pointer inside a global rule is global-sync's to refuse, not project-sync's",
+      r.status === 0 && !r.stdout.includes("REFUSED") && r.stdout.includes("global/shared/rules/g.md"),
+      out(r),
+    );
+  }
+
+  {
+    const kit = makeKit();
+    kit.write("project/stacks/py/rules/c.md", "# Rule C\n\nSee `d.md` → Gone.\n");
+    kit.write("project/stacks/py/rules/d.md", "# Rule D\n");
+    kit.commit("new stack rules");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a new stacks/<name>/rules root is checked", r.status === 1 && r.stdout.includes("REFUSED") && r.stdout.includes("Gone"), out(r));
+  }
+
+  {
+    const kit = makeKit();
+    kit.git("rm", "-q", "-r", "project/shared/rules", "project/stacks/node/rules", "project/domains/web/skills");
+    kit.commit("no rules or skills");
+    const r = tool(kit.dir, [makeProject("p", validRecord())]);
+    check("hold: a kit with no rules folder runs", r.status === 0 && !r.stdout.includes("REFUSED"), out(r));
+  }
+
+  {
     const r = tool(shared.dir, [makeProject("p")]);
     check("refuse: missing record", r.status === 1 && r.stdout.includes("project-bootstrap adopt"), out(r));
   }

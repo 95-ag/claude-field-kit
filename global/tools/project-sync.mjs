@@ -39,8 +39,9 @@
  *
  * With project directories and no mode flag it prints the plan per project and writes nothing.
  *
- * The dry run and every --apply form first run skill-reference-check over project/'s skill folders and refuse
- * on a dead pointer; a near-match is printed as `warn:` and does not refuse.
+ * The dry run and every --apply form first run skill-reference-check over project/'s skill folders, with every rules
+ * folder under global/ and project/ indexed, and refuse on a dead pointer in a project/ skill or rule; a hold inside a
+ * global rule and a near-match are printed and do not refuse.
  *
  * Exit: 0 ok · 1 refused (printed as `REFUSED: …`) or, with --apply, something still owed (a conflict, a file
  * edited with no recorded base, a renamed file the project edited, an edited binary, a symlinked or non-regular
@@ -160,14 +161,44 @@ function skillRoots(projectTier) {
   return roots.filter((root) => existsSync(root));
 }
 
-// A skill delivered with a dead pointer reads as correct prose in the project, so the hold comes before any write.
+/**
+ * Every rules folder a project rule's pointer can reach: the global tier's (a project rule cites `engineering.md`) and
+ * each project tier's. An unindexed folder turns a correct cross-tier pointer into NO SUCH FILE.
+ */
+function ruleRoots(kitDir) {
+  const roots = [];
+  const globalTier = join(kitDir, "global");
+  if (existsSync(globalTier)) for (const env of readdirSync(globalTier)) roots.push(join(globalTier, env, "rules"));
+  const projectTier = join(kitDir, "project");
+  roots.push(join(projectTier, "shared", "rules"));
+  for (const kind of ["domains", "stacks", "repos"]) {
+    const kindDir = join(projectTier, kind);
+    if (!existsSync(kindDir)) continue;
+    for (const name of readdirSync(kindDir)) roots.push(join(kindDir, name, "rules"));
+  }
+  return roots.filter((root) => existsSync(root));
+}
+
+// A skill or rule delivered with a dead pointer reads as correct prose in the project, so the hold comes before any write.
+// The global rules are indexed as targets only: a hold inside one is printed but left to global-sync's own hold, since
+// global/ is never checked for uncommitted edits here and the fault is not in what this run delivers.
 function assertPointersResolve(kitDir) {
-  const roots = skillRoots(join(kitDir, "project"));
-  if (roots.length === 0) return;
+  const skills = skillRoots(join(kitDir, "project"));
+  const rules = ruleRoots(kitDir);
+  if (skills.length === 0 && rules.length === 0) return;
   const check = join(dirname(fileURLToPath(import.meta.url)), "skill-reference-check.mjs");
-  const result = spawnSync(process.execPath, [check, ...roots], { encoding: "utf8" });
+  const args = [check, ...rules.flatMap((root) => ["--rules", resolve(root)]), ...skills.map((root) => resolve(root))];
+  // Run from the kit so a rule hold prints its kit path (`global/…`, `project/…`); a skill hold prints `<skill>/<file>`.
+  const result = spawnSync(process.execPath, args, { encoding: "utf8", cwd: kitDir });
   if (result.status !== 0 || /^warn:/m.test(result.stdout)) process.stdout.write(result.stdout);
-  if (result.status === 1) throw new Refusal("a skill pointer under project/ does not resolve — fix it in the kit and rerun");
+  const holds = result.stdout.split("\n").filter((line) => /^[^:]+: (DEAD|NO SUCH FILE|AMBIGUOUS FILE)\b/.test(line));
+  if (result.status === 1 && holds.length > 0) {
+    if (holds.some((line) => !line.startsWith("global/"))) {
+      throw new Refusal("a skill or rule pointer under project/ does not resolve — fix it in the kit and rerun");
+    }
+    console.log("the holds above sit in global/ rules — global-sync refuses on them; project-sync goes on");
+    return;
+  }
   if (result.status !== 0) {
     throw new Refusal(`skill-reference-check could not run (exit ${result.status}): ${(result.stderr ?? "").trim()}`);
   }
